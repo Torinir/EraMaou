@@ -1,0 +1,194 @@
+﻿
+;--------------------------------------------------
+@CONFIG_FILTER_SETTING
+;--------------------------------------------------
+;各フィルタの設定を変更する
+;Custom Formatting
+SETCOLOR GETBIT(FLAG:25,0) ? 0x646464 # GETDEFCOLOR()
+PRINTFORML %"[0] Caress Filter", 30, LEFT% Currently: \@ GETBIT(FLAG:25,0) ? ON # OFF \@
+SETCOLOR GETBIT(FLAG:25,1) ? 0x646464 # 0x6495ed
+PRINTFORML %"[1] Tool Filter", 30, LEFT% Currently: \@ GETBIT(FLAG:25,1) ? ON # OFF \@
+SETCOLOR GETBIT(FLAG:25,2) ? 0x646464 # 0xffa500
+PRINTFORML %"[2] V Filter", 30, LEFT% Currently: \@ GETBIT(FLAG:25,2) ? ON # OFF \@
+SETCOLOR GETBIT(FLAG:25,3) ? 0x646464 # 0xdb7093
+PRINTFORML %"[3] A Filter", 30, LEFT% Currently: \@ GETBIT(FLAG:25,3) ? ON # OFF \@
+SETCOLOR GETBIT(FLAG:25,4) ? 0x646464 # 0xff6347
+PRINTFORML %"[4] SM Filter", 30, LEFT% Currently: \@ GETBIT(FLAG:25,4) ? ON # OFF \@
+RESETCOLOR
+DRAWLINE
+PRINTL [100] Return
+
+INPUT
+IF RESULT == 100
+	RETURN 0
+ENDIF
+IF RESULT >= 0 && RESULT <= 4
+	INVERTBIT FLAG:25,RESULT
+ENDIF
+RESTART
+
+;--------------------------------------------------
+@CONFIG_SHOW_FILTER_STATUS
+;--------------------------------------------------
+;フィルタの状態を1行で記述するだけ
+SETCOLOR GETBIT(FLAG:25,0) ? 0x646464 # GETDEFCOLOR()
+PRINT Caress　
+SETCOLOR GETBIT(FLAG:25,1) ? 0x646464 # 0x6495ed
+PRINT Tools　
+SETCOLOR GETBIT(FLAG:25,2) ? 0x646464 # 0xffa500
+PRINT V　
+SETCOLOR GETBIT(FLAG:25,3) ? 0x646464 # 0xdb7093
+PRINT A　
+SETCOLOR GETBIT(FLAG:25,4) ? 0x646464 # 0xff6347
+PRINT SM　
+RESETCOLOR
+PRINTL
+
+;--------------------------------------------------
+@CONFIG_VIRGIN_CONCEDED_SETTING
+;--------------------------------------------------
+;処女献上の発生可否設定をする
+;英語の訳が間違っていても気にしてはいけない
+PRINTL [0] It will not occur
+PRINTL [1] Offer only once per person
+PRINTL [2] Offer any number of times
+DRAWLINE
+PRINTL [100] Return
+
+WHILE 1
+	INPUT
+	SELECTCASE RESULT
+		CASE 0 TO 2
+			FLAG:38 = RESULT - 1
+			RETURN 0
+		CASE 100
+			RETURN 0
+	ENDSELECT
+	CLEARLINE 1
+WEND
+
+;--------------------------------------------------
+@CONFIG_VIRGIN_CONCEDED_STATUS
+;--------------------------------------------------
+;処女献上の発生可否状態を記述
+;三項演算子で記述できないから直接CONFIG関数に入れると見栄えが悪くなるかなって...
+SELECTCASE FLAG:38
+	CASE IS <= -1
+		PRINT It Will Not Occur
+	CASE 0
+		PRINT Offer Once Per Person
+	CASE IS >= 1
+		PRINT Offer Any Number Of Times
+ENDSELECT
+PRINTL 
+
+;--------------------------------------------------
+@CONFIG_PENIS_YOU_SETTING
+;--------------------------------------------------
+
+PRINTFORML What is the state of the Demon King's penis?
+
+PRINTL  [0] - Average
+PRINTL  [1] - Large
+PRINTL  [2] - Small and Uncircumcised
+PRINTL  [3] - Uncircumcised
+PRINTL  [4] - Horse Sized
+DRAWLINE
+PRINTL  [999] - Back
+
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT >= 0 && RESULT <= 4
+	PRINT The Demon King's penis is now
+	IF RESULT == 1
+		PRINTW 《Large》
+	ELSEIF RESULT == 2
+		PRINTW 《Small And Uncircumcised》
+	ELSEIF RESULT == 3
+		PRINTW 《Uncircumcised》
+	ELSEIF RESULT == 4
+		PRINTW 《Horse Sized》
+	ELSE
+		PRINTW 《Average》
+	ENDIF
+	TALENT:0:318 = RESULT
+ENDIF
+
+;--------------------------------------------------
+@CONFIG 
+#DIM PAGE
+;--------------------------------------------------
+
+PAGE = 0
+
+$PAGE_TOP
+
+;Custom Formatting
+IF PAGE == 0
+	PRINTFORML %"[0] Rape Heroes After They Surrender", 55, LEFT% Currently: \@ GETBIT(FLAG:5,0) ? Allow # Do Not Allow \@
+	PRINTFORML %"[1] Hero Growth Setting", 55, LEFT% Currently: \@ GETBIT(FLAG:5,1) ? Stronger Heroes Will Arrive As The Days Progress # Heroes Will Always Arrive At The Default Strength \@
+	PRINTFORML %"[2] Pregnancy And Birth", 55, LEFT% Currently: \@ GETBIT(FLAG:5,2) ? ON # OFF \@
+	PRINTFORML %"[3] Automatically Execute Heroes", 55, LEFT% Currently: \@ GETBIT(FLAG:5,3) ? ON # OFF \@
+	PRINTFORML %"[4] Prevent Monsters From Intercepting", 55, LEFT% Currently: \@ GETBIT(FLAG:5,4) ? ON (+迎撃に向かう奴隷にモンスタ-が訓練を行う) # OFF \@
+	PRINTFORML %"[5] Display Combat Log", 55, LEFT% Currently: \@ GETBIT(FLAG:5,5) ? ON # OFF \@
+	PRINTFORML %"[6] Automatically Replace Traps", 55, LEFT% Currently: \@ GETBIT(FLAG:5,6) ? ON # OFF \@
+	PRINTFORML %"[7] NTR Features", 55, LEFT% Currently: \@ GETBIT(FLAG:5,7) ? ON # OFF \@
+	PRINTFORML %"[8] Organize Talents By Type", 55, LEFT% Currently: \@ GETBIT(FLAG:5,8) ? ON # OFF \@
+	PRINTFORML %"[9] 戦闘ログでのSKIP中断", 55, LEFT% Currently: \@ GETBIT(FLAG:5,9) ? ON # OFF \@
+	PRINTFORML %"[10] Intercept While Pregnant-Train Close To Delivery", 55, LEFT% Currently: \@ GETBIT(FLAG:5,10) ? Allow # Do Not Allow \@
+	PRINTFORML %"[11] Clothing System", 55, LEFT% Currently: \@ (FLAG:37) ? ON # OFF \@
+	PRINTFORML %"[12] Automatically End Training Before Target Dies", 55, LEFT% Currently: \@ (FLAG:35) ? ON # OFF \@
+	PRINTFORM %"[13] Training Filter", 55, LEFT% Currently: 
+	CALL CONFIG_SHOW_FILTER_STATUS
+	PRINTFORML %"[14] Character Profile Display Format", 55, LEFT% Currently: \@ GETBIT(FLAG:5,11) ? Self-Introduction # Detailed List \@
+	PRINTFORML %"[15] Display Age / Display 3 Sizes", 55, LEFT% Currently: \@ GETBIT(FLAG:5,12) ? ON # OFF \@/\@ GETBIT(FLAG:5,15) ? ON # OFF \@
+	PRINTFORM %"[16] Fallen Slaves Offer Their Virginity", 55, LEFT% Currently: 
+	CALL CONFIG_VIRGIN_CONCEDED_STATUS
+	PRINTFORM %"[17] State Of The Demon King's Penis", 55, LEFT% Currently: 
+	PRINTFORML %GET_LOOK_INFO(0, "ペニスの状態")%
+ELSEIF PAGE == 1
+	PRINTFORML %"[18] Allow For Male Heroes", 55, LEFT% Currently: \@ GETBIT(FLAG:8,0) ? Allow # Do Not Allow \@
+	PRINTFORML %"[19] Display Hero Talents On Arrival", 55, LEFT% Currently: \@ GETBIT(FLAG:8,1) ? ON # OFF \@
+	PRINTFORML %"[20] Allow Heroes To Gain Affection", 55, LEFT% Currently: \@ GETBIT(FLAG:8,2) ? Allow # Do Not Allow \@
+	PRINTFORML %"[21] 勇者のクエスト受注", 55, LEFT% Currently: \@ GETBIT(FLAG:8,3) ? Allow # Do Not Allow \@
+ENDIF
+DRAWLINE
+PRINT [100] Return  
+PRINTL [101] Next Page
+
+INPUT
+LOCAL = RESULT
+IF LOCAL == 100
+	RETURN 0
+ELSEIF LOCAL == 101
+	PAGE += 1
+	PAGE %= 2
+	GOTO PAGE_TOP
+ELSEIF LOCAL >= 0 && LOCAL <= 10
+	INVERTBIT FLAG:5,LOCAL
+ELSEIF LOCAL >= 18 && LOCAL <= 21
+	LOCAL:1 = LOCAL - 18
+	INVERTBIT FLAG:8,LOCAL:1
+ELSEIF LOCAL == 11
+	FLAG:37 = !(FLAG:37)
+ELSEIF LOCAL == 12
+	FLAG:35 = !(FLAG:35)
+ELSEIF LOCAL == 13
+	CALL CONFIG_FILTER_SETTING
+ELSEIF LOCAL == 14
+	INVERTBIT FLAG:5,11
+ELSEIF LOCAL == 15
+	CALL CONFIG_AGE_SETTING
+ELSEIF LOCAL == 16
+	CALL CONFIG_VIRGIN_CONCEDED_SETTING
+ELSEIF LOCAL == 17
+	CALL CONFIG_PENIS_YOU_SETTING
+ENDIF
+
+GOTO PAGE_TOP
+
+
+
+

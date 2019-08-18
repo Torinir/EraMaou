@@ -1,0 +1,1378 @@
+﻿;-------------------------------------------------
+;売却末路口上
+;Sは売却値
+;最初に反発刻印３、淫乱、愛、その他で分岐、次に値段(100万以上、50万以上、10万以上、10万未満)によって分岐
+;そして売られる先は職業によって４分岐
+;売られた先によって要求TALENT、PALAMが違って最終的な末路が表示される.
+;基本パターンは売却値段*4、売却先*4、正否判定で*2の32パターン
+;反発3は売却値段と売却先を２つにまで減らして8パターン
+;通常売却は売却値段を３つにまで減らして12パターン
+;最後に魔族とその他の*2で...64(愛)+64(淫乱)+8(反発３)+24(通常)で160パターン...え、そんなに
+;以下メモ
+;基本的に魔族以外の扱いは悪い
+;200,戦士,;物理戦闘が得意な職業
+;201,魔術師,;魔法によって敵を一掃する火力型
+;202,神官,;生贄
+;203,盗賊,;パワーではなく技で物理戦闘を有利に進める
+;204,肉便器,;勇者陥落の象徴
+;205,騎士,;ピンチに強い
+;206,巫女,;火力のもう一つの形
+;207,忍者,;マルチスキルで真価を発揮...のはずが地味
+;-------------------------------------------------
+;売却先加筆.@SELL_MATURO_K1を追加
+;異種姦メイン末路を追加
+;-------------------------------------------------
+@SELL_MATURO_K1
+#DIMS MATURO
+#DIM FAMILY,3
+
+
+FAMILY = CFLAG:TARGET:605
+FAMILY:1 = FAMILY % 10
+CALL SEARCH_FAMILY, TARGET
+FAMILY:2 = RESULT
+
+
+	;反発刻印Lv3
+	IF MARK:3 == 3
+		;魔族
+		IF TALENT:TARGET:314 == 9
+			;魔族売値10万以上
+			IF S >= 100000
+				IF rand:2 == 0
+					LOCALS = ブレインイーターの諸侯
+					LOCAL = 1
+				ELSE
+					LOCALS = ブレインイーターの大神官
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に売却された%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;
+					IF LOCAL == 1
+						;レベル50以上
+						IF CFLAG:9 >= 50
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%はそれでも好事家に愛されているようだ
+							PRINTFORMW 脳を改造され,従順な奴隷となった%SAVESTR:TARGET%は優秀な指揮官となり
+							PRINTFORMW 愛液と涎をだらだら垂らしながら職務を遂行しているらしい
+							MATURO = 脳改造指揮官
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は好事家に脳改造されたものの
+							PRINTFORMW 手術は失敗し完全な廃人となって幼児退行化してしまったらしい
+							PRINTFORMW それ以降糞尿を垂れ流しながら見世物になっているそうだ......
+							MATURO = 見世物
+						ENDIF
+					;
+					ELSEIF LOCAL == 0
+						;神官＆巫女
+						IF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は怪しい教団幹部に受け入れられ
+							PRINTFORMW 今では従順な神聖娼婦として洗脳されきっているらしい
+							PRINTFORMW %SAVESTR:TARGET%は信者たちに股を開き,暗黒神の寵愛を説いているそうだ
+							MATURO = 堕落神の神聖娼婦
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,怪しい教団の生贄として選ばれたようだ
+							PRINTFORMW 脳の一部を暗黒神に捧げてしまって,今ではすっかり従順な神聖娼婦となっている
+							PRINTFORMW 涎や愛液を垂れ流しにしながら,それでも彼女は幸せそうだった......
+							MATURO = 堕落神の神聖娼婦
+						ENDIF
+					ENDIF
+			;魔族売値10万未満
+			ELSE
+				IF RAND:2 == 0
+					LOCALS = 悪魔の諸侯
+					LOCAL = 1
+				ELSE
+					LOCALS = 悪魔の大富豪
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に購入された%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					IF LOCAL == 1
+						IF RAND:2 == 0
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は悪魔の玩具になってしまったようだ
+							PRINTFORMW ペニスや女性器をめちゃくちゃに生やされたり改造されたりして
+							PRINTFORMW 悪魔たちの見世物になっていた
+							MATURO = 悪魔の玩具
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は肥料を作る装置にされてしまった
+							PRINTFORMW 無理矢理に家畜用飼料を口から詰めさせられて,1時間程度で良質な肥料になる
+							PRINTFORMW 脱糞するたび叫び声のような嬌声をあげる%SAVESTR:TARGET%は
+							PRINTFORMW 見晴らしのいい畑に設置されて見世物としても有名になっていた
+							MATURO = 脱糞肥料装置
+						ENDIF
+					ELSEIF LOCAL == 0
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW 反抗的な%SAVESTR:TARGET%は畜舎に繋がれてミルクタンクにされてしまった
+							PRINTFORMW 元々大きかった乳房は魔法と薬でさらに肥大化し,まるでスライムのようだ
+							PRINTFORMW 母乳をだすため強制的に種付けされ,%SAVESTR:TARGET%は涎と愛液を垂らし続けていた
+							MATURO = ミルクタンク
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は魔法で人間の言葉を奪われ思考を粉砕された
+							PRINTFORMW いまや,彼女は四足であるく犬そのものだ.首輪と鎖で繋がれ,来客をもてなした
+							PRINTFORMW 今宵も飼い犬同士の種付けショ-が行われるだろう
+							PRINTFORMW %SAVESTR:TARGET%はとても幸せそうに腰を振っていた
+							MATURO = 思考粉砕された人犬
+						ENDIF
+					ENDIF
+			ENDIF
+		;それ以外の種族
+		ELSE
+			;それ以外の種族売値10万以上
+			IF S >= 100000
+				;種族ドラゴン
+				IF TALENT:TARGET:314 == 5
+					LOCALS = 高位魔術研究所
+					LOCAL = 2
+				;戦士＆盗賊
+				ELSEIF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オーガの傭兵団
+					LOCAL = 1
+				ELSE
+					LOCALS = 吸血鬼の暗黒神殿
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に移送された%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;種族ドラゴン
+					IF LOCAL == 2
+						PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,珍しい種族だったため檻に入れられてしまった
+						PRINTFORMW ウィザ-ドやウィッチが魔法実験を行う研究棟の中で%SAVESTR:TARGET%は飼われていた
+						PRINTFORMW 毎日定時に,彼女の血液や排泄物が採取される
+						PRINTFORMW 浣腸をたっぷり入れられ,バケツに排泄する%SAVESTR:TARGET%の目には涙が浮かんでいた
+						MATURO = 排泄実験素材
+					ELSEIF LOCAL == 1
+						;戦士＆盗賊
+						PRINTFORMW 護衛用の剣客として雇われているらしい
+								;レベル１００以上
+								IF CFLAG:9 >= 100
+									PRINTFORMW 非常に腕は立つが,生意気な口を利く%SAVESTR:TARGET%はオ-ガ達の姉御役だ
+									PRINTFORMW オ-ガ達を足蹴にし,時には訓練に付き合っている
+									PRINTFORMW これではどちらが奴隷かわからないと,オ-ガ達は苦笑した
+								ELSE
+									PRINTFORMW 反抗的で弱い%SAVESTR:TARGET%は,オ-ガの傭兵たちに今日もしごかれている
+									PRINTFORMW 生意気な口を聞くと鉄拳制裁を受け,練習では木刀で殴られてばかりだ
+									PRINTFORMW 稽古が終わると,オ-ガ達と共に裸になって風呂に入る
+									PRINTFORMW やがて彼女もかけがえのない仲間の一人になっていくのだろう
+								ENDIF
+						MATURO = 護衛用の剣客
+					ELSEIF LOCAL == 0
+						;神官＆巫女
+						IF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,吸血鬼の洗礼を受けて暗黒神の信徒となった
+							PRINTFORMW いまでは邪悪な儀式で幾度となく洗脳され,忠実に職務をこなせるようになっている
+							PRINTFORMW ただ,強めな薬物が使用されたせいで,彼女は時々無意識に排泄しながら絶頂してしまうらしい......
+							MATURO = 暗黒神の信徒
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,今では吸血鬼のドリンクサ-バ-となって血液を提供している
+							PRINTFORMW 全身をきつく拘束されて,採血チュ-ブが彼女の腕から伸びていた.食事も排泄も全てが管理されている
+							PRINTFORMW 彼女の唯一の楽しみは,毎日1回寝る前の愛撫による絶頂だけであった......
+							MATURO = 吸血鬼のドリンクサーバー
+						ENDIF
+					ENDIF
+			;それ以外の種族売値10万未満
+			ELSE
+				IF RAND:2 == 0
+					LOCALS = トロール傭兵団
+					LOCAL = 1
+				ELSE
+					LOCALS = 悪魔の人間牧場
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に移送された%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					IF LOCAL == 1
+						IF RAND:2 == 0
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,トロ-ルの傭兵団長のペニスケ-スに改造されてしまった
+							PRINTFORMW 手足を切り取られて,膣は限界まで拡張され,鎖でトロ-ルの胴体に縛り付けられている
+							PRINTFORMW 子宮まで完全に肉穴と化した彼女はもう何も孕むことは無い......
+							MATURO = トロールのペニスケース
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は,トロ-ルの繁殖用便器にされてしまった
+							PRINTFORMW 風船のように膨らんだ%SAVESTR:TARGET%の子宮には,いまトロ-ルの子がすくすくと育っている
+							PRINTFORMW もはや何人産み落としたかさえ%SAVESTR:TARGET%には分からなかった......
+							MATURO = トロールの繁殖便器
+						ENDIF
+					ELSEIF LOCAL == 0
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は畜舎に繋がれてミルクタンクにされてしまった
+							PRINTFORMW 隣には何人も裸の女たちが並び,彼女たちは皆限界まで乳房を肥大化させられている
+							PRINTFORMW 涎を垂らす%SAVESTR:TARGET%のイキ顔には,鼻輪がよく似合っていた
+							MATURO = ミルクタンク
+						ELSE
+							PRINTFORMW 反抗的だった%SAVESTR:TARGET%は畜舎に繋がれて繁殖家畜にされてしまった
+							PRINTFORMW 同じくどこからか買われてきた男奴隷が,鎖をじゃらじゃら鳴らしながら必死に腰を振る
+							PRINTFORMW %SAVESTR:TARGET%は自由と人権を奪われ,ただ性交の快楽だけを貪っていた......
+							MATURO = 繁殖用家畜奴隷
+						ENDIF
+					ENDIF
+			ENDIF
+		ENDIF
+	;愛・淫乱
+	ELSEIF TALENT:85 || TALENT:76
+		;魔族
+		IF TALENT:TARGET:314 == 9
+			;魔族売値100万以上
+			IF S >= 1000000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = 暗黒ドラゴン
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = 上級悪魔
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = 異形の神の神殿
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 魔獣の研究施設
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW %SAVESTR:TARGET%は暗黒竜の花嫁となって竜の洞窟で暮らしている
+							PRINTFORMW 竜の剛直と子種を受け入れ,絶滅寸前の竜を助けるために何度も孕んでは産んでいるらしい
+							PRINTFORMW 最近では暗黒竜が子種を絞られ過ぎて音を上げているそうだ
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は暗黒竜の花嫁となって竜の洞窟で暮らしている
+							PRINTFORMW 魔族の肉体となったことで竜の剛直と子種を受け入れ,いまでは竜の仔を何匹を育んでいるらしい
+							PRINTFORMW %SAVESTR:TARGET%はさらなる肉体改造を続けて完全に竜になっていくのが夢らしい
+						ENDIF
+						MATURO = 暗黒竜の花嫁
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW 巨乳の%SAVESTR:TARGET%は上級悪魔のメイドとして働いているらしい
+							PRINTFORMW 胸を露出したまま仕事を行い,興奮すると乳首が勃起してしまう
+							PRINTFORMW 乳首が立ったのが見つかると淫猥な折檻を受けるのだが,
+							PRINTFORMW 主人は意地悪にも催淫の呪文をかけて楽しんでいるそうだ......
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は上級悪魔のメイドとして働いているらしい
+							PRINTFORMW 粗相をするとその場でオナニ-してしまう呪いをかけられ,
+							PRINTFORMW 緊張感のある仕事をしているそうだ
+							PRINTFORMW 最近ではわざと粗相をして露出オナニ-を楽しんでいるようで主人を困らせているらしい......
+						ENDIF
+						MATURO = 上級悪魔のメイド
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%は異形の神の神殿で,人外までに変異した神の信徒の世話をしている
+							PRINTFORMW 神の信徒は歩くことや食事でさえも,神の巫女の手助けを必要とする
+							PRINTFORMW そして彼らのおぞましいペニスが勃起すれば,アナルで浄化しなければならない
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は異形の神の神殿で,人外までに変異した神の信徒の世話をしている
+							PRINTFORMW 神の花嫁となった%SAVESTR:TARGET%の子宮は神の信徒たちの公共のものになる
+							PRINTFORMW 今日も子種を受け入れ,異形の仔を孕んでいるらしい......
+						ENDIF
+						MATURO = 異形の神の信徒の世話人
+					;その他
+					ELSEIF LOCAL == 0
+						;話術LV5以上
+						IF ABL:15 >= 5
+							PRINTFORMW %SAVESTR:TARGET%の巧みな話術に目をつけた魔獣の研究員は,
+							PRINTFORMW %SAVESTR:TARGET%を実験台の買い付け役に起用したらしい
+							PRINTFORMW 魔獣や,異種交配用の奴隷を各地で買いあさり,彼らの悲鳴を聞いて自慰しているそうだ
+							MATURO = 実験台の買い付け役
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は魔獣交配用の奴隷として買われ,今日も異形の怪物と交尾を強制されている
+							PRINTFORMW 最近では魔獣たちに愛を感じて来たようで,愛おしそうに実験台の魔獣の名前を呼びながら
+							PRINTFORMW 腰を振ってKissを交わしているらしい......
+							MATURO = 魔獣交配奴隷
+						ENDIF
+					ENDIF
+			;魔族売値50万以上
+			ELSEIF S >= 500000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オーガの傭兵団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = ケンタウロスの騎士団
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ミノタウロスの司祭
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = オークの大商人
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;盗賊
+						IF TALENT:TARGET:203 == 1
+							PRINTFORMW %SAVESTR:TARGET%はオ-ガの傭兵団の一員となり,傭兵団のサポ-ト役として役立っているらしい
+							PRINTFORMW 資産管理や,装備や物資の購入など,頭を使う仕事に専念しているようだ
+							PRINTFORMW そのお腹は大きく膨らんでいた.団長の子を宿し,次期団長となるハ-フオ-ガを生むのだ.
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は傭兵団の戦士として活躍しているそうだ
+							PRINTFORMW 奴隷時代よりもさらに筋肉はたくましくなり,骨太になった
+							PRINTFORMW オ-ガの団員はそんな%SAVESTR:TARGET%をじっとりと見つめる
+							PRINTFORMW 強いメスこそ,彼らにとって最も性的な魅力になるのだ
+						ENDIF
+						MATURO = オーガ傭兵団の一員
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はケンタウロスの子供の養育係として暮らしている
+							PRINTFORMW その豊かな胸で母乳を与える姿は慈母そのものだ
+							PRINTFORMW ケンタウロスは子供と言えど,立派なペニスを持つ
+							PRINTFORMW 青く実る果実を見て,%SAVESTR:TARGET%は舌舐めずりをした
+							PRINTFORMW 今夜も禁断の性教育が行われる......
+							MATURO = ケンタウロスの養育係
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は騎士団の従者となり,雑用をしているようだ
+							PRINTFORMW ケンタウロスは性欲が強い.下半身を剥きだしで仕事をする%SAVESTR:TARGET%は,
+							PRINTFORMW 求められたらすぐにでも尻を差しださなくてはいけない......
+							MATURO = ケンタウロス騎士団の従者
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はミノタウロスの神官たちに崇められる存在となった.
+							PRINTFORMW 暗黒神の使徒として,儀式の際にはアナル自慰を見せつけて淫らに舞う.
+							PRINTFORMW そのアナルは限界まで拡張され,怪しく咲き誇っていた.......
+							MATURO = ミノタウロスの聖女
+						ELSE
+							PRINTFORMW ミノタウロスの神殿の聖母となった%SAVESTR:TARGET%は,ミノタウロスの仔を孕みつづけている
+							PRINTFORMW 混血によってさらに強いミノタウロスを生みだすという儀式らしい
+							PRINTFORMW 今日も聖なる母から牛面の神子が産み落とされる......
+							MATURO = ミノタウロスの聖母
+							
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 来客用の肉便器として買われた%SAVESTR:TARGET%は,オ-クの屋敷で特別な地位を得た.
+							PRINTFORMW 高貴な魔族の便器という存在は,オ-クの成金の欲望を満たすのに十分だった.
+							PRINTFORMW 書斎の隅に据え付けられた便器は,来客や主人の目も憚らず狂ったように自慰を繰り返す.
+							PRINTFORMW それを見るだけで,オ-クの主人は全てを手にしたような万能感に酔いしれるのだった.
+							MATURO = 来客用の肉便器
+						ELSE
+							PRINTFORMW 愛人として買われた%SAVESTR:TARGET%は,オ-クの屋敷で特別な地位を得た.
+							PRINTFORMW オ-クの商人は%SAVESTR:TARGET%に心酔し,毎日豪華な服や宝石を貢ぐ.
+							PRINTFORMW %SAVESTR:TARGET%はまんざらでもないような顔で,豪華に着飾られていた.
+							MATURO = オークの愛人
+						ENDIF
+					ENDIF
+			;魔族売値10万以上
+			ELSEIF S >= 100000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = スキュラの自警団
+					LOCAL = 3
+				;騎士＆魔術師
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:201 == 1
+					LOCALS = ダークエルフの学校
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ゴーレムの大規模農場
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 人狼のカジノ
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW スキュラの自警団は外人戦士として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW よく調教された%SAVESTR:TARGET%は,命令に従順で自警団の活躍に貢献した
+							PRINTFORMW ところが,性欲の強すぎる%SAVESTR:TARGET%は訓練をサボってスキュラ達とセックスばかりしているらしい
+							PRINTFORMW 最近は規律が乱れるということで,貞操帯をつけられセックス禁止令を言い渡されたという
+						ELSE
+							PRINTFORMW スキュラの自警団は外人戦士として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW よく調教された%SAVESTR:TARGET%は,命令に従順で自警団の活躍に貢献したようだ
+							PRINTFORMW 共に腕を磨き,戦う中でスキュラ達と信頼を築きあげたそうだ
+							PRINTFORMW 最近,自警団の若いスキュラと結婚したという知らせが届いた
+						ENDIF
+						MATURO = スキュラ自警団の外人戦士
+					;騎士＆魔術師
+					ELSEIF LOCAL == 2
+						;巨乳or爆乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の講師として働いているという
+							PRINTFORMW 胸が張り裂けそうなほど大きい%SAVESTR:TARGET%は少年たちの羨望の的となった
+							PRINTFORMW 最近ではダ-クエルフの少年と淫行しているのが発見されて,
+							PRINTFORMW 罰として淫行教師の刺青を入れられてしまったという
+							MATURO = ダークエルフ学校の淫行講師
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の講師として働いているという
+							PRINTFORMW 経験豊富な%SAVESTR:TARGET%は少年たちの羨望の的となった
+							PRINTFORMW クラス全員の男子と性的関係を持った%SAVESTR:TARGET%は,女子数名にも手を出しているという
+							PRINTFORMW 噂では保健の授業で公開セックス実習までしているらしい
+							MATURO = ダークエルフ学校の淫行講師
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW ゴ-レムが働く農場で%SAVESTR:TARGET%は肥料を生産する仕事についた
+							PRINTFORMW 大量の残飯や飼料が口に流し込まれ,妊婦のように膨らんだ改造済みの内臓で発酵させる
+							PRINTFORMW そして嬌声を上げながら良質な肥料を排泄しているという
+							MATURO = 農場の肥料生産奴隷
+						ELSE
+							PRINTFORMW ゴ-レムが働く農場で%SAVESTR:TARGET%はゴ-レムの生体ユニットとして買われた
+							PRINTFORMW %SAVESTR:TARGET%はゴ-レムの胴体に埋め込まれて,脳の空いている領域でゴ-レムの制御を行うのだ
+							PRINTFORMW 何も考える必要もなくただじっとしままま,股間と乳首に取り付けられた慰安装置の快楽を味わうだけの生活らしい
+							MATURO = ゴーレムの生体ユニット
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 人狼の運営するカジノに買われた%SAVESTR:TARGET%は,肉便器としての仕事を続けているという
+							PRINTFORMW 犬の子を孕めるように改造された%SAVESTR:TARGET%は,狼に犯されるショ-に出演していた
+							PRINTFORMW 即座に妊娠を判別され,何回目で孕むかが賭けの対象になっているという
+							MATURO = カジノの獣姦ショー女優
+						ELSE
+							PRINTFORMW 人狼の運営するカジノに買われた%SAVESTR:TARGET%は,肉便器としての仕事を続けているという
+							PRINTFORMW ふたなりに改造された%SAVESTR:TARGET%は,人狼の娘にフェラされて絶頂を我慢しなければならない
+							PRINTFORMW どれだけ耐えられるかが,賭けの対象になっているという
+							MATURO = カジノのふたなり玩具
+						ENDIF
+					ENDIF
+			;魔族売値10万未満
+			ELSE
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オークの傭兵団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = トロールの奴隷主人
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ダークエルフの学者
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 街角の見世物小屋
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はオ-クの傭兵団の一員として招かれた
+							PRINTFORMW セックスの好きな%SAVESTR:TARGET%は訓練をサボってオ-クのペニスを咥えているという
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はオ-クの傭兵団の一員として招かれた
+							PRINTFORMW 団長に気にいられた%SAVESTR:TARGET%は強い子を産んでほしいと毎晩種付けされているらしい
+						ENDIF
+						MATURO = オーク傭兵団の一員
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はトロ-ルの肉体労働者をなだめる慰安婦として働いている
+							PRINTFORMW トロ-ルはひたすらレバ-を回し,機械を動かすことに専念する.そのペニスケ-スとなったのだ
+							PRINTFORMW 大きな胸はチュ-ブで搾乳され,トロ-ルの喉を潤すのだという
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はトロ-ルの肉体労働者をなだめる慰安婦として働いている
+							PRINTFORMW トロ-ルはひたすらレバ-を回し,機械を動かすことに専念する.そのペニスケ-スとなったのだ
+							PRINTFORMW トロ-ルの精液だけで生きられるように改造され,その顔は淫蕩に歪んでいる
+						ENDIF
+						MATURO = トロール労働者の慰安婦
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%は新しい快楽拷問の研究用の実験体となった
+							PRINTFORMW アナルに特殊なディルドを挿入され,スイッチが入る
+							PRINTFORMW すると,膣ですら得られない快楽が被験者を襲うという......
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は新しい快楽拷問の研究用の実験体となった
+							PRINTFORMW 新しい媚薬を次々と注射され,廃人寸前まで絶頂する
+							PRINTFORMW 最近では風が吹くだけで絶頂するため,快楽に耐える薬の実験を始めたらしい......
+						ENDIF
+						MATURO = ダークエルフ学者の実験台
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW %SAVESTR:TARGET%は淫靡に改造された肉体を見世物小屋で晒す生活をしている
+							PRINTFORMW グロテスクに改造された性器や,淫らに膨れ上がった乳房などは街の人間の好奇の的になった
+							PRINTFORMW 最近では醜悪なペニスを生やされたふたなり奴隷と公開セックスをしているらしい
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は淫靡に改造された肉体を見世物小屋で晒す生活をしている
+							PRINTFORMW グロテスクなペニスを生やされ,それを扱く公開自慰ショ-を行っているらしい
+							PRINTFORMW あまりにもEjaculationしすぎてインポになったため,最近では膣の方で自慰しているという
+						ENDIF
+						MATURO = 見世物小屋のふたなり便器
+					ENDIF
+			ENDIF
+		;それ以外の種族
+		ELSE
+			;それ以外の種族売値100万以上
+			IF S >= 1000000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = 堕天使の貴族
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = グリフォンの宅配屋
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ラミアの高級娼館
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = ゴブリンの大劇場
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW %SAVESTR:TARGET%は堕天使の貴族の元で,堕天使の少年の教育係となった
+							PRINTFORMW 堕落すればするほど強大な存在になる堕天使に,性の実習を行うのだ
+							PRINTFORMW 性欲が盛んな堕天使の少年が悲鳴を上げるほど,%SAVESTR:TARGET%は毎晩ザ-メンを絞り取っているらしい
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は堕天使の貴族の元で,堕天使の少年の教育係となった
+							PRINTFORMW 堕落すればするほど強大な存在になる堕天使に,性の実習を行うのだ
+							PRINTFORMW 性欲が盛んで必死に腰を振る堕天使の少年を,%SAVESTR:TARGET%は優しく抱きしめた
+						ENDIF
+						MATURO = 堕天使少年の教育係
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はグリフォンの騎手として働き始めた
+							PRINTFORMW 宅配便とは表の姿.裏では売春婦をデリバリ-する仕事で儲けている
+							PRINTFORMW 乳房の大きい%SAVESTR:TARGET%は度々指名される看板嬢となっていた
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はグリフォンの騎手として働き始めた
+							PRINTFORMW 宅配便とは表の姿.裏では売春婦をデリバリ-する仕事で儲けている
+							PRINTFORMW 上達の早い%SAVESTR:TARGET%は,誰よりも早くチンポを吸いに来る嬢として有名になっていた
+						ENDIF
+						MATURO = グリフォンの騎手
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はアナル専用の嬢として娼館で働き始めた
+							PRINTFORMW 様々な異種族のセレブ達が通うラミアの娼館で,%SAVESTR:TARGET%の人気は高まっているらしい
+							PRINTFORMW 普通の娼館なら門前払いされるような異形の客が,今日も%SAVESTR:TARGET%を求めて門をくぐる
+							MATURO = アナル専用娼婦
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は異種族が通うラミアの娼館で働き始めた
+							PRINTFORMW 異種族の子を身ごもった%SAVESTR:TARGET%は,妊婦マニアのためにまだ股を開いているようだ
+							PRINTFORMW 普通の娼館なら門前払いされるような異形の客が,今日も%SAVESTR:TARGET%を求めて門をくぐる
+							MATURO = 異種姦専用娼婦
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;話術LV5以上
+						IF ABL:15 >= 5
+							PRINTFORMW %SAVESTR:TARGET%はゴブリン達のアイドルとして,今日も大劇場で歌っては踊る
+							PRINTFORMW 全裸の方がまだましとも思える卑猥な布切れを着て,舞台の上で猥雑なト-クをする%SAVESTR:TARGET%
+							PRINTFORMW その淫蕩な姿に,ゴブリンのファンが満員御礼で押し掛けるという
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はゴブリン達のアイドルとして,今日も大劇場で歌っては踊る
+							PRINTFORMW 全裸の方がまだましとも思える卑猥な布切れを着て,舞台の上で腰を振る%SAVESTR:TARGET%
+							PRINTFORMW その淫蕩な姿に,ゴブリンのファンが増えてきているという
+						ENDIF
+						MATURO = ゴブリンたちのアイドル
+					ENDIF
+			;それ以外の種族売値50万以上
+			ELSEIF S >= 500000
+				;忍者＆盗賊
+				IF TALENT:TARGET:207 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = ダークエルフの暗殺ギルド
+					LOCAL = 3
+				;騎士＆戦士
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:200 == 1
+					LOCALS = スキュラの海賊船
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ラミアの大富豪
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = オーガの暗黒戦士
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;忍者＆盗賊
+					IF LOCAL == 3
+						;盗賊
+						IF TALENT:TARGET:203 == 1
+							PRINTFORMW %SAVESTR:TARGET%は暗殺ギルドの諜報員として働いているらしい
+							PRINTFORMW 素性は謎に包まれているが,%SAVESTR:TARGET%と寝た男の情報はあっという間に裏に流れるという
+							PRINTFORMW 仕事のない日は,快楽拷問に対する訓練で夜まで焦らされているらしい
+							MATURO = 暗殺ギルドの諜報員
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は暗殺ギルドの暗殺者として働いているらしい
+							PRINTFORMW 素性は謎に包まれているが,%SAVESTR:TARGET%と寝た男は翌日死体となって発見されるという
+							PRINTFORMW 仕事のない日は,快楽拷問に対する訓練で夜まで焦らされているらしい
+							MATURO = 暗殺ギルドの暗殺者
+						ENDIF
+					;騎士＆戦士
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はスキュラの女海賊団の船長をやっているという
+							PRINTFORMW どうやら,その大きな胸に魅了されたスキュラ達に担ぎあげられたらしい
+							PRINTFORMW 船室の高い所に座ってマッサ-ジされているだけで,仕事は側近がしてくれるらしい
+							MATURO = 女海賊団船長
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はスキュラの女海賊団の船乗りをやっているという
+							PRINTFORMW ガレ-船の漕ぎ手たちは,みなスキュラ達に掠奪されてきた奴隷たちだ
+							PRINTFORMW %SAVESTR:TARGET%はそんな漕ぎ手たちに股を開いて,疲れと不満を和らげているという
+							MATURO = 女海賊団の船員
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW レズっ気のあるラミアに買われたため,%SAVESTR:TARGET%は毎晩のように抱かれることになった
+							PRINTFORMW アナル趣味のあるラミアの富豪は,その長く器用に動く舌でアナルを穿る.
+							PRINTFORMW そのたび,%SAVESTR:TARGET%は悩ましい喘ぎ声をあげて肛門をとろけさせるのだった.
+							MATURO = ラミアのレズ奴隷
+						ELSE
+							PRINTFORMW レズっ気のあるラミアに買われたため,%SAVESTR:TARGET%は毎晩のように抱かれることになった
+							PRINTFORMW ラミアの富豪は,その長い蛇の身体で%SAVESTR:TARGET%を締めつける
+							PRINTFORMW そのたび,%SAVESTR:TARGET%は悩ましい喘ぎ声をあげて身をよじるのだった.
+							MATURO = ラミアのレズ奴隷
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW %SAVESTR:TARGET%は全身にオ-ガの呪術で刺青を彫られ,未開の部族のようになってしまった.
+							PRINTFORMW 乳首やラビア,鼻にはピアスが通され,完全に人間を捨てオ-ガの仲間になったことを思わせる.
+							PRINTFORMW %SAVESTR:TARGET%の背中にはオ-ガの名前が彫られ,それでも彼の所有物になったことに喜びを感じていた.
+							MATURO = 蛮族オーガの一員
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は全身にオ-ガの呪術で刺青を彫られ,未開の部族のようになってしまった.
+							PRINTFORMW 乳首やラビア,鼻にはピアスが通され,完全に人間を捨てオ-ガの仲間になったことを思わせる.
+							PRINTFORMW それでも%SAVESTR:TARGET%は,それを喜びに重いオ-ガの厚い胸板に抱かれるのだった.
+							MATURO = 蛮族オーガの一員
+						ENDIF
+					ENDIF
+			;それ以外の種族売値10万以上
+			ELSEIF S >= 100000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = 魔界植物の農場
+					LOCAL = 3
+				;騎士＆魔術師
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:201 == 1
+					LOCALS = オーガ騎士団
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ハーピィの奴隷斡旋所
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = アルラウネの錬金術師
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW 魔界の植物を育てる%SAVESTR:TARGET%は,植物に特殊な養分を与える役割を与えられた
+							PRINTFORMW 植物の根を自らのアナルに挿入し,直接養分を与えるのだ
+							PRINTFORMW セックスの好きな%SAVESTR:TARGET%はその挿入感がたまらないようで,何度も肥料をやりに行っているという
+							MATURO = 魔界の植物の苗床
+						ELSE
+							PRINTFORMW 魔界の植物を育てる%SAVESTR:TARGET%は,植物に特殊な養分を与える役割を与えられた
+							PRINTFORMW 植物の根を自らのアナルに挿入し,直接養分を与えるのだ
+							PRINTFORMW %SAVESTR:TARGET%の育てた植物は発育がよく,品評会で賞を取ったそうだ
+							MATURO = 魔界の植物の苗床
+						ENDIF
+					;騎士＆魔術師
+					ELSEIF LOCAL == 2
+						;巨乳or爆乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はオ-ガの騎士団に雇われ,オ-ガの子供の育児係になった.
+							PRINTFORMW 持ち前の巨乳を生かし,ハ-フオ-ガ達の教育や戦闘訓練まで任されている.
+							PRINTFORMW 集落の奥では,母体となる女たちの喘ぎ声が聞こえる.
+							PRINTFORMW また一人生まれたハ-フオ-ガの子供を手に取るのも,彼女の仕事だった.
+							MATURO = オーガの子供の育児係
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はオ-ガの騎士団の一員として戦っている.
+							PRINTFORMW 人間の集落を襲い,金品や女を略奪する盗賊騎士団だ.
+							PRINTFORMW %SAVESTR:TARGET%もまた,抵抗してきた戦士の首をはね,奥に隠された女を引きずりだす.
+							PRINTFORMW 必死に命乞いする女を抱えあげ,%SAVESTR:TARGET%は愛するオ-ガの夫の元へ凱旋した.
+							MATURO = オーガ騎士団の一員
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW ハ-ピィの身の回りの世話をする奴隷として買われた%SAVESTR:TARGET%は,
+							PRINTFORMW 全裸に首輪という格好でハ-ピィの富豪の娘の世話をしていた
+							PRINTFORMW 富豪の娘は有名なサディストで,%SAVESTR:TARGET%のアナルに栓をして排泄管理を楽しんでいるという
+							MATURO = ハーピィの富豪の奴隷
+						ELSE
+							PRINTFORMW ハ-ピィの身の回りの世話をする奴隷として買われた%SAVESTR:TARGET%は,
+							PRINTFORMW 全裸に首輪という格好でハ-ピィたちの世話をしていた
+							PRINTFORMW %SAVESTR:TARGET%に新しい奴隷を生ませるため,仕事の合間に男奴隷と交配させられているという......
+							MATURO = ハーピィの奴隷
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 肉便器の%SAVESTR:TARGET%は実験用の精液を集めるため,街の公衆便所に繋がれた.
+							PRINTFORMW 肉体改造を受けた%SAVESTR:TARGET%は怪しくうねる膣と風船のような子宮で精液を絞り取る.
+							PRINTFORMW 大量に集めた精液はホムンクルスを作るために活用されるという.......
+							MATURO = 公衆肉便器
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は魔法の素材を集めるために肉体改造を受けることになった.
+							PRINTFORMW 巨大な陰嚢を生やされ大量の精液を生産する%SAVESTR:TARGET%.
+							PRINTFORMW 勃起すらできないふにゃふにゃの巨根ペニスには管が繋がれ,精液が次々と絞り取られていく.
+							PRINTFORMW "今日のノルマ半分行ったよ.あと5000回,張り切ってケツイキしてね"
+							PRINTFORMW アナルを犯され,%SAVESTR:TARGET%はびくびくと身体を震わせイキ続けた.
+							MATURO = 精液生産ふたなり奴隷
+						ENDIF
+					ENDIF
+			;それ以外の種族売値10万未満
+			ELSE
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オークの上級戦士
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = リザードマンの騎士
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ダークエルフの女神官
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 街角の公衆便所
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はオ-クの上級戦士と結婚したらしい.
+							PRINTFORMW たくましいオ-クの肉体に魅了され,深く愛し合っているようだ.
+							PRINTFORMW 最近では夫のオ-クの方が%SAVESTR:TARGET%の性欲に負けているらしい.
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はオ-クの上級戦士と結婚したらしい.
+							PRINTFORMW たくましいオ-クの肉体に魅了され,深く愛し合っているようだ.
+							PRINTFORMW もうすぐ5人目の子供が生まれるとの知らせが入ってきた.
+						ENDIF
+						MATURO = オーク上級戦士の妻
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はリザ-ドマンの騎士と結婚したらしい.
+							PRINTFORMW 見慣れぬ鱗の肌も,愛の障害にはならなかった.
+							PRINTFORMW 巨乳の%SAVESTR:TARGET%は夫のリザ-ドマンの自慢になり,ことあるごとに褒められるらしい.
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はリザ-ドマンの騎士と結婚したらしい.
+							PRINTFORMW 見慣れぬ鱗の肌も,愛の障害にはならなかった.
+							PRINTFORMW 鍛え上げられた%SAVESTR:TARGET%はリザ-ドマンの夫に溺愛されて,ことあるごとに自慢されるらしい.
+						ENDIF
+						MATURO = リザードマン騎士の妻
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの女神官の元で修行しているらしい.
+							PRINTFORMW 姉妹の契りを交わし,毎日を暗黒神のために捧げているようだ.
+							PRINTFORMW その大きな胸は露わになり,乳首には契約のピアスが光っていた.......
+							MATURO = 邪教の姉妹信徒
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの女神官の元で修行しているらしい.
+							PRINTFORMW 姉妹の契りを交わし,毎日を暗黒神のために捧げているようだ.
+							PRINTFORMW その性器はピアスで閉じられ,二度と男根を受け入れることは無いだろう.
+							MATURO = 邪教の姉妹信徒
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 異種族の行き交う街の公共設備として公衆便所に繋がれたらしい.
+							PRINTFORMW %SAVESTR:TARGET%はあらゆる種族のペニスを受け入れ,休む間もなく孕んだ.
+							PRINTFORMW 産み落とした子供は孤児院で立派に教育を受け,街の発展に役立つことだろう.
+							MATURO = 公衆肉便器
+						ELSE
+							PRINTFORMW 異種族の行き交う街の公共設備として公衆便所に繋がれたらしい.
+							PRINTFORMW %SAVESTR:TARGET%はあらゆる種族のペニスを咥え,精液を飲み続けた.
+							PRINTFORMW 便女として有名になった%SAVESTR:TARGET%は,ある日常連客に買われそのまま結婚したらしい.
+							MATURO = 公衆肉便器
+						ENDIF
+					ENDIF
+			ENDIF
+		ENDIF
+	;それ以外
+	ELSE
+		;魔族
+		IF TALENT:TARGET:314 == 9
+			;魔族売値50万以上
+			IF S >= 500000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オーガの傭兵団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = ケンタウロスの騎士団
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ミノタウロスの司祭
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = オークの大商人
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;盗賊
+						IF TALENT:TARGET:203 == 1
+							PRINTFORMW %SAVESTR:TARGET%はオ-ガの傭兵団に,魔族のアドバイザ-として迎え入れられた.
+							PRINTFORMW オ-ガ達は%SAVESTR:TARGET%に服従して,傭兵団の運営を完全に任せている.
+							PRINTFORMW 前団長だったオ-ガの戦士は,密かに企んでいた.
+							PRINTFORMW %SAVESTR:TARGET%を自らの巨根で服従させて,傭兵団での権力をさらに強くするのだ.
+							MATURO = オーガたちのアドバイザー
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は傭兵団に魔族の用心棒として迎え入れられた.
+							PRINTFORMW 略奪や傭兵団同士の小競り合いで,%SAVESTR:TARGET%は自慢の武器を振るう.
+							PRINTFORMW 魔族の力をもってすれば,女騎士など片手で捻るように倒せてしまう.
+							PRINTFORMW 手に入れた女は,傭兵団の共有財産として性処理にこき使われるのだ.
+							MATURO = オーガ傭兵団の用心棒
+						ENDIF
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はケンタウロスの騎士団に,教育係として迎え入れられた.
+							PRINTFORMW ケンタウロスの子供たちに魔族の力を教えるのだ.
+							PRINTFORMW 魔の母乳を飲んだケンタウロスの子供は,淫気に当てられて勃起してしまう
+							PRINTFORMW そんなとき,%SAVESTR:TARGET%は優しく手で処理してあげるのだ.
+							MATURO = ケンタウロスの子供の教育係
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はケンタウロスの騎士団に,教育係として迎え入れられた.
+							PRINTFORMW ケンタウロスの子供たちに魔族の力を教えるのだ.
+							PRINTFORMW 魔の力を浴びたケンタウロスの子供は,淫気に当てられて勃起してしまう
+							PRINTFORMW そんなとき,%SAVESTR:TARGET%は腰を振ってEjaculationの手助けをしてあげるのだ.	
+							MATURO = ケンタウロスの子供の教育係
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はミノタウロスの神官たちに儀式と称して毎晩アナルを捧げられているらしい
+							PRINTFORMW ミノタウロスの巨根を受け入れるアヌスはすでに限界まで拡張され,
+							PRINTFORMW アナルストッパ-無しでは日常生活も送れないようになっているらしい......
+							MATURO = ミノタウロス神殿の供物
+						ELSE
+							PRINTFORMW ミノタウロスの神殿の聖母となった%SAVESTR:TARGET%は,ミノタウロスの信仰を受けていた.
+							PRINTFORMW 今日も性欲の高まった雄のミノタウロスの信徒が神殿を訪れる.
+							PRINTFORMW %SAVESTR:TARGET%は,そんな悩める子牛を自らの手と口で慰めてやるのだ.......
+							MATURO = ミノタウロス神殿の聖母
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 来客用の肉便器として買われた%SAVESTR:TARGET%は,オ-クの屋敷で家畜として飼われている
+							PRINTFORMW 全身に卑猥な言葉が書かれ,見世物としてふたなり奴隷に犯される毎日だ
+							PRINTFORMW ふたなり奴隷は思考まで完全に性欲によって上書きされ,卑猥な肉体に改造され,狂ったように%SAVESTR:TARGET%を犯す
+							PRINTFORMW 飽きられてしまったら,今度は%SAVESTR:TARGET%がふたなり奴隷として改造されるだろう.......
+							MATURO = 来客用の肉便器
+						ELSE
+							PRINTFORMW 愛人として買われた%SAVESTR:TARGET%は主人に大人しく従っているそうだ.
+							PRINTFORMW オ-クの商人は,毎日綺麗な服を買ってきては%SAVESTR:TARGET%に着させる
+							PRINTFORMW やがて愛が芽生え,その子宮にハ-フオ-クの子を宿すことであろう.......
+							MATURO = オーク商人の愛人
+						ENDIF
+					ENDIF
+			;魔族売値10万以上
+			ELSEIF S >= 100000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = スキュラの自警団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = ダークエルフの学校
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ゴーレムの大農場
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 魔界の大監獄
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW スキュラの自警団は外人戦士として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW 仕事が終わると,%SAVESTR:TARGET%はスキュラの先輩に呼び出されて性処理を命じられる
+							PRINTFORMW セックス狂の%SAVESTR:TARGET%はまんざらでもないようだ
+							PRINTFORMW 詰所で今日も乱痴気騒ぎをしているとの噂だ
+							MATURO = スキュラ自警団の外人戦士
+						ELSE
+							PRINTFORMW スキュラの自警団は外人戦士として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW 仕事が終わると,%SAVESTR:TARGET%はスキュラの先輩に呼び出されて性処理を命じられる
+							PRINTFORMW スキュラの男根を咥えて子種を飲みこむのも,今ではもうすっかり慣れたらしい
+							MATURO = スキュラ自警団の外人戦士
+						ENDIF
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳or爆乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の保険医として働いているという
+							PRINTFORMW 胸が張り裂けそうなほど大きい%SAVESTR:TARGET%は少年たちの羨望の的となった
+							PRINTFORMW 悩みを持った幼いダ-クエルフの相談役として信頼を集めているらしい
+							PRINTFORMW 性欲を発散させれば悩みが吹き飛ぶということで,保健室はさながら娼館のようだという
+							MATURO = ダークエルフ学校の保険医
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の保険医として働いているという
+							PRINTFORMW 経験豊富な%SAVESTR:TARGET%は少年少女たちのよき理解者となった
+							PRINTFORMW 恋に悩むダ-クエルフの少年と少女をカップルにして性の手ほどきを行っているらしい
+							PRINTFORMW 保健室はまさに青い性欲をぶつけ合うラブホテルとなったという
+							MATURO = ダークエルフ学校の保険医
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW ゴ-レムが働く農場で%SAVESTR:TARGET%はゴ-レムの整備をする仕事についた
+							PRINTFORMW %SAVESTR:TARGET%は肉体を改造され,食べたものをゴ-レムの燃料として腸内に蓄積する用になっている
+							PRINTFORMW そしてアナルにチュ-ブを差し込んで,ゴ-レムへと供給するのだそうだ
+							MATURO = ゴーレムの整備士
+						ELSE
+							PRINTFORMW ゴ-レムが働く農場で%SAVESTR:TARGET%は作物を見張る警備員の役についた
+							PRINTFORMW %SAVESTR:TARGET%は光の魔法で農場を照らし,野生動物や盗賊が侵入しないか見張る
+							PRINTFORMW 休憩時間は詰所の仮眠室で休むことになっていたが,娯楽はほとんど無かった
+							PRINTFORMW いまでは同僚の奴隷とセックスして暇を潰しているらしい
+							MATURO = 農場の警備員
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 監獄の囚人たちの娯楽用に買われた%SAVESTR:TARGET%は,肉便器としての仕事を続けているという
+							PRINTFORMW ミノタウロスやケンタウロスなど,粗野で性欲の強い種族が反乱しないようにするためだ
+							PRINTFORMW 多種多様な異種族のペニスを受け入れ,%SAVESTR:TARGET%の抱いたことのない種族はいないという
+							MATURO = 囚人の娯楽便器
+						ELSE
+							PRINTFORMW 監獄の囚人たちの娯楽用に買われた%SAVESTR:TARGET%は,囚人たちの慰安をしているらしい
+							PRINTFORMW 性欲の溜まった囚人たち一人一人に手淫と口淫を行い精液を出させてやる
+							PRINTFORMW 猥褻罪で捕まったオ-クの変態性欲者と愛を育み,今度獄中結婚式を行うという知らせが来た
+							MATURO = オークの囚人の妻
+						ENDIF
+						
+					ENDIF
+			;魔族売値10万未満
+			ELSE
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オークの傭兵団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = トロールの奴隷主人
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ダークエルフの学者
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = 街角の見世物小屋
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW とある%LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;Ｖ感覚ＬＶ5以上
+						IF ABL:2 >= 5
+							PRINTFORMW %SAVESTR:TARGET%はオ-クの傭兵団の備品となった
+							PRINTFORMW 傭兵団の馬車の中に繋がれて,休む暇もなく犯されたらしい
+							MATURO = オーク傭兵団の備品
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はオ-ク傭兵団の性欲処理係となった
+							PRINTFORMW 毎日全員のペニスを咥えて掃除フェラをしなくてはならない
+							MATURO = オーク傭兵団の性欲処理係
+						ENDIF
+						
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW トロ-ルの奴隷が働く工場で%SAVESTR:TARGET%は働いている
+							PRINTFORMW %SAVESTR:TARGET%はその巨乳でトロ-ルの巨根を扱いて慰安をするのだ
+							PRINTFORMW 今日も日々の仕事を終えたトロ-ルが%SAVESTR:TARGET%の前に長い列を作っていた
+							MATURO = 労働トロールの慰安婦
+						ELSE
+							PRINTFORMW トロ-ルの奴隷が働く工場で%SAVESTR:TARGET%は働いている
+							PRINTFORMW 巨大な陰嚢を持つトロ-ルの性欲は凄まじく,そのままにしていると暴れ出すのだ
+							PRINTFORMW 壁にはめ込まれ尻だけを突き出している%SAVESTR:TARGET%.その尻に,今日も何本もの巨根があてがわれる......
+							MATURO = 労働トロールの慰安婦
+						ENDIF
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;A感覚3以上
+						IF ABL:Ａ感覚 >= 3
+							PRINTFORMW %SAVESTR:TARGET%は新しい媚薬の研究用の実験体となった
+							PRINTFORMW アナルに媚薬を塗りたくっただけで狂おしいほどの快楽に襲われ潮を吹き散らすという
+							MATURO = 媚薬の実験台
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は新しい媚薬の研究用の実験体となった
+							PRINTFORMW 淫核に直接媚薬を刷りこむと,一日中絶頂が止まらなくなるという
+							MATURO = 媚薬の実験台
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW %SAVESTR:TARGET%は魔族の奴隷として見世物小屋で体を晒す生活をしている
+							PRINTFORMW 小汚いオ-クとの公開セックスがそこそこの人気らしい
+							MATURO = 見世物小屋の肉便器
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は魔族の奴隷として見世物小屋で体を晒す生活をしている
+							PRINTFORMW ピアスや刺青で改造された体はそこそこ好評らしい
+							MATURO = 見世物小屋の肉便器
+						ENDIF
+						
+					ENDIF
+			ENDIF
+		;それ以外の種族
+		ELSE
+			;それ以外の種族売値50万以上
+			IF S >= 500000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オーガの傭兵団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = ケンタウロスの騎士団
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ミノタウロスの司祭
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = オークの大商人
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;セックス狂
+						IF TALENT:TARGET:75 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はオ-ガの傭兵団に,高級性奴隷として迎え入れられた.
+							PRINTFORMW オ-ガ達は%SAVESTR:TARGET%に惚れこみ,まるで聖母のように接している.
+							PRINTFORMW 前団長だったオ-ガの戦士は,密かに企んでいた.
+							PRINTFORMW %SAVESTR:TARGET%を自らの巨根で服従させて,傭兵団のカリスマを自分のものにするのだ.
+							MATURO = オーガ傭兵団の高級性奴隷
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は傭兵団に用心棒として迎え入れられた.
+							PRINTFORMW 経験を積んだ%SAVESTR:TARGET%は,オ-ガの剣となって前線で戦った..
+							PRINTFORMW 彼女自身にも性的魅力が無いわけではない.しかし性奴隷になるつもりもない.
+							PRINTFORMW そういう時は女を略奪して,身代わりに便器として差し出すのだ..
+							MATURO = オーガ傭兵団の用心棒
+						ENDIF
+						
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はケンタウロスの騎士団に,教育係として迎え入れられた.
+							PRINTFORMW ケンタウロスの子供たちに戦士としての教育を施すのだ.
+							PRINTFORMW 胸の大きな%SAVESTR:TARGET%は子供たちに人気で,よく母乳をせがまれていた.
+							MATURO = ケンタウロスの子供の教育係
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はケンタウロスの騎士団に,教育係として迎え入れられた.
+							PRINTFORMW ケンタウロスの子供たちに戦士としての教育を施すのだ.
+							PRINTFORMW 異種族の%SAVESTR:TARGET%は早くも舐められ,クラスの共有便器になっているという.
+							MATURO = ケンタウロスの子供の教育係
+						ENDIF
+						
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;アナル狂い
+						IF TALENT:TARGET:77 == 1 
+							PRINTFORMW %SAVESTR:TARGET%はミノタウロスの神官たちに生贄として買われた.
+							PRINTFORMW 命を奪われることは無いが,毎日祭壇でアナルセックスを捧げなくてはならない.
+							PRINTFORMW 奴隷の卑しい太った中年とつがいにされ,首輪で繋がれ毎晩アナルで繋がっているという......
+							MATURO = セックスを捧げる供物
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はミノタウロスの神官たちに生贄として買われた.
+							PRINTFORMW 命を奪われることは無いが,毎日祭壇でセックスを捧げなくてはならない.
+							PRINTFORMW 青い性欲のみなぎる少年とつがいにされ,孕めば子供は奴隷として売られるという......
+							MATURO = セックスを捧げる供物
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 来客用の肉便器として買われた%SAVESTR:TARGET%は,オ-クの屋敷で家畜として飼われている
+							IF TALENT:ふたなり
+								PRINTFORMW ふたなりだった%SAVESTR:TARGET%は,さらに巨根に改造されて他の奴隷を犯す見世物をしている
+							ELSE
+								PRINTFORMW ふたなりに改造された%SAVESTR:TARGET%は,他の奴隷を犯す見世物をしている
+							ENDIF
+							PRINTFORMW 思考は洗脳で完全に性欲に上書きされ,もはやEjaculationのことしか頭に無かった
+							MATURO = ふたなり便器
+						ELSE
+							PRINTFORMW 愛人として買われた%SAVESTR:TARGET%は主人に惚れこんでしまったらしい.
+							PRINTFORMW オ-クの商人も%SAVESTR:TARGET%を溺愛し,二人は幸せに暮らした.
+							PRINTFORMW やがてその子宮にハ-フオ-クの子を宿すことであろう.......
+							MATURO = オークの愛人
+						ENDIF
+					ENDIF
+			;それ以外の種族売値10万以上
+			ELSEIF S >= 100000
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = スキュラの自警団
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = ダークエルフの学校
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ゴーレムの大農場
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = ゴブリンの賭博場
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;Ｖ感覚ＬＶ5以上
+						IF ABL:2 >= 5
+							PRINTFORMW スキュラの自警団は外人戦士として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW 仕事が終わると,%SAVESTR:TARGET%は戦闘で心が昂ぶったスキュラに抱かれるらしい
+							MATURO = スキュラ自警団の外人戦士
+						ELSE
+							PRINTFORMW スキュラの自警団は雑用係として%SAVESTR:TARGET%を雇ったらしい
+							PRINTFORMW 鎧磨きを命じられている%SAVESTR:TARGET%は,仕事が遅いと尻に鞭を入れられるらしい
+							MATURO = スキュラ自警団の雑用係
+						ENDIF
+						
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;巨乳、爆乳、超乳
+						IF TALENT:TARGET:110 == 1 || TALENT:TARGET:114 == 1 || TALENT:TARGET:119 == 1
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の備品として働いているという
+							PRINTFORMW 大きい%SAVESTR:TARGET%の胸は授業で肉体改造実験の実験台になっているという
+							MATURO = ダークエルフ学校の備品
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はダ-クエルフの少年少女が通う学校の備品として働いているという
+							PRINTFORMW 授業で肉体改造実験の実験台になり,次は異種交配実験が控えているという
+							MATURO = ダークエルフ学校の備品
+						ENDIF
+						
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;動物耳
+						IF TALENT:TARGET:124
+							PRINTFORMW %SAVESTR:TARGET%は獣に近かったため,家畜繁殖用として厩舎に繋がれた
+							PRINTFORMW 子宮が改造され3日に1度家畜を出産できる身体になってしまっていた
+							PRINTFORMW 出産するたび常人には耐えられない快楽を感じる副作用で,%SAVESTR:TARGET%の思考は崩壊寸前だった
+							MATURO = 繁殖用家畜奴隷
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は農場で家畜の世話をすることになった
+							PRINTFORMW 家畜といっても改造された肉便器だ.肥大化した乳から母乳を絞り取られている
+							PRINTFORMW 健康診断のためにアナルに肘まで腕を突っ込むと,肉便器は嬌声をあげて喜んだ
+							MATURO = 家畜便器の世話人
+						ENDIF
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW 肉便器の%SAVESTR:TARGET%は賭場の賭けの対象として人気があった
+							PRINTFORMW ゴブリンの精液がグラスで並べられ,%SAVESTR:TARGET%は利きザ-メンをするのだ
+							PRINTFORMW 精液の出したゴブリンを当てられるか,外すか次第で大きな金が動くという
+							MATURO = 賭場の玩具
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は賭場でバニ-ガ-ルの格好をしてカ-ドゲ-ムを仕切っている
+							PRINTFORMW %SAVESTR:TARGET%に勝つことができれば,フェラチオのサ-ビスを行うことになっている
+							PRINTFORMW そのため,いつも行列ができるほど人気になっているという
+							MATURO = 賭場のバニーガール
+						ENDIF
+						
+					ENDIF
+			;それ以外の種族売値10万未満
+			ELSE
+				;戦士＆盗賊
+				IF TALENT:TARGET:200 == 1 || TALENT:TARGET:203 == 1
+					LOCALS = オークの公衆浴場
+					LOCAL = 3
+				;騎士＆忍者
+				ELSEIF TALENT:TARGET:205 == 1 || TALENT:TARGET:207 == 1
+					LOCALS = トロールの奴隷主人
+					LOCAL = 2
+				;巫女＆神官
+				ELSEIF TALENT:TARGET:202 == 1 || TALENT:TARGET:206 == 1
+					LOCALS = ダークエルフの大学生
+					LOCAL = 1
+				;その他
+				ELSE
+					LOCALS = ゴブリンの集落
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+					;戦士＆盗賊
+					IF LOCAL == 3
+						;Ｖ感覚ＬＶ5以上
+						IF ABL:2 >= 5
+							PRINTFORMW %SAVESTR:TARGET%は公衆浴場でオ-クたちにマッサ-ジをしているそうだ
+							PRINTFORMW %SAVESTR:TARGET%の手つきで勃起してしまったオークは、追加料金で%SAVESTR:TARGET%を抱けるらしい
+							MATURO = 公衆浴場のマッサージ師
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は公衆浴場でオ-クたちにマッサ-ジをしているそうだ
+							PRINTFORMW よく肩のコリがほぐれると評判らしい
+							MATURO = 公衆浴場のマッサージ師
+						ENDIF
+						
+					;騎士＆忍者
+					ELSEIF LOCAL == 2
+						;汚臭敏感・鈍感
+						IF TALENT:TARGET:汚臭鈍感 == 1 || TALENT:TARGET:汚臭敏感 == 1
+							PRINTFORMW %SAVESTR:TARGET%はトロ-ルの奴隷の慰安用に買われてしまった
+							PRINTFORMW 尻が拭けないトロ-ルの奴隷を,%SAVESTR:TARGET%は綺麗に拭ってやらなくてはならない
+							MATURO = トロール奴隷の慰安婦
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%はトロ-ルの奴隷の慰安用に買われてしまった
+							PRINTFORMW 風呂に入るのを嫌がるトロ-ルの奴隷を,%SAVESTR:TARGET%は蒸しタオルで拭ってやるのだ
+							MATURO = トロール奴隷の慰安婦
+						ENDIF
+						
+					;巫女＆神官
+					ELSEIF LOCAL == 1
+						;元学生
+						IF TALENT:TARGET:勇者になる前の生活 == 1
+							PRINTFORMW ダ-クエルフの大学生は,%SAVESTR:TARGET%の元同級生だったらしい
+							PRINTFORMW 二人はそのまま結ばれて幸せになったという......
+							MATURO = ダークエルフ学生の妻
+						ELSE
+							PRINTFORMW ダ-クエルフの大学生は%SAVESTR:TARGET%をサ-クルの共有便器にした
+							PRINTFORMW ヤリ部屋には毎日たくさんのひとが訪れているという......
+							MATURO = ダークエルフのヤリ部屋共有便器
+						ENDIF
+						
+					;その他
+					ELSEIF LOCAL == 0
+						;肉便器
+						IF TALENT:TARGET:204 == 1
+							PRINTFORMW %SAVESTR:TARGET%は孕み便器としてゴブリン達に愛された
+							PRINTFORMW 今ではゴブリンの言葉も覚え,幸せに子供を生んでいるという
+							MATURO = ゴブリンの孕み便器
+						ELSE
+							PRINTFORMW %SAVESTR:TARGET%は雑用係としてゴブリン達に愛された
+							PRINTFORMW 今ではゴブリンの言葉も覚え,幸せに暮らしているという
+							MATURO = ゴブリンの雑用係
+						ENDIF
+					ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	SIF FAMILY:2 >= 0
+		CSTR:(FAMILY:2):5 = %MATURO%
+	
+	;結びの文、特殊な文を入れたくなったら後で分岐を入れよう
+	PRINTFORML
+	PRINTFORMW こうして%NAME:MASTER%と%SAVESTR:TARGET%は二度と出会うことはなかった.........
+	PRINTFORML
+RETURN 0
+
+
+

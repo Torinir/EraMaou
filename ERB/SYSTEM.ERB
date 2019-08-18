@@ -1,0 +1,777 @@
+﻿@EVENTFIRST
+#DIM CHARA, 1
+#DIM ID_OF_NEWCHARA
+#DIM TEMP
+#DIM HAIRCOLOR
+#DIM CHARACTER
+
+HAIRCOLOR = -1
+CHARACTER = -1
+
+;狂王は初期値ではふたなり
+FLAG:500 = 2
+;各種設定
+CALL FIRST_SETTING
+
+REPEAT 14
+	X = COUNT + 60
+	FLAG:X = -1
+REND
+
+TARGET = -1
+BOUGHT = -1
+
+;戦闘ログ表示フラグ
+FLAG:5 += 32
+
+DAY:1 = 1
+
+ITEMSALES:53 = 1
+A = 200
+REPEAT 8
+	FLAG:A = 1
+	A += 1
+REND
+
+PBAND = 4
+
+;瀕死時に調教を自動終了
+FLAG:35 = 1
+;着衣システム
+FLAG:37 = 1
+
+MONEY = 10000
+
+;2Dモードマップ生成
+IF FLAG:502 == 1
+	CALL GEO_TEST
+	CALL SET_VIL
+	FOR LOCAL:0,0,50
+		FOR LOCAL:1,0,50
+			DB:(LOCAL:0):(LOCAL:1) = 0
+	NEXT
+NEXT
+ENDIF
+
+
+PRINTL Long ago, there was a Demon Lord who could only be defeated by a woman
+PRINTL Utilizing this power, Demon Lord accumulated enough strength to conquer to world
+PRINTL But was ultimately brought down and sealed by a legendary female hero
+PRINTL  
+PRINTL The seal has stood strong for centuries, but has been broken just recently
+PRINTL And today, a weak hero opens the door of this forgotten dungeon
+WAIT
+
+;村娘の場合.他のユニークも同様に処理する感じ
+IF FLAG:501 == 1
+	DRAWLINE
+	PRINTW First things first, I should thank this foolish woman that woke me up from my slumber
+	PRINTFORMW Demon Lord is looking down at the unconscious village girl lying by %MAOU_HIS_HER()% side that was sucked of all her energy by the broken seal
+	PRINTW .........
+	PRINTW ......
+	PRINTW ...
+	
+	ADDCHARA 17
+	
+	SAVESTR:1 = %NAME:1%
+	
+	TARGET = 1
+	
+	CSTR:1 = %NAME:1%
+	CFLAG:420 = 1
+	
+	CFLAG:9 = 1
+	CFLAG:1 = 0
+	CFLAG:6 = 1
+	CFLAG:11 = 15
+	CFLAG:12 = 15
+	CFLAG:13 = 15
+	CFLAG:14 = 15
+	CFLAG:16 = -1
+	CFLAG:450 = 31
+	
+	;勝手には書かないけどなんかセリフあってもいいかもね
+	;口上作者さん待ってます
+	;あいよー　4/8
+	PRINTFORMW Village girl's clothing was completely torn apart by the torrent of magic unleashed by breaking the seal
+	PRINTFORMW She has a very young body and quirky short red hair
+	PRINTFORMW Her gently sloping chest is quitely moving up and down as she breathes, her alluring tanned skin waiting to be ravaged
+	PRINTFORMW Would be nice to rape her here, but first...
+	PRINTL 
+	PRINTL [1] I held her in my arms and carried her back to the prison.
+	PRINTL [2] Pull her by the leg to her prison
+	DRAWLINE
+
+	$INPUT_LOOP
+	INPUT
+	IF RESULT == 1
+		PRINTFORMW The girl is surprisingly light. Her nice smell has a hint of peasant dirt
+		PRINTFORMW Regrettably she barely has any meat on her, but should still be able to survive things ahead
+		PRINTFORMW Having not touched a woman for quite awhile, you have gotten a bit excited and returned to your room thinking of all the ways to rape her
+		PRINTFORMW "sis...ter........."
+		PRINTFORMW groaned the little girl, breaking this poisonous atmosphere
+	ELSEIF RESULT == 2
+		PRINTFORMW She is but a little girl, there is no need to treat her decently---
+		PRINTFORMW You grabbed her by the leg and pulled her towards the prison cell.
+		PRINTFORMW Should she get some bruises from this, she can just lick them off.........
+		PRINTFORMW Surprisingly, she didn't even wake up from being tossed into the cell
+	ELSE
+		GOTO INPUT_LOOP
+	ENDIF
+
+	PRINTL *****************************************
+	;Added space after next line
+	PRINTS SAVESTR:1+" "
+	PRINTL has been confined to the underground prison!
+	PRINTL *****************************************
+
+	
+	WAIT
+	
+	BEGIN SHOP
+ENDIF
+
+;ランダムの場合
+
+PRINTW First things first, I should thank this foolish woman that woke me up from my slumber
+PRINTFORMW Demon Lord is looking down at the unconscious adventurer lying by %MAOU_HIS_HER()% side that was sucked of all her energy by the broken seal
+PRINTW .........
+PRINTW ......
+PRINTW ...
+PRINTW 
+PRINTL ...
+PRINTL ......
+PRINTL .........
+
+CALL RAND_CHARA_MAKE
+BEGIN SHOP
+
+
+@EVENTCOMEND
+#PRI
+
+@EVENTTURNEND
+#DIM HEAL
+#DIM MHEAL
+#DIM LEADER
+#DIM TARGET_POOL
+#DIM ASSI_POOL
+;HEAL   = HP回復量
+;MHEAL  = 気力回復量
+;LEADER = リーダー記憶
+
+TARGET_POOL = TARGET
+ASSI_POOL = ASSI
+PLAYER = 0
+ASSI = -1
+
+
+FOR TARGET, 0, CHARANUM
+	;自動調教フォーマット
+	CALL FORMAT_AUTOTRAIN
+	;新人フラグ消去
+	CFLAG:506 = 0
+	;自動調教フラグ消去
+	CFLAG:666 = 0
+	
+NEXT
+
+
+
+;パーティー設定
+CALL PARTY_UNITE
+
+FOR LEADER, 0, CHARANUM
+	;装備の回復
+	CALL WEAPON_RESTORE,LEADER
+	
+	;ダンジョン攻略
+	SIF CFLAG:LEADER:1 == 12
+		CALL DUNGEON, LEADER
+NEXT
+
+A = 1
+REPEAT CHARANUM
+	SIF A >= CHARANUM
+		BREAK
+	
+	;キャンペーン終了後のリセット
+	IF FLAG:400 == 0 && CFLAG:A:1 == 12
+		CFLAG:A:1 = 0
+		CFLAG:A:534 = 0
+	ENDIF
+	
+	;ダンジョン攻略
+	IF (CFLAG:A:1 == 2 || CFLAG:A:1 == 3) && FLAG:502 == 0
+		
+		LEADER = A
+		
+		CALL DUNGEON, LEADER
+		
+		A = LEADER
+		
+	ELSEIF CFLAG:A:1 == 2 || CFLAG:A:1 == 3
+		;フィールド
+		CALL DUNGEON_MAP
+	ENDIF
+	
+	SIF CFLAG:A:1 != 2
+		CALL LVUP, A
+	
+	;戦果
+	CALL DUNGEON_AFTER
+	
+	;体力の回復(午後の調教後は夜の休みが入るので回復大きい)
+	SIF BASE:A:0 < 1
+		BASE:A:0 = 1
+	
+	IF TIME == 1
+		HEAL = MAXBASE:A:0 / 10
+	ELSE
+		HEAL = MAXBASE:A:0 / 2
+	ENDIF
+	
+	;装備効果
+	W:8 = 4
+	CALL EQUIP_CHECK
+	RESULT += 1
+	SIF RESULT > 0
+		HEAL *= RESULT
+	
+	;装備効果
+	W:8 = 13
+	CALL EQUIP_CHECK
+	RESULT += 1
+	SIF RESULT > 0
+		HEAL /= RESULT
+	
+	;吸血鬼の場合ボーナス
+	SIF TALENT:A:314 == 3
+		HEAL *= 3
+	
+	;侵攻中の勇者は回復にペナルティ
+	SIF CFLAG:A:1 == 2
+		HEAL /= 30
+	
+	;休憩フラグ
+	IF CFLAG:A:503 & 1
+		HEAL *= 2
+		CFLAG:A:503 -= 1
+	ENDIF
+	CFLAG:A:4 = 0
+	
+	;回復早い,回復遅い,虚弱
+	IF TALENT:A:111
+		HEAL *= 2
+	ELSEIF TALENT:A:112 || TALENT:A:256
+		HEAL /= 2
+	ENDIF
+
+	BASE:A:0 += HEAL
+	SIF BASE:A:0 > MAXBASE:A:0
+		BASE:A:0 = MAXBASE:A:0
+
+	;気力の回復
+	;侵攻中の勇者は回復にペナルティ
+	IF CFLAG:A:1 == 2
+		MHEAL = MAXBASE:A:1 / 40
+		
+		;装備効果
+		W:8 = 5
+		CALL EQUIP_CHECK
+		RESULT += 1
+		MHEAL *= RESULT
+		
+		;装備効果
+		W:8 = 13
+		CALL EQUIP_CHECK
+		RESULT += 1
+		MHEAL /= RESULT
+		
+		;気丈,臆病
+		IF TALENT:A:12
+			MHEAL *= 2
+		ELSEIF TALENT:A:10
+			MHEAL /= 2
+		ENDIF
+		
+		BASE:A:1 += MHEAL
+		SIF BASE:A:1 > MAXBASE:A:1
+			BASE:A:1 = MAXBASE:A:1
+		
+	ELSE
+		BASE:A:1 = MAXBASE:A:1
+	ENDIF
+	
+	;場所のリセット
+	SIF CFLAG:A:1 != 2 && CFLAG:A:1 != 3 && CFLAG:A:1 != 7 && CFLAG:A:1 != 8 && CFLAG:A:1 != 9 && CFLAG:A:1 != 10 && CFLAG:A:1 != 11 && CFLAG:A:1 != 12
+		CFLAG:A:1 = 0
+	
+	;即落ち付与
+	;装備効果
+	W:8 = 6
+	CALL EQUIP_CHECK
+	IF RESULT > 0
+		TALENT:A:73 = 1
+		;レベルに応じて欲情
+		SIF JUEL:A:5 < 10000
+			JUEL:A:5 += RESULT / 2
+	ENDIF
+	
+	;攻撃-防御増加について
+	;非常に強力になりすぎるため
+	;仕様変更を行いました
+	;現在これらの効果はCHAR_ST.ERBの@WEAPON_RESTOREに
+	;移動しています
+	
+	;装備効果(攻撃増加)
+	;W:8 = 7
+	;CALL EQUIP_CHECK
+	;SIF RESULT > 0 && CFLAG:A:13 < 200
+	;	CFLAG:A:13 += RESULT
+	
+	;装備効果(防御増加)
+	;W:8 = 8
+	;CALL EQUIP_CHECK
+	;SIF RESULT > 0 && CFLAG:A:14 < 200
+	;	CFLAG:A:14 += RESULT
+	
+	;装備効果(経験増加)
+	W:8 = 10
+	CALL EQUIP_CHECK
+	SIF RESULT > 0
+		EXP:A:80 += RESULT * 10
+	
+	;装備効果(攻撃防御減少)
+	W:8 = 14
+	CALL EQUIP_CHECK
+	IF RESULT > 0
+		CFLAG:A:13 -= RESULT
+		SIF CFLAG:A:13 < 15
+			CFLAG:A:13 = 15
+		CFLAG:A:14 -= RESULT
+		SIF CFLAG:A:14 < 15
+			CFLAG:A:14 = 15
+	ENDIF
+	
+	;装備効果(支配)
+	W:8 = 9
+	CALL EQUIP_CHECK
+	IF RESULT > 0
+		IF CFLAG:A:1 == 3
+			X = CFLAG:A:501 - 1
+			X *= 10
+			X += 100 + RAND:5
+			IF CFLAG:A:501 >= 8 && RAND:10 == 0
+				Z = 191 + RAND:3
+				SIF ITEM:Z > 0
+					X = Z
+			ENDIF
+			CFLAG:A:570 = X
+		ENDIF
+	ELSE
+		CFLAG:A:570 = 0
+	ENDIF
+	
+	;装備効果(洗脳)
+	W:8 = 15
+	CALL EQUIP_CHECK
+	IF RESULT > 0 && CFLAG:A:1 == 2
+		CFLAG:A:1 = 0
+		PRINTFORMW %SAVESTR:A%は虚ろな目であなたに傅いた
+		CFLAG:A:506 = 1
+		CFLAG:A:507 = 0
+		CALL PARTY_DEL, A
+		ABL:A:10 += 1
+	ELSEIF RESULT > 0 && ABL:A:10 < RESULT
+		PRINTFORMW %SAVESTR:A%は虚ろな目であなたに傅いた
+		ABL:A:10 += 1
+	ENDIF
+	
+	;好感度減少
+	IF CFLAG:A:1 == 2 && CFLAG:A:2 > 100
+		CFLAG:A:2 -= RAND:100
+	ENDIF
+	
+	;妄想支援パッチ.eraWIZから流用改変しました
+	IF A > 0 
+		IF TALENT:A:302 <= 201
+			;髪が伸びるまで1００ターン,つまり5０日.
+			TALENT:A:302 += 1
+			IF TALENT:A:302 == 51 || TALENT:A:302 == 201
+				PRINTFORM %SAVESTR:A%'s
+				SIF TALENT:A:312 == 22
+					PRINT Beautiful
+				;毛髪の色
+				SIF TALENT:A:300 == 1
+					PRINT Blonde
+				SIF TALENT:A:300 == 2
+					PRINT Chestnut
+				SIF TALENT:A:300 == 3
+					PRINT Black
+				SIF TALENT:A:300 == 4
+					PRINT Red-headed
+				SIF TALENT:A:300 == 5
+					PRINT Silver
+				SIF TALENT:A:300 == 6
+					PRINT Blue
+				SIF TALENT:A:300 == 7
+					PRINT Green
+				IF TALENT:A:302 == 51
+					PRINTL 髪は肩まで伸び,セミロングになった.
+				ELSEIF TALENT:A:302 == 201
+					PRINTL 髪は腰まで伸び,ロングになった.
+				ENDIF
+			ENDIF
+		ENDIF
+		;TALENT:310 == TALENT:311 のとき,成長が止まる
+		IF TALENT:A:310 < TALENT:A:311 && TALENT:A:125 == 0 && TALENT:A:310 <= 200
+			TALENT:A:310 += 1
+			IF TALENT:A:310 == 2 || TALENT:A:310 == 21 || TALENT:A:310 == 51 || TALENT:A:310 == 101 || TALENT:A:310 == 151 || TALENT:A:310 == 201
+				PRINTFORM %SAVESTR:A%'s
+				;チャームポイント確認
+				SIF  TALENT:A:312 ==  11
+					PRINT Under pretty belly button
+				SIF  TALENT:A:312 == 14
+					PRINT In the shade of womanly buttocks
+				SIF  TALENT:A:312 == 15
+					PRINT At the joint of beautiful legs
+				SIF  TALENT:A:312 == 22
+					PRINT Alluring
+				PRINT 恥丘に
+				;毛髪の色で陰毛の色を判断
+				SIF TALENT:A:300 == 1
+					PRINT 金色の
+				SIF TALENT:A:300 == 2
+					PRINT 栗毛の
+				SIF TALENT:A:300 == 3
+					PRINT 漆黒の
+				SIF TALENT:A:300 == 4
+					PRINT 赤毛の
+				SIF TALENT:A:300 == 5
+					PRINT 銀色の
+				SIF TALENT:A:300 == 6
+					PRINT 青色の
+				SIF TALENT:A:300 == 7
+					PRINT 緑色の
+				;陰毛の状態を見る
+				SIF TALENT:A:310 == 2
+					PRINTL 産毛が生えてきた.
+				SIF TALENT:A:310 == 21
+					PRINTL 産毛が生え揃った.
+				SIF TALENT:A:310 == 51
+					PRINTL 軟毛が生え揃った.
+				SIF TALENT:A:310 == 101
+					PRINTL 若草が生い茂った.
+				SIF TALENT:A:310 == 151
+					PRINTL 剛毛が生えてきた.
+				SIF TALENT:A:310 == 201
+					PRINTL 森が蘇った.
+				IF TALENT:A:310 >= TALENT:A:311
+					TALENT:A:310 = TALENT:A:311
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	A += 1
+	COUNT = 0
+REND
+
+IF FLAG:5 & 8
+	TARGET = 0
+	REPEAT CHARANUM
+		SIF TARGET >= CHARANUM
+			BREAK
+		
+		;自動処刑
+		;調教済と思われる従順の高い勇者は死を免れる
+		;事前にお気に入り登録されている場合も処刑されない
+		IF CFLAG:506 == 1 && ABL:10 < 2 && CFLAG:700 == 0
+			CALL EXECUTION_MINI
+			COUNT = 1
+			TARGET = 0
+		ELSEIF CFLAG:506 == 1
+			PRINTFORMW %SAVESTR:TARGET%は必死に命乞いをして魔王に忠誠を誓った
+		ENDIF
+		
+		TARGET += 1
+	REND
+ENDIF
+
+
+
+;コンフィグ"戦闘ログでのSKIP中断"がONなら強制停止
+;戦闘後の処理が飛ばされてしまうので追加しました
+IF GETBIT(FLAG:5,9)
+	FORCEWAIT
+ELSE
+	WAIT
+ENDIF
+
+LOCAL:0 = CFLAG:0:9 * 100 + 10
+$LVUP_REPEAT
+IF EXP:0:80 >= LOCAL:0
+	EXP:0:80 -= LOCAL:0
+	CALL ST_UP, 0
+	LOCAL:0 = CFLAG:0:9 * 100 + 10
+	SIF EXP:0:80 >= LOCAL:0
+		GOTO LVUP_REPEAT
+	PRINTFORML *%NAME:0%はレベルアップして{CFLAG:0:9}レベルになった*
+ENDIF
+
+;CALL INVASION_CHECK
+
+PRINTL
+IF FLAG:82 == 0
+	IF FLAG:81 > 0
+		FLAG:81 -= RAND:100
+		PRINTL 人間界の軍隊は魔王軍の侵略に対して反抗している.........
+		PRINTW *人間界の侵略度が減りました*
+		SIF FLAG:81 < 0
+			FLAG:81 = 0
+	ENDIF
+ENDIF
+IF FLAG:87 == 0
+	IF FLAG:86 > 0
+		FLAG:86 -= RAND:100
+		PRINTL エルフのレジスタンスは魔王軍に対して反抗している.........
+		PRINTW *エルフの領域の侵略度が減りました*
+		SIF FLAG:86 < 0
+			FLAG:86 = 0
+	ENDIF
+ENDIF
+IF FLAG:89 == 0
+	IF FLAG:88 > 0
+		FLAG:88 -= RAND:100
+		PRINTL ドラゴンの群れは魔王軍に対して反抗している.........
+		PRINTW *ドラゴンの山の侵略度が減りました*
+		SIF FLAG:88 < 0
+			FLAG:88 = 0
+	ENDIF
+ENDIF
+IF FLAG:91 == 0
+	IF FLAG:90 > 0
+		FLAG:90 -= RAND:100
+		PRINTL 天界の軍隊は魔王軍に対して反抗している.........
+		PRINTW *天界の侵略度が減りました*
+		SIF FLAG:90 < 0
+			FLAG:90 = 0
+	ENDIF
+ENDIF
+
+
+;魔王の回復
+IF TIME == 0
+	HEAL = 1400
+ELSE
+	HEAL = 1000
+ENDIF
+
+BASE:0:0 += HEAL
+SIF BASE:0:0 > MAXBASE:0:0
+	BASE:0:0 = MAXBASE:0:0
+
+SIF FLAG:400 > 0
+	HEAL = -10
+
+BASE:0:1 += HEAL
+SIF BASE:0:1 > MAXBASE:0:1
+	BASE:0:1 = MAXBASE:0:1
+
+CALL CAMPAIGN_GAMEOVER
+
+TARGET = TARGET_POOL
+
+;肉便器/苗床業務/結婚
+;イベント後の場所,クエスト初期化
+A = 0
+REPEAT CHARANUM
+	CALL BENKI,A
+	CALL NAEDOKO,A
+	CALL MARRIAGE_DAY,A
+	IF FLAG:400 == 0 && CFLAG:A:1 == 12
+		CFLAG:A:1 = 0
+		CFLAG:A:534 = 0
+	ENDIF
+	A += 1
+REND
+
+;自動調教
+CALL AUTOTRAIN
+
+;パーティ結成
+CALL PARTY_JOIN
+
+SIF FLAG:502 == 1
+	CALL GEO_OUTPUT_2
+
+
+;翌朝に起こる出来事
+SIF TIME == 0
+	CALL EVENT_NEWDAY
+
+;前回の調教対象と前回の助手を戻す
+TARGET = FLAG:1
+ASSI = FLAG:2
+
+
+BEGIN SHOP
+
+;ロード時の処理
+@EVENTLOAD
+LOADGLOBAL
+IF LASTLOAD_NO == 999
+	CALL MAOUNET
+	BEGIN SHOP
+ENDIF
+SIF LASTLOAD_NO >= 1000 && LASTLOAD_NO < 1020
+	CALL INPORT_B
+
+
+;---------------------------------------
+@FIRST_SETTING
+;---------------------------------------
+#DIM MAOUSEX
+CFLAG:0:16 = -1
+$INPUT_LOOP
+
+;Formatting
+PRINTFORM %"[0] Sex of the Demon Lord:", 30, LEFT%
+
+IF MAOUSEX == 0
+	PRINTL Male
+ELSEIF MAOUSEX == 1
+	PRINTL Female
+ELSEIF MAOUSEX == 3
+	PRINTL Young Boy
+ELSE
+	PRINTL Futanari
+ENDIF
+
+;Formatting
+PRINTFORM %"[1] Sex of the Mad Monarch:", 30, LEFT%
+
+IF FLAG:500 == 0
+	PRINTL Male
+ELSEIF FLAG:500 == 1
+	PRINTL Female
+ELSE
+	PRINTL Futanari
+ENDIF
+
+;Formatting
+PRINTFORM %"[2] Initial Slave:", 30, LEFT%
+
+IF FLAG:501 == 0
+	PRINTL Random
+ELSEIF FLAG:501 == 1
+	PRINTL Village Girl
+ENDIF
+
+;現在開発中のモード.隠しコマンド
+
+;PRINT [3] Dungeon Mode : 
+
+;IF FLAG:502 == 0
+;	PRINTL Normal
+;ELSEIF FLAG:502 == 1
+;	PRINTL 2D
+;ENDIF
+
+
+DRAWLINE
+PRINTL [100] Done
+
+INPUT
+
+IF RESULT == 0
+	;魔王の性別
+	PRINTL [0] Male  [1] Female  [2] Futanari  [3] Young Boy
+	INPUT
+	
+	IF RESULT == 0
+		TALENT:0:1 = 1
+		TALENT:0:122 = 1
+		TALENT:0:121 = 0
+		TALENT:0:100 = 0
+		CFLAG:0:16 = -1
+		MAOUSEX = 0
+	ELSEIF RESULT == 1
+		TALENT:0:1 = 0
+		TALENT:0:122 = 0
+		TALENT:0:121 = 0
+		TALENT:0:100 = 0
+		CFLAG:0:16 = 0
+		MAOUSEX = 1
+	ELSEIF RESULT == 2
+		TALENT:0:1 = 1
+		TALENT:0:122 = 0
+		TALENT:0:121 = 1
+		TALENT:0:100 = 0
+		CFLAG:0:16 = -1
+		MAOUSEX = 2
+	ELSEIF RESULT == 3
+		TALENT:0:1 = 1
+		TALENT:0:122 = 1
+		TALENT:0:121 = 0
+		TALENT:0:100 = 1
+		CFLAG:0:16 = -1
+		MAOUSEX = 3
+	ENDIF
+	
+ELSEIF RESULT == 1
+	;狂王の性別
+	PRINTL The Mad Monarch is the lord that rules over this region.
+	PRINTL They have sealed you once before, and are trying to seal you again.
+	PRINTL They are a:
+	PRINTL [0] Male  [1] Female  [2] Futanari
+	INPUT
+	
+	SIF RESULT >= 0 && RESULT <= 2
+		FLAG:500 = RESULT
+	
+ELSEIF RESULT == 2
+	;初期奴隷
+	PRINTL [0] Random  [1] Village Girl
+	INPUT
+	
+	SIF RESULT >= 0 && RESULT <= 1
+		FLAG:501 = RESULT
+	
+ELSEIF RESULT == 3
+	;モード
+	PRINTL [0] 通常  [1] 2D
+	INPUT
+	
+	SIF RESULT >= 0 && RESULT <= 1
+		FLAG:502 = RESULT
+	
+ELSEIF RESULT == 100
+	RETURN 0
+ELSE
+	GOTO INPUT_LOOP
+ENDIF
+
+GOTO INPUT_LOOP
+
+;========================================================
+;セーブ時のテキストの設定
+;;========================================================
+@SAVEINFO
+
+
+IF TIME == 0
+	PUTFORM Day: {DAY+1} (Morning)
+ELSE
+	PUTFORM Day: {DAY+1} (Afternoon)
+ENDIF
+
+SIF FLAG:1 >= 0
+	TARGET = FLAG:1
+SIF FLAG:2 >= 0
+	ASSI = FLAG:2
+
+SIF TARGET >= 1
+	PUTFORM Last Trained: %SAVESTR:TARGET%
+;

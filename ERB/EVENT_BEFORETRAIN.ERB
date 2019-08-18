@@ -1,0 +1,313 @@
+﻿;eraIM@Sから導入しました(eramaou)
+
+;--------------------------------------------------------
+;調教開始時メッセージ
+;--------------------------------------------------------
+@PRITRAIN_MESSAGE
+;調教経験を加算
+CFLAG:10 += 1
+
+;調教テキスト省略設定の場合
+IF (FLAG:6 & 1)
+	PRINTFORML Starting %SAVESTR:TARGET%'s training session.
+	PRINTFORML This is training session #{CFLAG:10}.
+	WAIT
+	RETURN 0
+ENDIF
+
+DRAWLINE
+
+;口上が存在すればそちらを優先
+
+;着衣OFFのとき全裸に
+SIF FLAG:37 == 0
+	CFLAG:40 = 0
+	
+
+;初調教時
+IF CFLAG:10 == 1
+	PRINTFORML Starting %SAVESTR:TARGET%'s first training session.
+	PRINTL 
+ 
+	IF FLAG:37
+		CALL PRITRAIN_MESSAGE_CLOTHED
+	ELSE
+		CALL PRITRAIN_MESSAGE_NOCLOTHES
+	ENDIF
+
+	IF TALENT:23
+		PRINTFORML 
+		PRINTFORML ただ,その一方で,%SAVESTR:TARGET%の瞳の奥底に,
+		PRINTFORML まるで何かを期待するような光が浮かんでいるのも事実だった.
+	ENDIF
+
+	IF ASSI > 0
+		IF TALENT:ASSI:83
+			PRINTFORML 
+			PRINTFORML 一方,助手の%SAVESTR:ASSI%は,思う存分%SAVESTR:TARGET%を痛めつけられるという愉しみに,
+			PRINTFORML 今から内心の期待を隠し切れない様子だった.
+		ELSEIF TALENT:ASSI:13
+			PRINTFORML 
+			PRINTFORML 助手の%SAVESTR:ASSI%はそんな%SAVESTR:TARGET%の様子を見ると,
+			PRINTFORML %CALLNAME:MASTER%の許可を得て,%SAVESTR:TARGET%の肩にそっと手を置いた.
+			SIF TALENT:11
+				PRINTFORML %SAVESTR:TARGET%はその手を邪険に振り払った.
+		ENDIF
+	ENDIF
+
+	WAIT
+	RETURN 1
+ENDIF
+
+PRINTFORML Starting %SAVESTR:TARGET%'s training session.
+PRINTFORML This is training session #{CFLAG:10}.
+
+S = 0
+
+;崩壊している場合
+IF TALENT:9
+	WAIT
+	PRINTFORM %SAVESTR:TARGET%は
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML のまま,惚けた顔でぼおっとしている.よく見ると瞳には生気が宿っていない.........
+
+;素直かおとなしいなら従順4以上,奉仕精神3以上,反発刻印無しで土下座
+ELSEIF (TALENT:13 || TALENT:14 || TALENT:88) && ABL:10 >= 4 && ABL:16 >= 3 && MARK:3 == 0
+	WAIT
+	PRINTFORM %SAVESTR:TARGET%は
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML で土下座し,%CALLNAME:MASTER%に調教前の挨拶をした.
+	IF TALENT:MASTER:83
+		PRINTFORML %CALLNAME:MASTER%はその後頭部を革靴で踏みにじり,%SAVESTR:TARGET%の顔面を床に擦り付けた.
+			SIF ABL:21 >= 3
+				PRINTFORML そしてその状況に,%SAVESTR:TARGET%は股間を濡らしているようだった......
+	ENDIF
+	S = 1
+;素直かおとなしいなら従順3以上,反発刻印1以下で調教前の挨拶
+ELSEIF (TALENT:13 || TALENT:14) && ABL:10 >= 3 && MARK:3 <= 1
+	WAIT
+	PRINTFORM %SAVESTR:TARGET%は
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML のまま,%CALLNAME:MASTER%にそっと頭を下げて調教前の挨拶をした.
+	S = 1
+;その他(口上があればそちらを優先)
+ELSE
+	WAIT
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%が連れてこられた.
+	S = 1
+ENDIF
+
+
+;ズーコの着ぐるみを着てるならここで終了
+IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+	SIF CFLAG:40 == 64
+		PRINTL どうやら,中身は全裸らしい.......
+	WAIT
+	S = 0
+	RETURN 0
+ENDIF
+
+;妊娠中
+IF TALENT:153 && CFLAG:110 <= DAY+10
+	IF S == 0
+		CALL PRINT_CLOTHTYPE
+		PRINT の
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:100
+		PRINT その小さな身体に不釣合いな,
+	PRINTFORML 今にもはちきれそうなお腹を抱えている.
+	PRINTFORML (過激な調教は避けてあげましょう)
+ELSEIF TALENT:153 && CFLAG:110 <= DAY+20
+	PRINTFORML %SAVESTR:TARGET%のお腹は安定期に入り,妊婦特有の丸く膨らんだラインを見せている.
+ELSEIF TALENT:153 && CFLAG:110 <= DAY+30
+	PRINTFORML %SAVESTR:TARGET%のお腹は,ややふくらみが目立ち始めている.
+ENDIF	
+
+A = CFLAG:40
+CALL WEARING_CLOTH_ALL
+B = CFLAG:40
+CFLAG:40 = A
+
+IF (CFLAG:40 & 4)
+	IF (CFLAG:40 & 2) == 0 && (B & 2) && (TALENT:109 == 0 && TALENT:116 == 0)
+		PRINT ノ-ブラの乳房が服の下で揺れている様子が
+		IF TALENT:110 || TALENT:114
+			PRINT はっきり
+		ELSE
+			PRINT 微かに
+		ENDIF
+		PRINTL わかり,目を楽しませてくれる.
+	ENDIF
+ENDIF
+
+;乳房ピアスでノーブラの場合
+IF (CFLAG:7 & 1) && (CFLAG:40 & 2) == 0
+	IF (CFLAG:40 & 4) == 1
+		PRINTFORML 服の布地ごしに,%SAVESTR:TARGET%の両乳首に施されたピアスの形が浮かびあがっていた.
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%が身動きするたび,その両乳首に施されたピアスが小さく揺れた.
+	ENDIF
+ENDIF
+
+;ノーパンで下半身着衣,かつ露出癖Lv3未満の場合
+IF  (CFLAG:40 & 1) == 0 && ((CFLAG:40 & 8) || (CFLAG:40 & 16))
+	SIF (B & 1) && TALENT:135 == 0 && ABL:17 < 3
+		PRINTL ノ-パンの下半身が頼りないらしく,しきりに股間のあたりを気にしている.......
+ENDIF
+
+;ノーパンでスカートタイプ,かつ露出癖Lv3以上の場合
+IF  (CFLAG:40 & 1) == 0 && (CFLAG:40 & 8)
+	SIF (B & 1) && ABL:17 >= 3
+		PRINTFORML %SAVESTR:TARGET%はスカ-トの裾を捲りあげ,下着を着けていない秘部をあなたに晒してみせた.
+ENDIF
+
+;下半身ピアスでノーパン,かつズボンタイプでない場合
+IF (CFLAG:7 & 4) || (CFLAG:7 & 8) && (CFLAG:40 & 1) == 0 && (CFLAG:40 & 16) == 0
+	IF (CFLAG:40 & 8) == 1
+		PRINT スカ-トの間から覗く
+	ELSE
+		PRINT 裸のままの
+	ENDIF
+	PRINT 秘部では,
+		SIF (CFLAG:7 & 4)
+			PRINT 両方のラビア
+		SIF (CFLAG:7 & 4) && (CFLAG:7 & 8)
+			PRINT と
+		SIF (CFLAG:7 & 8)
+			PRINT クリトリス
+	PRINTL に施されたピアスが金属の輝きを放っていた.......
+ENDIF
+WAIT
+
+;助手
+IF ASSI > 0
+	PRINTL
+	;淫乱+サドっ気Lv3以上
+	IF TALENT:ASSI:76 && ABL:ASSI:20 >= 3
+		PRINTFORMW %SAVESTR:PLAYER%の助手である%SAVESTR:ASSI%は舌なめずりをしながら%SAVESTR:TARGET%を興味深そうに見ている.
+		PRINTFORMW %SAVESTR:TARGET%をどのようにいたぶるか考えているようだ.
+	;愛+サドっ気Lv3以上
+	ELSEIF TALENT:ASSI:85 && ABL:ASSI:20 >= 3
+		PRINTFORMW 助手の%SAVESTR:ASSI%は%SAVESTR:PLAYER%の腕に抱きついて,調教対象である%SAVESTR:TARGET%を見ている.
+		PRINTFORMW そして%SAVESTR:PLAYER%に何か耳打ちすると%SAVESTR:TARGET%を指さしながらくすくすと笑った.
+	ELSE
+		PRINTFORMW %SAVESTR:PLAYER%の横には助手として%SAVESTR:ASSI%が立っている.
+	ENDIF
+ENDIF
+C = 0
+S = 0
+
+RETURN 1
+
+;--------------------------------------------------------
+;初調教時-着衣設定オフ
+;--------------------------------------------------------
+@PRITRAIN_MESSAGE_NOCLOTHES
+IF TALENT:22
+	PRINTFORML %SAVESTR:TARGET%は%CALLNAME:MASTER%に言われるままに服を脱ぐと,
+	PRINTFORML 何の感情も見せずに,前すら隠そうともせずに棒立ちになっている.
+ELSEIF TALENT:132 && TALENT:135
+	PRINTFORML %SAVESTR:TARGET%はわけの分からないままに服を脱ぎ捨てて,素っ裸になった.
+ELSEIF TALENT:12
+	PRINTFORML 裸にむかれた%SAVESTR:TARGET%は,手で胸と股間を隠しながらも,
+	PRINTFORML 毅然とした態度を取っている.弱味だけは決して見せまいという覚悟のようだ.
+ELSEIF TALENT:11
+	PRINTFORML %CALLNAME:MASTER%をさんざん手こずらせて裸にむかれた%SAVESTR:TARGET%は,
+	PRINTFORML 必死で身体を覆い隠そうとして前かがみになりながらも,
+	PRINTFORML 目だけは物凄い勢いで%CALLNAME:MASTER%を睨みつけている.
+ELSEIF TALENT:21
+	PRINTFORML %CALLNAME:MASTER%の命令に,%SAVESTR:TARGET%は肩をすくめて服を脱いだ.
+	PRINTFORML 何をされても構わないから,こんな茶番はさっさと終わらせて欲しい,
+	PRINTFORML という態度だ.
+ELSEIF TALENT:132
+	PRINTFORML 裸にされた%SAVESTR:TARGET%は,ただただ怯えている.
+	PRINTFORML 結局のところ,ただの子供なのだ.
+ELSEIF TALENT:20
+	PRINTFORML 裸にされた%SAVESTR:TARGET%は両手で身体を覆ってはいるが,
+	PRINTFORML 表面はあくまで平静を装っている.
+ELSEIF TALENT:10
+	PRINTFORML 裸にむかれた%SAVESTR:TARGET%は,自分の肩を抱いて震えている.
+	PRINTFORML これから自分を待ち受ける運命を想像して,恐怖に歯を鳴らしている.
+ELSEIF TALENT:15
+	PRINTFORML %SAVESTR:TARGET%は全裸を晒した恥辱とこれから奴隷として扱われる屈辱を,
+	PRINTFORML 歯を食いしばり肩を震わせながら,必死に堪えている.
+ELSEIF TALENT:17
+	PRINTFORML 裸にされた%SAVESTR:TARGET%は,おどおどと%CALLNAME:MASTER%の顔色をうかがっている.
+	PRINTFORML 言う事さえ聞いていれば,痛い目にはあわないかもしれない,と考えているようだ.
+ELSEIF TALENT:13
+	PRINTFORML 裸にむかれながらも,%SAVESTR:TARGET%は自分の置かれた状況を受け入れられない様子だ.
+	PRINTFORML 人間がこんな酷い事を他の人間にやれるわけがない,そう考えているのだろうか.
+ELSEIF TALENT:14
+	PRINTFORML 抵抗は無駄だと悟ったらしく,%SAVESTR:TARGET%はおとなしく服を脱いで裸になった.
+	PRINTFORML せめて,無理矢理服を剥ぎ取られる屈辱だけは避けたかったのかもしれない.
+ELSEIF TALENT:16
+	PRINTFORML %SAVESTR:TARGET%は怯えつつも,やや挑戦的に%CALLNAME:MASTER%を睨んでいる.
+	PRINTFORML こんな事で自分は屈服させられたりしないという自信があるらしい.
+ELSE
+	PRINTFORML %SAVESTR:TARGET%は裸にむかれている.
+ENDIF
+
+
+RETURN 1
+
+;--------------------------------------------------------
+;初調教時-上着着用時
+;--------------------------------------------------------
+@PRITRAIN_MESSAGE_CLOTHED
+IF TALENT:22
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%は,何の感情も見せずに棒立ちになっている.
+ELSEIF TALENT:132 && TALENT:135
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%は,何をされるのか理解できていないようだ.
+ELSEIF TALENT:12
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,毅然とした態度を取っている.
+	PRINTFORML 弱味だけは決して見せまいという覚悟のようだ.
+ELSEIF TALENT:11
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%は,物凄い勢いで%CALLNAME:MASTER%を睨みつけている.
+ELSEIF TALENT:21
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は肩をすくめている.
+	PRINTFORM 何をされても構わないから,こんな茶番はさっさと終わらせて欲しい,
+	PRINTFORML という態度だ.
+ELSEIF TALENT:132
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,ただただ怯えている.
+	PRINTFORML 結局のところ,ただの子供なのだ.
+ELSEIF TALENT:20
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%は,表面はあくまで平静を装っている.
+ELSEIF TALENT:10
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,自分の肩を抱いて震えている.
+	PRINTFORML これから自分を待ち受ける運命を想像して,恐怖に歯を鳴らしている.
+ELSEIF TALENT:15
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,これから奴隷として扱われる屈辱を,
+	PRINTFORML 歯を食いしばり肩を震わせながら,必死に堪えている.
+ELSEIF TALENT:17
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,おどおどと%CALLNAME:MASTER%の顔色をうかがっている.
+	PRINTFORML 言う事さえ聞いていれば,痛い目にはあわないかもしれない,と考えているようだ.
+ELSEIF TALENT:13
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,自分の置かれた状況を受け入れられない様子だ.
+	PRINTFORML 人間がこんな酷い事を他の人間にやれるわけがない,そう考えているのだろうか.
+ELSEIF TALENT:14
+	PRINTFORM 抵抗は無駄だと悟ったらしく,
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%はおとなしくしている.
+ELSEIF TALENT:16
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%は,怯えつつもやや挑戦的に%CALLNAME:MASTER%を睨んでいる.
+	PRINTFORML こんな事で自分は屈服させられたりしないという自信があるらしい.
+ELSE
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM の%SAVESTR:TARGET%が調教室に連れてこられた.
+ENDIF
+
+RETURN 1

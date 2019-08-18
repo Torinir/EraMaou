@@ -1,0 +1,215 @@
+﻿;欲望のLvUP処理とその可否判定
+;eratohoA ver1,204のスクリプトをベースに処理を簡略化
+;eraIM@Sから導入しました(eramaou)
+
+;-------------------------------------------------
+;欲望のLvUP
+;-------------------------------------------------
+@ABLUP11
+DRAWLINE
+;PRINTL 奴隷の性欲の強さを高めます
+;PRINTL 欲望が高いと,より大きな快楽が得られ,快楽によって恭順が高まるようになります
+;PRINTL ..............................................................................
+;欲望はLv5が上限
+;[即落ち][淫乱]が付いている場合は10まで上昇可能
+IF ABL:11 >= 5 && (TALENT:73 == 0 && TALENT:76 == 0)
+	PRINTW Character qualities must be improved before this can be raised further.
+	RETURN 0
+ELSEIF ABL:11 >= 10
+	PRINTW Already At MAX.
+	RETURN 0
+ENDIF
+
+;必要な欲情の珠
+A = 0
+
+;条件別にＯＫかダメかを記録する
+;欲情の珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+
+;異常経験が必要か
+E = 0
+
+CALL DECIDE_ABLUP11
+
+;異常経験が必要か
+SIF E > 0
+	PRINTFORML %EXPNAME:50%{E}以上(現在{EXP:50})かつ
+
+;欲情の珠で上げる
+PRINTFORM [0] - %PALAMNAME:5%の珠×{JUEL:5}/{A} ......
+IF I == 0
+	PRINT OK
+ELSE
+	SIF I & 1
+		PRINT Not enough points 
+	SIF I & 2
+		PRINT Not enough exp 
+ENDIF
+PRINTL 
+
+PRINTL [100] - やめる
+
+INPUT
+IF (RESULT < 0 || RESULT > 0) && RESULT != 100
+	RESTART
+ELSEIF I != 0 && RESULT == 0
+	PRINTL Requirements haven't been met
+	RESTART
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+
+ABL:11 += 1
+
+IF RESULT == 0
+	JUEL:5 -= A
+ENDIF
+
+PRINTFORML %ABLNAME:11%のレベルが{ABL:11}になりました
+
+RETURN 0
+
+;-------------------------------------------------
+;欲望のLvUP可否判定
+;-------------------------------------------------
+@DECIDE_ABLUP11
+;欲望はLv5が上限,
+;[即落ち][淫乱]が付いている場合は10まで上昇可能
+SIF ABL:11 >= 5 && (TALENT:73 == 0 && TALENT:76 == 0)
+	RETURN 0
+SIF ABL:11 >= 10
+	RETURN 0
+
+;判定変数を空に
+A = 0
+E = 0
+I = 0
+
+IF ABL:11 == 0
+	A = 5
+ELSEIF ABL:11 == 1
+	A = 50
+ELSEIF ABL:11 == 2
+	A = 1000
+ELSEIF ABL:11 == 3
+	A = 5000
+ELSEIF ABL:11 == 4
+	A = 12000
+ELSEIF ABL:11 == 5
+	A = 20000
+ELSEIF ABL:11 == 6
+	A = 30000
+ELSEIF ABL:11 == 7
+	A = 50000
+ELSEIF ABL:11 == 8
+	A = 80000
+ELSEIF ABL:11 == 9
+	A = 150000
+ENDIF
+
+;一線越えない
+IF TALENT:27
+	SIF ABL:11 == 3
+		TIMES A , 1.50
+	SIF ABL:11 == 4
+		TIMES A , 2.00
+	SIF ABL:11 == 5
+		TIMES A , 2.50
+	SIF ABL:11 >= 6
+		TIMES A , 3.00
+ENDIF
+
+;自制心
+IF TALENT:20
+	TIMES A , 1.20
+ENDIF
+
+;保守的
+IF TALENT:24
+	TIMES A , 1.10
+ENDIF
+
+;貞操観念
+IF TALENT:30
+	TIMES A , 1.50
+;貞操無頓着
+ELSEIF TALENT:31
+	TIMES A , 0.95
+ENDIF
+
+;抑圧
+IF TALENT:32
+	TIMES A , 1.50
+;解放
+ELSEIF TALENT:33
+	TIMES A , 0.90
+ENDIF
+
+;抵抗
+SIF TALENT:34
+	TIMES A , 1.50
+
+;恥じらい
+IF TALENT:35
+	TIMES A , 1.10
+;恥薄い
+ELSEIF TALENT:36
+	TIMES A , 0.95
+ENDIF
+
+;快感に素直
+IF TALENT:70
+	TIMES A , 0.80
+;快感の否定
+ELSEIF TALENT:71
+	TIMES A , 1.50
+ENDIF
+
+;中毒しやすい
+SIF TALENT:72
+	TIMES A , 0.95
+;即落ち
+SIF TALENT:73
+	TIMES A , 0.50
+;淫乱
+SIF TALENT:76
+	TIMES A , 0.70
+;娼婦
+SIF TALENT:180
+	TIMES A , 0.90
+;傾城
+SIF TALENT:181
+	TIMES A , 0.80
+;人妻
+SIF TALENT:157
+	TIMES A , 0.80
+
+;ＬV４から5に上げるときは異常経験必要(素質:[解放][快感に素直][即落ち][淫乱][狂気]なら無視できる)
+IF ABL:11 == 4 && (TALENT:33 == 0 && TALENT:70 == 0 && TALENT:73 == 0 && TALENT:76 == 0 && TALENT:123 == 0)
+	E = 1
+;ＬV７から８に上げるときは異常経験が３以上必要(素質:[解放][快感に素直][即落ち][淫乱][狂気]なら無視できる)
+ELSEIF ABL:11 == 7 && (TALENT:33 == 0 && TALENT:70 == 0 && TALENT:73 == 0 && TALENT:76 == 0 && TALENT:123 == 0)
+	E = 3
+ENDIF
+
+;最低でも1個は必要
+SIF A < 1
+	A = 1
+
+;欲情の珠は足りている?
+SIF JUEL:5 < A
+	I |= 1
+
+;異常経験は足りている?
+SIF E > EXP:50
+	I |= 2
+
+IF I == 0
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+;
+;
+;

@@ -1,0 +1,177 @@
+﻿;-------------------------------------------------
+;牝犬売却末路口上
+;Sは売却値
+;値段(100万以上,50万以上,10万以上,10万未満)によって分岐
+;セックス狂分岐...子犬をとにかく孕みまくる
+;話術分岐............牝犬トレーナーや舞台女優
+;その他...............ペットとして買われる
+;-------------------------------------------------
+@SELL_MATURO_K2
+#DIMS MATURO
+#DIM FAMILY,3
+
+FAMILY = CFLAG:TARGET:605
+FAMILY:1 = FAMILY % 10
+CALL SEARCH_FAMILY, TARGET
+FAMILY:2 = RESULT
+			;売値100万以上
+			IF S >= 1000000
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					LOCALS = 魔界の牝犬ブリーダー
+					LOCAL = 3
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					LOCALS = 魔界の牝犬トレーナー
+					LOCAL = 2
+				;その他
+				ELSE
+					LOCALS = 魔界の豪商
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					PRINTFORMW %SAVESTR:TARGET%は最高級牝犬ブリ-ダ-として今日も牝犬奴隷に犬の仔を妊娠させているという.
+					PRINTFORMW どうも彼女は犬の仔を妊娠することが至上の喜びと思っているようで,女奴隷を買い付けては犬の子種を種付けしている.
+					PRINTFORMW 畜舎で獣愛にむせび泣く獣姦奴隷たちを眺めながら,%SAVESTR:TARGET%はオナニ-をしたり自らも獣姦をして悠々自適の生活を送っているという.
+					MATURO = 最高級牝犬ブリーダー
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					PRINTFORMW 獣愛に目覚めた%SAVESTR:TARGET%は,他の女たちも獣愛に目覚めさせるために牝犬トレ-ナ-となった.
+					PRINTFORMW 女奴隷を買い付け,1ヶ月もたてば皆4つ足で腰を振る牝犬獣姦奴隷になってしまうという.
+					PRINTFORMW ゆくゆくは誰もが道端で牝犬交尾していてもおかしくない世界にするのが彼女の夢らしい.......
+					MATURO = 最高級牝犬トレーナー
+				ELSE
+					PRINTFORMW 豪商のペットとして買われた%SAVESTR:TARGET%は,優雅な牝犬ライフを送っているそうだ.
+					PRINTFORMW 変態の来客があると,必ず彼女の交尾が披露され,大いに楽しませたという.
+					PRINTFORMW そして牝犬品評会では,何度も受賞をして他の牝犬奴隷の羨望の的になったらしい.
+					MATURO = 最高級牝犬奴隷
+				ENDIF
+			;売値50万以上
+			ELSEIF S >= 500000
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					LOCALS = 魔界の牝犬ブリーダー
+					LOCAL = 3
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					LOCALS = 魔界の円形劇場
+					LOCAL = 2
+				;その他
+				ELSE
+					LOCALS = 魔界の女富豪
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					PRINTFORMW %SAVESTR:TARGET%は魔族の最高級孕み牝犬として今日も犬の仔を妊娠しているという.
+					PRINTFORMW 異種族の遺伝子が交じり合った子犬は魔犬となり優秀な知能を持つ.
+					PRINTFORMW アヘ顔を晒し子種をせがむ母親の知性も品性もない顔からは想像できないほどに.......
+					MATURO = 高級孕み牝犬
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					PRINTFORMW %SAVESTR:TARGET%は,円形劇場で獣姦ショ-を行う牝犬女優となった.
+					PRINTFORMW 無数の観客が見守る中,四つ足で犬や山羊と交尾をして観客の興奮を掻き立てる.
+					PRINTFORMW 彼女のチケットは飛ぶように売れるという.......
+					MATURO = 高級牝犬女優
+				ELSE
+					PRINTFORMW 女富豪のペットとして買われた%SAVESTR:TARGET%は,淫行牝犬ライフを送っているそうだ.
+					PRINTFORMW 加虐趣味のある女富豪は%SAVESTR:TARGET%が堕ちれば堕ちるほど興奮するようだ.
+					PRINTFORMW 最近では道端で突然交尾を始めて罵倒される%SAVESTR:TARGET%の姿を見て楽しんでいるらしい.
+					MATURO = 高級牝犬奴隷
+				ENDIF
+			;売値10万以上
+			ELSEIF S >= 100000
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					LOCALS = 魔界の個人ブリーダー
+					LOCAL = 3
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					LOCALS = 魔界の個人経営トレーナー
+					LOCAL = 2
+				;その他
+				ELSE
+					LOCALS = 魔界の獣姦マニア女
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					PRINTFORMW %SAVESTR:TARGET%は牝犬ブリ-ダ-として仲間と手を組み牝犬奴隷に犬の仔を妊娠させているという.
+					PRINTFORMW 交尾を見るのもするのも大好きな%SAVESTR:TARGET%は仲間の女調教師と共に奴隷を買いあさった.
+					PRINTFORMW 月に一度は仲間や奴隷と共に乱交獣姦するのが楽しみとなっているらしい.
+					MATURO = 牝犬ブリーダー
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					PRINTFORMW 獣愛に目覚めた%SAVESTR:TARGET%は,獣姦マニアを増やすために牝犬トレ-ナ-となった.
+					PRINTFORMW 女奴隷を買い付け,取り返しのつかないほどまでに獣愛を教え込み,開放する.
+					PRINTFORMW ゆくゆくは獣姦雑誌を創刊するのが彼女の夢らしい.......
+					MATURO = 牝犬トレーナー
+				ELSE
+					PRINTFORMW 獣姦マニア女の友達として買われた%SAVESTR:TARGET%は,楽しい牝犬ライフを送っているそうだ.
+					PRINTFORMW 共通の趣味がある主人と%SAVESTR:TARGET%はすぐに意気投合し,同棲を始めた.
+					PRINTFORMW 仲良く尻を並べて大型犬と盛っているという.......
+					MATURO = 牝犬奴隷
+				ENDIF
+			;売値10万未満
+			ELSE
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					LOCALS = 魔界の犬
+					LOCAL = 3
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					LOCALS = 魔界の小劇場
+					LOCAL = 2
+				;その他
+				ELSE
+					LOCALS = 魔界の変態
+					LOCAL = 0
+				ENDIF
+				PRINTFORMW %LOCALS%に買われた%SAVESTR:TARGET%はその後.........
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+				;セックス狂
+				IF TALENT:TARGET:75 == 1 
+					PRINTFORMW %SAVESTR:TARGET%は知性を持った魔界の犬に買われてしまった.
+					PRINTFORMW 彼は自らの優秀な遺伝子を残すために,最高の母体を求めていたという.
+					PRINTFORMW 残念ながら予算は足りなかったが,二人の身体の愛称は抜群だったという.......
+					MATURO = 犬のお嫁さん
+				;話術LV5以上
+				ELSEIF ABL:15 >= 5
+					PRINTFORMW %SAVESTR:TARGET%は,小劇場で獣姦ショ-を行う牝犬女優となった.
+					PRINTFORMW 無数の観客が見守る中,四つ足で犬や山羊と交尾をして観客の興奮を掻き立てる.
+					PRINTFORMW なかなかチケットが売れないため,醜い珍獣との交尾も始めたという.......
+					MATURO = 牝犬女優
+				ELSE
+					PRINTFORMW 変態のペットとして買われた%SAVESTR:TARGET%は,奇妙な性生活を送っているそうだ.
+					PRINTFORMW 変態の奴隷主人は%SAVESTR:TARGET%が大型犬と交尾している姿を見ないと興奮できないらしい.
+					PRINTFORMW オナニ-する主人を見上げながら,複雑な表情で%SAVESTR:TARGET%は絶頂した.
+					MATURO = 牝犬
+				ENDIF
+			ENDIF
+	
+	SIF FAMILY:2 >= 0
+		CSTR:(FAMILY:2):5 = %MATURO%
+	
+	;結びの文,特殊な文を入れたくなったら後で分岐を入れよう
+	PRINTFORML
+	PRINTFORMW こうして%NAME:MASTER%と%SAVESTR:TARGET%は二度と出会うことはなかった.........
+	PRINTFORML
+RETURN 0
+
+
+

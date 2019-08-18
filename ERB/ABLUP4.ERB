@@ -1,0 +1,85 @@
+﻿
+@ABLUP4
+DRAWLINE
+IF ABL:4 >= 5
+	PRINTW Already At MAX..
+	RETURN 0
+ENDIF
+
+CALL DECIDE_ABLUP4
+
+PRINT [0] - 
+PRINTS PALAMNAME:15
+PRINT  × 
+PRINTV A
+PRINT ......
+IF I == 0
+	PRINT OK
+ELSE
+	SIF I & 1
+		PRINT Insufficient Points 
+	SIF I & 2
+		PRINT Insufficient Experience 
+ENDIF
+PRINTL 
+
+PRINTL [100] - Back
+
+
+INPUT
+IF (RESULT < 0 || RESULT > 0) && RESULT != 100
+	RESTART
+ELSEIF I != 0 && RESULT == 0
+	PRINTL Requirements haven't been met.
+	RESTART
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+
+ABL:4 += 1
+
+IF RESULT == 0
+	JUEL:15 -= A
+ENDIF
+
+PRINTS ABLNAME:4
+PRINT のレベルが
+PRINTV ABL:4
+PRINTW になりました.
+
+@DECIDE_ABLUP4
+
+;条件別にＯＫかダメかを記録する
+I = 0
+
+IF ABL:4 == 0
+	A = 1
+ELSEIF ABL:4 == 1
+	A = 50
+ELSEIF ABL:4 == 2
+	A = 600
+ELSEIF ABL:4 == 3
+	A = 7000
+	;一線越えない
+	IF TALENT:27
+		TIMES A , 2.00
+	ENDIF
+ELSEIF ABL:4 == 4
+	A = 45000
+	;一線越えない
+	IF TALENT:27
+		TIMES A , 3.00
+	ENDIF
+ENDIF
+
+;快Fの珠で上げる
+SIF JUEL:15 < A
+	I |= 1
+
+IF I == 0
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+

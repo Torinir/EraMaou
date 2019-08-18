@@ -1,0 +1,294 @@
+﻿@EVENTTURNEND
+#LATER
+;エンディングチェック
+
+;グッドエンド
+@ENDING_1
+
+DRAWLINE
+PRINTL ┌────────────────────────────┐
+PRINTL ｜　　　　　　ついに魔王は世界を再び掌握した　　　　　　　｜
+PRINTL ｜　　　　　そして魔王は人間側にある提案をした　　　　　　｜
+PRINTL ｜勇者を魔王を倒すためにダンジョンへ行かせるようにさせると｜
+PRINTL ｜　　　それは勇者ではなく生贄として送られるのだ...　　　　｜
+PRINTL └────────────────────────────┘
+
+WAIT
+DRAWLINE
+PRINTL ゲ-ムを続けますか?
+
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+$INPUT_LOOP
+INPUT
+IF RESULT == 1
+	QUIT
+ELSEIF RESULT != 0
+	GOTO INPUT_LOOP
+ENDIF
+FLAG:82 = 1
+RETURN 0
+
+;魔王城陥落
+@ENDING_2
+
+DRAWLINE
+PRINTL ┌────────────────────────────┐
+PRINTL ｜ついに魔王のダンジョンは新たな女勇者の手によって陥落した｜
+PRINTL ｜魔王は自分を倒した勇者の顔を目に焼き付けると,　　　　　｜
+PRINTL ｜満足した顔でまた深い封印の眠りについたのだった.........　　｜
+PRINTL └────────────────────────────┘
+
+PRINTFORMW *勇者%SAVESTR:TARGET%は魔王を封印し,伝説の勇者として讃えられた*
+PRINTL  
+PRINTL -------------------------------GAMEOVER---------------------------------
+INPUT
+QUIT
+
+;エルフの領域を制覇
+@ENDING_3
+DRAWLINE
+PRINTL ┌────────────────────────────┐
+PRINTL ｜　　　　　ついに魔王はエルフの領域を征服した　　　　　　｜
+PRINTL ｜　　　　そして魔王はエルフの一族にある提案をした　　　　｜
+PRINTL ｜　　　　一族の秘蔵するエルフの娘を差し出せと.........　　　｜
+PRINTL └────────────────────────────┘
+
+WAIT
+DRAWLINE
+
+FLAG:87 = 1
+CALL CHAR_GIFT, 1, "エルフ"
+
+RETURN 0
+
+;ドラゴンの山を制覇
+@ENDING_4
+DRAWLINE
+PRINTL ┌────────────────────────────┐
+PRINTL ｜　　　　　ついに魔王はドラゴンの山を征服した　　　　　　｜
+PRINTL ｜　　　そして魔王はドラゴンの長老にある提案をした　　　　｜
+PRINTL ｜　　　　　　　ドラゴンの生娘を差し出せと.........　　　　　｜
+PRINTL └────────────────────────────┘
+
+WAIT
+DRAWLINE
+
+FLAG:89 = 1
+CALL CHAR_GIFT, 5, "ドラゴン"
+
+RETURN 0
+
+
+
+;天界の領域を制覇
+@ENDING_5
+DRAWLINE
+PRINTL ┌────────────────────────────┐
+PRINTL ｜　　　　　　　ついに魔王は天界を征服した　　　　　　　　｜
+PRINTL ｜　　　　　そして魔王は天界にある提案をした　　　　　　　｜
+PRINTL ｜　　　　次世代の主神となる天使を差し出せと.........　　　　｜
+PRINTL └────────────────────────────┘
+
+WAIT
+DRAWLINE
+
+FLAG:91 = 1
+CALL CHAR_GIFT, 6, "天使"
+
+RETURN 0
+
+;---------------------------------------------------------
+@CHAR_GIFT, ARG, ARGS
+#DIM CHARA, 1
+#DIM PERSONAL
+#DIM MOTHER
+#DIM MON_ID
+#DIM MOTHER_TYPE
+#DIM MOTHER_RACE
+;---------------------------------------------------------
+;ARG = 指定種族(100以上は指定母体)
+;ARGS = 贈呈元
+
+;母親フラグ
+MOTHER = -1
+MOTHER_RACE = -1
+MON_ID = 0
+MOTHER_TYPE = 0
+PERSONAL = 160
+
+IF ARG > 100
+	MOTHER = ARG - 100
+	ARG = 9
+	MON_ID = CFLAG:MOTHER:112
+	IF MON_ID == 171
+		;デュラハン
+		ARG = 4
+	ELSEIF MON_ID == 172
+		;ヴァンパイアは吸血鬼
+		ARG = 3
+	ELSEIF MON_ID == 114 || MON_ID == 141
+		;ゾンビハウンド-ヘルハウンドは人狼
+		ARG = 2
+	ELSEIF MON_ID == 193
+		;カオスドラゴンはドラゴン
+		ARG = 5
+	ELSEIF MON_ID == 191
+		;ダークメサイアは堕天使
+		ARG = 8
+	ENDIF
+	
+	;母親の性格記憶
+	FOR LOCAL,160,199
+		IF TALENT:MOTHER:LOCAL == 1
+			;モンスターIDと区別するため,1000を追加する
+			MOTHER_TYPE = LOCAL + 1000
+			BREAK
+		ENDIF
+	NEXT
+	
+	MOTHER_RACE = TALENT:MOTHER:314
+	
+ENDIF
+
+;キャラのNOを選定
+$INPUT_LOOP_1
+CHARA = RAND(1, 17)
+;出産の場合,特殊キャラ呼び出し
+SIF MOTHER >= 0
+	CHARA = 100
+ADDCHARA CHARA
+A = CHARANUM - 1
+
+TALENT:A:300 = LOCAL:300
+SIF TALENT:A:300 == 0
+	TALENT:A:300 = 1
+
+$INPUT_LOOP_2
+PRINTL 好みの性格と髪色を設定してください.
+PRINTFORML [0] 性格 : %TALENTNAME:PERSONAL%
+PRINT [1] 髪色 : 
+
+IF TALENT:A:300 == 1
+	PRINTL 金髪
+ELSEIF TALENT:A:300 == 2
+	PRINTL 栗毛
+ELSEIF TALENT:A:300 == 3
+	PRINTL 黒髪
+ELSEIF TALENT:A:300 == 4
+	PRINTL 赤毛
+ELSEIF TALENT:A:300 == 5
+	PRINTL 銀髪
+ELSEIF TALENT:A:300 == 6
+	PRINTL 青髪
+ELSEIF TALENT:A:300 == 7
+	PRINTL 緑髪
+ENDIF
+
+DRAWLINE
+PRINTL [100] 決定
+
+INPUT
+
+IF RESULT == 0
+	PRINTL 好みの性格を選んで下さい.
+	PRINTL [0] - 慈愛　　[1] - 自信家　[2] - 気弱　　
+	PRINTL [3] - 高貴　　[4] - 冷徹　　[5] - 悪女　　
+	PRINTL [6] - 知的　　[7] - 庇護者　
+	INPUT
+	IF RESULT >= 8
+		PERSONAL = 160
+		GOTO INPUT_LOOP_2
+	ELSEIF RESULT == 0
+		PERSONAL = 160
+	ELSEIF RESULT == 1
+		PERSONAL = 161
+	ELSEIF RESULT == 2
+		PERSONAL = 162
+	ELSEIF RESULT == 3
+		PERSONAL = 163
+	ELSEIF RESULT == 4
+		PERSONAL = 164
+	ELSEIF RESULT == 5
+		PERSONAL = 166
+	ELSEIF RESULT == 6
+		PERSONAL = 172
+	ELSEIF RESULT == 7
+		PERSONAL = 173
+	ELSEIF RESULT < 0
+		PERSONAL = 160
+		GOTO INPUT_LOOP_2
+	ENDIF
+	GOTO INPUT_LOOP_2
+
+ELSEIF RESULT == 1
+	PRINTL 好みの髪色を選んで下さい.
+	PRINTL [1] 金髪  [2]栗毛  [3]黒髪  [4]赤毛  [5]銀髪  [6]青髪  [7]緑髪
+	INPUT
+	IF RESULT >= 1 && RESULT <= 7
+		TALENT:A:300 = RESULT
+		LOCAL:300 = RESULT
+	ENDIF
+	GOTO INPUT_LOOP_2
+ELSEIF RESULT == 100
+ELSE
+	GOTO INPUT_LOOP_2
+ENDIF
+
+CALL CHAR_MAKE, PERSONAL, ARG
+CFLAG:RESULT:1 = 0
+A = RESULT
+
+;種族年齢再設定
+IF GETBIT(FLAG:5,12) || GETBIT(FLAG:5,13)
+	CALL RACE_AGE_GENERATE, CFLAG:A:451, TALENT:A:314
+	CFLAG:A:452 = RESULT
+ENDIF
+
+;父親と母親記憶
+;貢物の場合,0が入る
+SIF MOTHER_RACE > -1
+	TALENT:A:321 = MOTHER_RACE
+TALENT:A:322 = MON_ID
+TALENT:A:323 = MON_ID
+TALENT:A:324 = MOTHER_TYPE
+
+PRINTL *****************************************
+IF MOTHER >= 0
+	PRINT 予言の魔法が娘の
+	PRINTS SAVESTR:A
+	PRINTL の将来を暗示する......
+ELSE
+	PRINTFORM %ARGS%の
+	PRINTS SAVESTR:A
+	PRINT が
+	SIF ARG == 1
+		PRINT エルフの王
+	SIF ARG == 5
+		PRINT ドラゴンの長老
+	SIF ARG == 6
+		PRINT 天界
+	PRINTL から贈られてきました.........
+ENDIF
+PRINTL *****************************************
+;FLAG:87 = 2
+PRINTW
+CALL SHOW_CHARA_INFO, A
+IF MOTHER >= 0
+	PRINTL この未来を否定しますか?
+ELSE
+	PRINTL 返却しますか?
+ENDIF
+PRINTL [1] はい  [2] いいえ
+INPUT
+IF RESULT == 1
+	A = CHARANUM - 1
+	CALL PARTY_CHAR_DEL, A
+	DELCHARA A
+	CALL NAME_RESET
+	GOTO INPUT_LOOP_1
+ELSE
+ENDIF
+
+
+RETURN 0

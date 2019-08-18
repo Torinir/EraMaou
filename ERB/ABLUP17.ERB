@@ -1,0 +1,284 @@
+﻿;露出癖のLvUP処理とその可否判定
+;eratohoA ver1,204のスクリプトをベースに処理を簡略化
+
+;eraIM@Sから導入しました(eramaou)
+
+;-------------------------------------------------
+;露出癖のLvUP
+;-------------------------------------------------
+@ABLUP17
+DRAWLINE
+;PRINTL 奴隷の露出癖を高めます
+;PRINTL 露出癖が高いと,恥辱的な行為や屈辱的な行為から快楽を得られるようになります
+;PRINTL ..............................................................................
+;露出癖はLv5が上限
+;[素直][解放][目立ちたがり][露出狂]が付いている場合はLv10まで解放
+IF ABL:17 >= 5 && (TALENT:13 == 0 && TALENT:33 == 0 && TALENT:28 == 0 && TALENT:89 == 0)
+	PRINTW Character qualities must be improved before this can be raised further.
+	RETURN 0
+ELSEIF ABL:17 >= 10
+	PRINTW Already At MAX.
+	RETURN 0
+ENDIF
+
+;必要な恥情の珠
+A = 0
+;必要な異常経験回数
+B = 0
+;必要な絶頂経験回数
+C = 0
+;必要な調教自慰経験回数
+D = 0
+
+;条件別にＯＫかダメかを記録する
+;恥情の珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+
+CALL DECIDE_ABLUP17
+
+;欲望が露出癖+1レベルでないといけない([愛]がない場合)
+IF TALENT:85 == 0
+	PRINTFORM %ABLNAME:11%{ABL:17+1}LV以上(現在{ABL:11}LV)かつ
+	PRINTL 
+ELSEIF TALENT:85 == 1
+;従順が露出癖+1レベルでないといけない([愛]がある場合)
+	PRINTFORM %ABLNAME:10%{ABL:17+1}LV以上(現在{ABL:10}LV)かつ
+	PRINTL
+ENDIF
+
+;異常経験が必要か
+SIF B > 0
+	PRINTFORML %EXPNAME:50%{B}以上(現在{EXP:50})かつ
+
+PRINTFORM [0] - %PALAMNAME:8%の珠×{JUEL:8}/{A} ......
+IF I == 0
+	PRINT OK
+ELSE
+	SIF I & 1
+		PRINT Not enough points 
+	SIF I & 2
+		PRINT Not enough exp 
+	SIF I & 4
+		PRINT 能力不足 
+ENDIF
+PRINTL 
+;絶頂経験
+SIF C > 0
+	PRINTFORML 　　　%EXPNAME:2%　{EXP:2}/{C}
+;調教自慰経験
+SIF D > 0
+	PRINTFORML 　　　%EXPNAME:11%　{EXP:11}/{D}
+
+PRINTL [100] - やめる
+
+INPUT
+IF (RESULT < 0 || RESULT > 0) && RESULT != 100
+	RESTART
+ELSEIF I != 0 && RESULT == 0
+	PRINTL Requirements haven't been met.
+	RESTART
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+
+ABL:17 += 1
+
+IF RESULT == 0
+	JUEL:8 -= A
+ENDIF
+
+PRINTFORML %ABLNAME:17%のレベルが{ABL:17}になりました
+
+RETURN 0
+
+;-------------------------------------------------
+;露出癖のLvUP可否判定
+;-------------------------------------------------
+@DECIDE_ABLUP17
+SIF ABL:17 >= 10
+	RETURN 0
+SIF ABL:17 >= 5 && (TALENT:13 == 0 && TALENT:33 == 0 && TALENT:28 == 0 && TALENT:89 == 0)
+	RETURN 0
+
+;判定変数を空に
+A = 0
+B = 0
+C = 0
+D = 0
+I = 0
+J = 0
+
+IF ABL:17 == 0
+	A = 100
+	C = 1
+ELSEIF ABL:17 == 1
+	A = 1000
+	D = 1
+ELSEIF ABL:17 == 2
+	A = 3000
+ELSEIF ABL:17 == 3
+	A = 6000
+ELSEIF ABL:17 == 4
+	A = 12000
+ELSEIF ABL:17 == 5
+	A = 25000
+ELSEIF ABL:17 == 6
+	A = 50000
+ELSEIF ABL:17 == 7
+	A = 80000
+ELSEIF ABL:17 == 8
+	A = 120000
+ELSEIF ABL:17 == 9
+	A = 150000
+ENDIF
+
+;一線越えない
+IF TALENT:27
+	SIF ABL:17 == 3
+		TIMES A , 1.50
+	SIF ABL:17 == 4
+		TIMES A , 2.00
+	SIF ABL:17 == 5
+		TIMES A , 2.50
+	SIF ABL:17 >= 6
+		TIMES A , 3.00
+ENDIF
+
+;ＬV３以上に上げるときは異常経験必要(素質:[目立ちたがり][解放][淫乱][倒錯的][マゾ][狂気]なら無視できる)
+IF ABL:17 >= 3 && (TALENT:28 == 0 && TALENT:33 == 0 && TALENT:76 == 0 && TALENT:80 == 0 && TALENT:88 == 0 && TALENT:123 == 0)
+	B = ABL:17 - 2
+ENDIF
+
+;崩壊
+SIF TALENT:9
+	TIMES A , 0.80
+;臆病
+SIF TALENT:10
+	TIMES A , 1.20
+;反抗的
+SIF TALENT:11
+	TIMES A , 1.50
+;気丈
+SIF TALENT:12
+	TIMES A , 1.10
+;生意気
+SIF TALENT:16
+	TIMES A , 1.10
+;自制心
+SIF TALENT:20
+	TIMES A , 1.10
+;無関心
+SIF TALENT:21
+	TIMES A , 1.10
+;感情乏しい
+SIF TALENT:22
+	TIMES A , 1.50
+;目立ちたがり
+SIF TALENT:28
+	TIMES A , 0.50
+;貞操観念
+SIF TALENT:30
+	TIMES A , 1.20
+;貞操無頓着
+SIF TALENT:31
+	TIMES A , 0.90
+
+;抑圧
+IF TALENT:32
+	TIMES A , 1.20
+;解放
+ELSEIF TALENT:33
+	TIMES A , 0.80
+ENDIF
+
+;抵抗
+SIF TALENT:34
+	TIMES A , 1.50
+
+;恥じらい
+IF TALENT:35
+	TIMES A , 1.10
+;恥薄い
+ELSEIF TALENT:36
+	TIMES A , 0.90
+ENDIF
+
+;弱味
+SIF TALENT:37
+	TIMES A , 0.80
+
+;自慰しやすい
+SIF TALENT:60
+	TIMES A , 0.90
+
+;快感に素直
+IF TALENT:70
+	TIMES A , 0.90
+;快感の否定
+ELSEIF TALENT:71
+	TIMES A , 1.20
+ENDIF
+
+;中毒しやすい
+SIF TALENT:72
+	TIMES A , 0.90
+;即落ち
+SIF TALENT:73
+	TIMES A , 0.50
+;淫乱
+SIF TALENT:76
+	TIMES A , 0.80
+;倒錯的
+SIF TALENT:80
+	TIMES A , 0.75
+;サド
+SIF TALENT:83
+	TIMES A , 1.20
+;マゾ
+SIF TALENT:88
+	TIMES A , 0.75
+;狂気
+SIF TALENT:123
+	TIMES A , 0.50
+
+;欲望が露出癖+1レベルでないといけない([愛]がない場合)
+IF TALENT:85 == 0
+	IF ABL:11 < ABL:17+1
+		;欲望が不足
+		I |= 4
+	ENDIF
+ELSEIF TALENT:85 == 1
+;従順が露出癖+1レベルでないといけない([愛]がある場合)
+	IF ABL:10 < ABL:17+1
+		;従順が不足
+		I |= 4
+	ENDIF
+ENDIF
+
+;最低でも1個は必要
+SIF A < 1
+	A = 1
+
+;異常経験が不足
+SIF EXP:50 < B
+	I |= 2
+;絶頂経験が不足
+SIF EXP:2 < C
+	I |= 2
+;調教自慰経験が不足
+SIF EXP:11 < D
+	I |= 2
+
+;恥情の珠は足りている?
+SIF JUEL:8 < A
+	I |= 1
+
+IF I == 0
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+;
+;
+;

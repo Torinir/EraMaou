@@ -1,0 +1,479 @@
+﻿;------------------------------------------
+@EXECUTION
+#DIM LV
+#DIM LAST_MEMBER
+#DIM NO_CHECK
+#DIM FAMILY,3
+;ZはTARGETを保存してるため使用禁止
+;------------------------------------------
+;処刑コマンド
+;LAST_MEMBER = 残り処刑待ち人数
+;NO_CHECK    = お気に入りされてない処刑待ち
+
+;FLAG:83  肉便器の数
+
+$EXCUTION_MAIN
+PRINTL  
+PRINTL Please choose a subject to be executed.
+SIF FLAG:84 < 20 && DAY < 60
+	PRINTFORML {60 - DAY}日以内に勇者をあと{20 - FLAG:84}人博物館へ飾ると実績解除!
+PRINTL  
+
+LAST_MEMBER = 0
+NO_CHECK = 0
+
+REPEAT CHARANUM
+	IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && COUNT != 0
+		PRINTFORM [{LAST_MEMBER}] %SAVESTR:COUNT% {CFLAG:COUNT:9}LV
+		LAST_MEMBER += 1
+		SIF CFLAG:COUNT:0 > 0 && COUNT != 0
+		PRINT [Able To Be Sold]
+		IF CFLAG:COUNT:700
+			PRINT [☆]
+		ELSE
+			NO_CHECK += 1
+		ENDIF
+		PRINTL  
+	ENDIF
+REND
+
+
+SIF LAST_MEMBER == 0
+	RETURN 0
+
+PRINTL 
+PRINTL [100] Return
+DRAWLINE
+
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= LAST_MEMBER && RESULT != 100
+	GOTO INPUT_LOOP
+ENDIF
+
+SIF RESULT == 100
+	RETURN 0
+
+X = RESULT
+A = 0
+REPEAT CHARANUM
+	IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && COUNT != 0 && A == X
+		A = COUNT
+		BREAK
+	ENDIF
+	SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && COUNT != 0
+		A += 1
+REND
+
+
+SIF CFLAG:A:700
+	SETCOLOR (GETDEFCOLOR() - 0x444444)
+PRINTL [0] Banish Them From The Dungeon
+PRINTL [1] Make An Example Out Of Them
+PRINTL [2] Turn Them Into A Museum Decoration
+;PRINTL [3] 猟奇的な処刑を行う
+PRINTL [4] Turn Them Into A Meat Urinal
+SIF CFLAG:A:700
+		RESETCOLOR
+PRINTL [5] Turn Them Into A Combatant
+PRINTL [6] Public Pillory
+PRINTL [7] Erase Their Memory And Release Them
+SIF CSTR:A:6 == ""
+	SETCOLOR (GETDEFCOLOR() - 0x444444)
+SIF CFLAG:A:497 == 0
+	PRINTL [8] 水晶球の映像を公開する
+SIF CFLAG:A:497 == 1
+	PRINTL [8] 水晶球の映像を非公開にする
+SIF CSTR:A:6 == ""
+		RESETCOLOR
+PRINTL  
+PRINTL [100] Back
+
+$INPUT_LOOP_2
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP_2
+ELSEIF RESULT >= 9 && RESULT != 100
+	GOTO INPUT_LOOP_2
+ENDIF
+
+SELECTCASE RESULT
+	CASE 0, 1, 2, 3, 4
+		IF CFLAG:A:700
+			PRINTFORMW %SAVESTR:A% cannot be executed because they are registered as a favorite.
+			GOTO INPUT_LOOP_2
+		ENDIF
+ENDSELECT
+
+IF RESULT == 100
+	TARGET = FLAG:1
+	RETURN 0
+ENDIF
+
+TARGET = A
+TFLAG:16 = RESULT
+
+CALL EXUCUTION_KOUJO
+
+
+
+IF TFLAG:16 == 0
+	PRINTFORML %NAME:MASTER%は%SAVESTR:A%をダンジョンから永久追放することにした...
+	CALL BANISHMENT
+	RETURN 0
+
+ELSEIF TFLAG:16 == 1
+	PRINTFORML %NAME:MASTER%は%SAVESTR:A%を見せしめにすることにした...
+	CALL PUBLIC_EXECUTION
+	RETURN 0
+	
+ELSEIF TFLAG:16 == 2
+	PRINTFORMW %SAVESTR:A%をアトリエに連れて来た...
+	CALL MUSEUM
+	RETURN 0
+
+;ELSEIF TFLAG:16 == 3
+	;PRINTFORML %NAME:MASTER%は%SAVESTR:A%に苦痛を味わわせることにした...
+	;PRINTW 　　　　　　　　　　< ※ 注 意 ! ※ >
+	;PRINTW (この先の処刑メニューは,リョナ-グロ成分しかありません!)
+	;CALL GROTESQUE
+	;RETURN 0
+
+ELSEIF TFLAG:16 == 4
+	FLAG:83 += 1
+	
+	FAMILY = CFLAG:A:605
+	FAMILY:1 = FAMILY % 10
+	CALL SEARCH_FAMILY, A
+	FAMILY:2 = RESULT
+	
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ肉便器にされるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORML %SAVESTR:A%にすべての力を封じる焼印を押し
+	PRINTL 吸収した力で彼女の身体を淫靡な肉塊へと変え
+	PRINTL ダンジョンのモンスタ-たちの慰みものにした
+	PRINTW もう勇者としての復帰はおろか,日の光を見ることすら叶わないだろう
+	;エルフ
+	SIF TALENT:A:元種族 == 1
+		PRINTFORMW エルフの%SAVESTR:A%は醜悪なオ-クたちに好評だったという
+	;精液中毒
+	SIF ABL:A:32 > 0 || TALENT:A:舌使い
+		PRINTFORMW %SAVESTR:A%は精液便所として白濁液を毎日喜んで飲み干していた
+	;レズ中毒-レズっ気
+	SIF ABL:A:33 > 0 | ABL:A:22 > 2
+		PRINTFORMW 女子便所としての%SAVESTR:A%も評判がよかった.ヴァギナの恥垢やアナルさえも嬉々として舐め取り女を絶頂させた
+	;マゾっ気
+	SIF ABL:A:21 > 0
+		PRINTFORMW 罵声を浴びるたびに%SAVESTR:A%は股間を濡らし恍惚の笑みを浮かべた
+	;露出癖
+	SIF ABL:A:17 > 0
+		PRINTFORMW %SAVESTR:A%はいつもダンジョンの大通りで痴態を晒していた.客がいないと通りすがったモンスタ-に媚びておねだりをした
+	;奉仕精神
+	SIF ABL:A:16 > 0
+		PRINTFORMW 完全に壊れた%SAVESTR:A%は勇者の誇りの欠片も失い,肉棒に奉仕することだけが喜びとなっている
+	;V感覚
+	SIF ABL:A:2 > 3
+		PRINTFORMW 数え切れないほどのペニスを咥えこんだ%SAVESTR:A%の膣は完全に拡張され締りを失っていた.最近はトロ-ルや馬などの巨根を相手にすることが多い
+	;A感覚
+	SIF ABL:A:3 > 3
+		PRINTFORMW もはや性器となった%SAVESTR:A%の肛門は拡張されきって完全に閉まらなくなっていた.それでも彼女は肉棒をねじ込まれると腸内Ejaculationを嘆願しながらよがり狂った
+	;愛
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%は全てのペニスが愛しいあなたのモノに見えるようだ
+	;V敏感-淫壺
+	SIF TALENT:A:104 || TALENT:A:232
+		PRINTFORMW %SAVESTR:A%はヴァギナに何か入っていないと落ちつかず,卑猥な言葉で子種をせがんだ
+	;A敏感-淫肛
+	SIF TALENT:A:106 || TALENT:A:233
+		PRINTFORMW %SAVESTR:A%はアナルで特に感じるようで,悪魔にアナルで妊娠できるよう改造してもらったらしい
+	;C敏感-淫核
+	SIF TALENT:A:102 || TALENT:A:230
+		PRINTFORMW %SAVESTR:A%のクリトリスは巨大に腫れあがり,鞭でぶたれると涎を撒き散らして絶頂した
+	;B敏感-淫乳
+	SIF TALENT:A:108 || TALENT:A:231
+		PRINTFORMW %SAVESTR:A%は乳首を悪魔に改造してもらい,乳首で性交できるようになったらしい
+	;魔術-呪術
+	SIF TALENT:A:241 || TALENT:A:250
+		PRINTFORMW 魔法の力があった%SAVESTR:A%は,頭をすっぽりと覆う兜を被らされて強制的に魔力を絞られている
+	;法術
+	SIF TALENT:A:242
+		PRINTFORMW 聖なる力があった%SAVESTR:A%は,悪魔との肛門性交によって完全に堕落し悪魔の力になっていた
+	
+	;ふたなり＆二人以上の肉便器
+	IF TALENT:A:121 && FLAG:83 >= 2
+		IF TALENT:A:318 == 1
+			;巨根
+			PRINTFORML ふたなり巨根の%SAVESTR:A%は改造されさらに大きなペニスとなり,
+			PRINTFORMW 他の肉便器をオナホのように犯していた
+		ELSEIF TALENT:A:318 == 2
+			;短小包茎
+			PRINTFORML ふたなり短小包茎の%SAVESTR:A%は性欲に任せて他の肉便器にのしかかるも,
+			PRINTFORMW ヘコヘコと腰を振るだけで全く肉便器を満足させられなかった
+		ELSEIF TALENT:A:318 == 3
+			;包茎
+			PRINTFORML ふたなり包茎の%SAVESTR:A%は風呂にも入れず恥垢が溜まったペニスを剥いて
+			PRINTFORMW 他の肉便器に口奉仕で綺麗にさせていた
+		ELSE
+			;普通
+			PRINTFORML ふたなりの%SAVESTR:A%は積極的に他の肉便器を犯して
+			PRINTFORMW 巨大な陰嚢が生産する大量の精液をEjaculationしていた
+		ENDIF
+	ENDIF
+	
+	;チャームポイント-美乳
+	SIF TALENT:A:312 == 12
+		PRINTFORMW チャ-ムポイントだった美乳は,いまや醜く膨れ上がった肉塊と化していた
+	;チャームポイント-ヒップライン
+	SIF TALENT:A:312 == 14
+		PRINTFORMW チャ-ムポイントだったヒップラインは,いまや下品に膨れ上がった肉塊と化していた
+	;チャームポイント-性器
+	SIF TALENT:A:312 == 21
+		PRINTFORMW チャ-ムポイントだった性器は,いまやグロテスクな肉塊と化していた
+	;チャームポイント-髪の光沢
+	SIF TALENT:A:312 == 22
+		PRINTFORMW チャ-ムポイントだった髪の光沢は,いまや完全に色褪せていた
+	;チャームポイント-大きな尻
+	SIF TALENT:A:312 == 23
+		PRINTFORMW チャ-ムポイントだった大きな尻は,いまや下品な性欲が滲みだしそうな熟れた桃になっていた
+	
+	;故郷の恋人-憧れの人が好き
+	SIF TALENT:A:317 == 4 || TALENT:317 == 11
+		PRINTFORMW %SAVESTR:A%は虚ろな目で誰かの名前を繰り返している.妄想の中では愛する人に抱かれているのだろう
+	PRINTFORMW 現在の肉便器の数...{FLAG:83}人
+	
+	FOR LOCAL,1,CHARANUM
+		SIF CFLAG:LOCAL:1 != 11
+			CONTINUE
+		;同じ種族
+		SIF GET_LOOK_INFO(LOCAL, "種族") == GET_LOOK_INFO(A, "種族")
+			CFLAG:LOCAL:800 += 1
+		;同じ性格
+		SIF GET_LOOK_INFO(LOCAL, "性格") == GET_LOOK_INFO(A, "性格")
+			CFLAG:LOCAL:801 += 1
+		;同じ勇者になったきっかけ
+		SIF GET_LOOK_INFO(LOCAL, "勇者になったきっかけ") == GET_LOOK_INFO(A, "勇者になったきっかけ")
+			CFLAG:LOCAL:802 += 1
+		;同じ勇者になる前の生活
+		SIF GET_LOOK_INFO(LOCAL, "勇者になる前の生活") == GET_LOOK_INFO(A, "勇者になる前の生活")
+			CFLAG:LOCAL:803 += 1
+		;同じ髪の色
+		SIF GET_LOOK_INFO(LOCAL, "髪の色") == GET_LOOK_INFO(A, "髪の色")
+			CFLAG:LOCAL:804 += 1
+		;同じ瞳の色
+		SIF GET_LOOK_INFO(LOCAL, "瞳の色") == GET_LOOK_INFO(A, "瞳の色")
+			CFLAG:LOCAL:805 += 1
+		
+		IF (CFLAG:LOCAL:800 + CFLAG:LOCAL:801 + CFLAG:LOCAL:802 + CFLAG:LOCAL:803 + CFLAG:LOCAL:804 + CFLAG:LOCAL:805) >= 30
+			PRINTFORMW %SAVESTR:LOCAL%の召喚酔いが解けたようだ......
+			PRINTFORMW %SAVESTR:LOCAL%の残り寿命...30日
+			CFLAG:LOCAL:1 = 0
+			CFLAG:LOCAL:820 = 30
+		ENDIF
+	NEXT
+	
+	
+	SIF FAMILY:2 >= 0
+		CSTR:(FAMILY:2):5 = 肉便器
+	
+
+ELSEIF TFLAG:16 == 5
+	TALENT:A:254 = 1
+	PRINTFORML %SAVESTR:A%は服従の契約の刻印を身体に刻まれた
+	PRINTW かろうじて意識や記憶は残っているが
+	PRINTW 命令すれば今すぐにでも勇者を殺しにいくだろう
+	CFLAG:A:13 /= 2
+	CFLAG:A:14 /= 2
+	PRINTW *術の副作用で若干戦闘能力が低下しました*
+	RETURN 0
+
+ELSEIF TFLAG:16 == 6
+	CFLAG:A:1 = 8
+	PRINTFORML %SAVESTR:A%は尻を突き出した格好のまま枷で固定され
+	PRINTW モンスタ-たちの性欲のはけ口となった
+	IF TALENT:A:9 == 1
+		PRINTW 壊れてしまった奴隷は,何が起こるかもわからず笑っている
+	ELSEIF  TALENT:A:76 == 1
+		PRINTW 淫乱な奴隷は,むしろこの趣向を楽しんでいるようだ
+	ELSE
+		PRINTW 哀れな奴隷はこれから起こる制裁に怯えている
+	ENDIF
+	PRINTW *否定の珠が限界まで溜まるまで続けられます*
+	RETURN 0
+	
+ELSEIF TFLAG:16 == 7
+	
+	PRINTFORMW %SAVESTR:A%は記憶を消され,ダンジョン外の街に解放された
+	PRINTFORMW %SAVESTR:A%の冒険が再び始まる......
+	
+	;侵入階層-侵攻度-侵攻中-再起ポイント設定
+	CFLAG:A:501 = 1
+	CFLAG:A:502 = 0
+	CFLAG:A:1 = 2
+	CFLAG:A:508 = 3
+	;カルマがいくらか回復
+	SIF CFLAG:A:151 < -50
+		CFLAG:A:151 = -50
+	;好感度も低く
+	CFLAG:A:2 = 20
+	
+	;体力回復
+	BASE:A:0 = MAXBASE:A:0
+	BASE:A:1 = MAXBASE:A:1
+	
+	RETURN 0
+ELSEIF TFLAG:16 == 8 && CFLAG:A:497 == 0
+	
+	IF CSTR:A:6 == ""
+		PRINTW 映像はまだ撮られていない
+		RETURN 0
+	ENDIF
+	
+	PRINTFORMW %SAVESTR:A%の調教を記録した映像が,ダンジョン外の街に公開された
+	PRINTFORMW その"%CSTR:A:6%"映像は広く流通した......
+	
+	LOCAL = A
+	SIF CFLAG:A:604 == 0 && CFLAG:A:605 == 0
+		CALL ENTER_ENEMY,A
+	
+	A = LOCAL
+	CFLAG:A:497 = 1
+	
+	RETURN 0
+ELSEIF TFLAG:16 == 8 && CFLAG:A:497 == 1
+	
+	PRINTFORMW %SAVESTR:A%の調教を記録した映像を取り下げた......
+	
+	CFLAG:A:497 = 0
+	
+	RETURN 0
+ENDIF
+
+
+A = TARGET
+
+;武器解除
+W:0 = CFLAG:A:550
+CALL EQUIP_GET
+CFLAG:A:550 = -1
+;指輪解除
+W:0 = CFLAG:A:551
+CALL EQUIP_GET
+CFLAG:A:551 = -1
+;指輪解除
+W:0 = CFLAG:A:552
+CALL EQUIP_GET
+CFLAG:A:552 = -1
+
+LV = CFLAG:A:9
+
+X = NO:A + 199
+FLAG:X = 1
+
+;前回の助手-調教対象だった場合はフラグを空に
+SIF FLAG:1 == TARGET
+	FLAG:1 = -1
+SIF FLAG:2 == TARGET
+	FLAG:2 = -1
+
+;前回の助手-調教対象より前だった場合はフラグを減算
+SIF FLAG:1 > TARGET
+	FLAG:1 -= 1
+SIF FLAG:2 > TARGET
+	FLAG:2 -= 1
+
+TARGET = FLAG:1
+ASSI = FLAG:2
+
+CALL PARTY_CHAR_DEL, A
+
+DELCHARA A
+
+CALL NAME_RESET
+
+
+FLAG:80 += 1
+
+LV += 1
+LV *= 50
+
+EXP:0:80 += LV
+PRINTFORMW 《封印した勇者の力を吸収しあなたは{LV}の経験値を得た!》
+
+NO_CHECK -= 1
+
+;処刑残りがいる場合,最初に戻る
+SIF NO_CHECK > 0
+	GOTO EXCUTION_MAIN
+
+TARGET = -1
+RETURN 0
+
+;------------------------------------------
+@EXECUTION_MINI(ARGS = "")
+#DIM LV
+;------------------------------------------
+;簡易処刑コマンド.TARGETがキャラNo
+
+;武器解除
+W:0 = CFLAG:550
+CALL EQUIP_GET
+CFLAG:550 = -1
+;指輪解除
+W:0 = CFLAG:551
+CALL EQUIP_GET
+CFLAG:551 = -1
+;指輪解除
+W:0 = CFLAG:552
+CALL EQUIP_GET
+CFLAG:552 = -1
+
+LV = CFLAG:9
+
+DRAWLINE
+IF ARGS == ""
+	PRINTFORML %SAVESTR:TARGET%にすべての力を封じる焼印を押し,
+	PRINTW 処刑手続きを行った
+ENDIF
+X = NO:TARGET + 199
+FLAG:X = 1
+
+;前回の助手-調教対象だった場合はフラグを空に
+SIF FLAG:1 == TARGET
+	FLAG:1 = -1
+SIF FLAG:2 == TARGET
+	FLAG:2 = -1
+
+;前回の助手-調教対象より前だった場合はフラグを減算
+SIF FLAG:1 > TARGET
+	FLAG:1 -= 1
+SIF FLAG:2 > TARGET
+	FLAG:2 -= 1
+
+TARGET = -1
+ASSI = -1
+
+CALL PARTY_CHAR_DEL, TARGET
+
+DELCHARA TARGET
+
+CALL NAME_RESET
+
+
+FLAG:80 += 1
+
+LV += 1
+LV *= 50
+
+EXP:0:80 += LV
+PRINTL  
+PRINTL 手に入れた勇者の力は勲章の形で残った
+PRINTL 勲章経験+1
+EXP:0:81 += 1
+PRINTFORMW 《封印した勇者の力を吸収しあなたは{LV}の経験値を得た!》
+
+DRAWLINE
+
+RETURN 0
+

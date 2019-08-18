@@ -1,0 +1,264 @@
+﻿;-----------------------------------------------------
+@MONSTER_SKILL, ARG:0, ARG:1, ARG:2
+#DIM DMG
+#DIM PALAM_DOWN
+;-----------------------------------------------------
+;モンスターの特殊能力.ARG:0=対象 ARG:1=使用能力 ARG:2=使用者 LOCAL:0=使用者ID
+
+LOCAL:0 = E:(ARG:2)
+DMG = E:(ARG:2 + 1) + CFLAG:0:9
+
+;パラメータ変動系効果
+PALAM_DOWN = (DMG / 5) + 1
+
+;発動確率(2/3)
+SIF RAND:3 == 0
+	RETURN 0
+
+;ダメージ強化補正
+DMG += DMG / 2
+
+;ダメージキャップ
+SIF DMG > 400
+	DMG = 400
+;パラメータ変動キャップ
+SIF PALAM_DOWN > 50
+	PALAM_DOWN = 50
+
+;-----------------------------------------------------
+;モンスター特殊一覧
+;-----------------------------------------------------
+;0  なし
+;1  粘液捕獲
+;2  落とし穴捕獲
+;3  蔦捕獲
+;4  鎧破壊
+;5  透明
+;6  再生
+;7  擬態
+;8  迷い
+;9  ブレス
+;10 麻痺ガス
+;11 誘惑
+;12 混乱
+;13 経験値吸収
+;14 鎧破壊ブレス
+;15 魔力吸収
+;16 射撃
+;17 地形能力
+;18 肉鎧
+
+IF ARG:1 == 1
+	;1 粘液捕獲
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW 's mucus is flying everywhere!(Willpower-{DMG})
+	ENDIF
+	BASE:(ARG:0):1 -= DMG
+ELSEIF ARG:1 == 2
+	;2 落とし穴捕獲
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW fell into the pitfall trap!(HP-{DMG})
+	ENDIF
+	BASE:(ARG:0):0 -= DMG
+ELSEIF ARG:1 == 3
+	;3 蔦捕獲
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW 's ivy restricts the movement!(ATK-{PALAM_DOWN})
+	ENDIF
+	CFLAG:(ARG:0):11 -= PALAM_DOWN
+ELSEIF ARG:1 == 4
+	;4 鎧破壊
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW 's armour broke!(DEF-{PALAM_DOWN})
+	ENDIF
+	CFLAG:(ARG:0):12 -= PALAM_DOWN
+ELSEIF ARG:1 == 5
+	;5 透明
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is becoming transparent......(DEF+2)
+	ENDIF
+	E:(ARG:2 + 3) += 2
+ELSEIF ARG:1 == 6
+	;6 再生
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is regenerating......(DEF+3)
+	ENDIF
+	E:(ARG:2 + 3) += 3
+ELSEIF ARG:1 == 7
+	;7 擬態
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is ingeniously comouflaged(DEF+5)
+	ENDIF
+	E:(ARG:2 + 3) += 5
+ELSEIF ARG:1 == 8
+	;8 迷い
+	IF RAND:3 == 0
+		SIF FLAG:5 & 32
+			PRINTFORMW %SAVESTR:(ARG:0)% got lost!
+		CFLAG:(ARG:0):509 = 1
+	ENDIF
+ELSEIF ARG:1 == 9
+	;9 ブレス
+	LOCAL:2 = DMG * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW used it's breath ability!!(HP-{LOCAL:2})
+	ENDIF
+	BASE:(ARG:0):0 -= LOCAL:2
+ELSEIF ARG:1 == 10
+	;10 麻痺ガス
+	LOCAL:2 = PALAM_DOWN * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW released paralysis gas!!(ATK-{LOCAL:2})
+	ENDIF
+	CFLAG:(ARG:0):11 -= LOCAL:2
+ELSEIF ARG:1 == 11
+	;11 誘惑
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is trying to seduce......(Karma:-2 Favour+4)
+	ENDIF
+	CFLAG:(ARG:0):2 += 4
+	CALL karma, ARG:0, -2
+ELSEIF ARG:1 == 12
+	;12 混乱
+	LOCAL:2 = DMG * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW released chaotic shockwave!!(Willpower-{LOCAL:2})
+	ENDIF
+	BASE:(ARG:0):1 -= LOCAL:2
+ELSEIF ARG:1 == 13
+	;13 経験値吸収
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW drains level!!(Exp-{DMG})
+	ENDIF
+	EXP:(ARG:0):80 -= DMG
+	CALL CHARA_LV_CHECK,(ARG:0)
+ELSEIF ARG:1 == 14
+	;14 鎧破壊ブレス
+	LOCAL:2 = DMG * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW released it's armour-breaking breath!!(HP-{LOCAL:2} DEF-{PALAM_DOWN})
+	ENDIF
+	BASE:(ARG:0):0 -= LOCAL:2
+	CFLAG:(ARG:0):12 -= PALAM_DOWN
+ELSEIF ARG:1 == 15
+	;15 魔力吸収
+	LOCAL:2 = DMG * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW drained magical power!!(気力-{LOCAL:2} DEF+4)
+	ENDIF
+	BASE:(ARG:0):1 -= LOCAL:2
+	E:(ARG:2 + 3) += 4
+ELSEIF ARG:1 == 16
+	;16 射撃
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW used it's bow attack!!(HP-{DMG})
+	ENDIF
+	BASE:(ARG:0):0 -= DMG
+ELSEIF ARG:1 == 17
+	;16 地形効果
+	CALL MONSTER_ROOM_SKILL, ARG:0, ARG:2
+ELSEIF ARG:1 == 18
+	;18 肉鎧
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW drains energy from the meat toilet strapped onto it's chest......(DEF+2)
+	ENDIF
+	E:(ARG:2 + 3) += 2
+ENDIF
+
+RETURN 0
+
+;-----------------------------------------------------
+@MONSTER_ROOM_SKILL, ARG:0, ARG:2
+#DIM ROOM
+#DIM DMG
+#DIM PALAM_DOWN
+;-----------------------------------------------------
+;モンスターの地形適応能力.ARG:0=対象 ARG:2=使用者 LOCAL:0=使用者ID DMG=使用者レベル
+
+LOCAL:0 = E:(ARG:2)
+DMG = E:(ARG:2 + 1) + CFLAG:0:9
+
+ROOM = CFLAG:(ARG:0):501
+
+;強化補正
+DMG *= 2
+
+IF ROOM == 500
+	;商店街
+	SIF FLAG:5 & 32
+		PRINTFORMW ruffians from shopping district are assisting!!(HP-{DMG} ATK+1)
+	BASE:(ARG:0):0 -= DMG
+	E:(ARG:2 + 2) += 1
+ELSEIF ROOM == 501
+	;沼地
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW ambushed from the poison marsh!(Willpower-{DMG} ATK+2)
+	ENDIF
+	BASE:(ARG:0):1 -= DMG
+	E:(ARG:2 + 2) += 2
+ELSEIF ROOM == 502 && FLAG:83 > 0
+	;人間牧場
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is using meat toilet as a shield......(ATK-{DMG})
+	ENDIF
+	CFLAG:(ARG:0):11 -= DMG
+ELSEIF ROOM == 503
+	;氷室
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW hid it's body in the water!(ATK+2 DEF+2)
+	ENDIF
+	E:(ARG:2 + 2) += 2
+	E:(ARG:2 + 3) += 2
+ELSEIF ROOM == 504
+	;熱砂
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW concealed itself in the flames!!(ATK+10 DEF-1)
+	ENDIF
+	E:(ARG:2 + 2) += 10
+	SIF E:(ARG:2 + 3) > 2
+		E:(ARG:2 + 3) -= 1
+ELSEIF ROOM == 505
+	;迷宮
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is hiding in the labyrinth(DEF+5)
+	ENDIF
+	E:(ARG:2 + 3) += 5
+ELSEIF ROOM == 506 && FLAG:84 > 0
+	;博物館
+	LOCAL:2 = DMG * 3
+	LOCAL:2 /= 2
+	IF FLAG:5 & 32
+		CALL MONSTER_NAME,LOCAL:0,0
+		PRINTFORMW is cornering by throwing the display items!!(気力-{LOCAL:2})
+	ENDIF
+	BASE:(ARG:0):1 -= LOCAL:2
+ENDIF
+
+RETURN 0
+

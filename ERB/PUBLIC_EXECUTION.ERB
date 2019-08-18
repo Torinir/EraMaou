@@ -1,0 +1,184 @@
+﻿;------------------------------------------
+@PUBLIC_EXECUTION
+#DIM LV
+#DIMS MATURO
+#DIM FAMILY,3
+;ZはTARGETを保存してるため使用禁止
+;------------------------------------------
+;公開?処刑コマンド
+
+SIF A == 0
+	RETURN 0
+B = A
+
+FAMILY = CFLAG:A:605
+FAMILY:1 = FAMILY % 10
+CALL SEARCH_FAMILY, A
+FAMILY:2 = RESULT
+
+PRINTL [0] 陵辱処刑
+PRINTL [1] 絞首刑
+PRINTL [2] 魂粉砕
+PRINTL  
+PRINTL [100] やめる
+
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 3 && RESULT != 100
+	GOTO INPUT_LOOP
+ENDIF
+
+IF RESULT == 100
+	TARGET = FLAG:1
+	RETURN 0
+ENDIF
+
+TARGET = A
+TFLAG:520 = RESULT
+
+CALL PUBLIC_EXUCUTION_KOUJO
+
+IF TFLAG:520 == 0
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORML %SAVESTR:A%にすべての力を封じる焼印を押し,
+	PRINTL ダンジョンのモンスタ-たちに壊れるまで陵辱させて
+	PRINTW ひとときの娯楽のために公開処刑にした
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%の死体はあなたへの生贄として丁重に捧げられた.
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 公開処刑
+	
+ELSEIF TFLAG:520 == 1
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし
+	PRINTFORML %SAVESTR:A%はすべての力を封じられ
+	PRINTW ダンジョンの大通りに全裸で吊るされた
+	PRINTW "わたしは淫売です"と書かれた札が首から下げられ
+	PRINTW 膣と肛門には巨大なディルドが突き刺さっている...
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%の死体は三日晒された後,あなたは自らの手で%SAVESTR:A%の死体を荼毘に付した.
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 縛り首
+	
+ELSEIF TFLAG:520 == 2
+;よおし,この女(の肉体)はくれてやる!好きにしろ!
+	PRINTFORMW %SAVESTR:A%はすべての力を封じられ,四肢を鎖でつながれていた.
+	PRINTFORMW 配下の呪術師に指示を出すと詠唱を始め,やがて抵抗する彼女の体から白く光る球状の魂が排出された.
+	PRINTFORMW %NAME:MASTER%はそれを鷲づかみにし,そのまま握り潰した!
+	PRINTW この光景は,魔王に逆らった勇者の末路として全領土に公開された.
+	PRINTFORM 力なくうなだれた%SAVESTR:A%の肉体は,
+		A = RAND:10
+		IF A == 0
+				;匠の手によって実用的な○○に!
+				PRINT とある魔界の鍛冶工によって引き取られ,武具などの加工に利用された.
+				MATURO = 武具の素材
+		ELSEIF A == 1
+				;主に武具とか新魔法の威力とか効果とかの検証などに...
+				PRINT とある魔界ギルドによって引き取られ,実験用の人形として活用された.
+				MATURO = 実験用の人形
+		ELSEIF A == 2
+				;小隊共有のダッチワイフ!
+				PRINT とある士官によって引き取られ,慰安用の人形として活用された.
+				MATURO = 慰安用の肉オナホ
+		ELSEIF A == 3
+				;"使い魔欲しかったんだー☆"などと供述しており
+				PRINT とあるレズビアンのサキュバスによって引き取られ,使い魔として活用された.
+				MATURO = 淫魔の使い魔
+		ELSEIF A == 4
+				;ワシはピチピチギャル(死語)になってムフフでアハ～ンなことをしてみたい...いや,されたいんじゃ!
+				PRINT 隠居中の老魔術師によって引き取られ,新たな自身の肉体として利用されたという.
+				MATURO = 魔術師の肉体
+		ELSEIF A == 5
+				;食品化!...というよりただの食材化なんやな...
+				PRINT とある魔界の料理人によって引き取られ,店の特別メニュ-として振舞われた.
+				MATURO = 料理
+		ELSEIF A == 6
+				;ヤクい連中が新薬の実験台に欲しいって...
+				;この実験の結果なんかよくわからないモンスターが生まれるのもありだと思います
+				PRINT とある魔術学院によって引き取られ,人体実験の材料として活用された.
+				MATURO = 人体実験の素材
+		ELSEIF A == 7
+				;丁度良い身体もあるしとりあえず使ってみるスタイル
+				PRINT とある怪しい集団によって引き取られ,彼らが信仰する存在の憑代となったという.
+				MATURO = 神霊の憑代
+		ELSE
+				;特に意味の無い欲望が勇者の身体を襲う!(食欲的な意味で
+				PRINT 下級モンスタ-達の餌となった.
+				MATURO = モンスターの餌
+		ENDIF
+	PRINTW  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	
+
+ENDIF
+
+SIF FAMILY:2 >= 0
+	CSTR:(FAMILY:2):5 = %MATURO%
+
+A = TARGET
+
+;武器解除
+W:0 = CFLAG:A:550
+CALL EQUIP_GET
+CFLAG:A:550 = -1
+;指輪解除
+W:0 = CFLAG:A:551
+CALL EQUIP_GET
+CFLAG:A:551 = -1
+;指輪解除
+W:0 = CFLAG:A:552
+CALL EQUIP_GET
+CFLAG:A:552 = -1
+
+LV = CFLAG:A:9
+
+X = NO:A + 199
+FLAG:X = 1
+
+;前回の助手-調教対象だった場合はフラグを空に
+SIF FLAG:1 == TARGET
+	FLAG:1 = -1
+SIF FLAG:2 == TARGET
+	FLAG:2 = -1
+
+;前回の助手-調教対象より前だった場合はフラグを減算
+SIF FLAG:1 > TARGET
+	FLAG:1 -= 1
+SIF FLAG:2 > TARGET
+	FLAG:2 -= 1
+
+TARGET = FLAG:1
+ASSI = FLAG:2
+
+CALL PARTY_CHAR_DEL, A
+
+DELCHARA A
+
+CALL NAME_RESET
+
+
+FLAG:80 += 1
+
+LV += 1
+LV *= 50
+
+EXP:0:80 += LV
+PRINTFORMW 《封印した勇者の力を吸収しあなたは{LV}の経験値を得た!》
+
+TARGET = -1
+RETURN 0
+

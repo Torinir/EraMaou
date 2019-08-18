@@ -1,0 +1,2626 @@
+﻿;========================================================
+;調教時メッセージ
+;========================================================
+;eratohoRR v1.31.6より一部改変して流用
+;eraIM@Sから導入しました(eramaou)
+;========================================================
+;調教コマンド実行中に呼び出されるテキスト
+;個々のCOMFxx.ERBより呼び出し
+;主に"どの調教がどのようになされたか"という情景の描写に用いる
+;表示される順番はTRAIN_MESSAGE_B→TRAIN_MESSAGE_Aである事に注意
+;========================================================
+@TRAIN_MESSAGE_B
+;ローカル変数の使用状況
+;LOCALS:0 : 地の文分岐に使用
+LOCALS:0 = 
+;LOCALS:1 : 同上
+LOCALS:1 = 
+
+;調教テキスト省略設定の場合は戻る
+SIF (FLAG:6 & 1)
+	RETURN 0
+
+PRINTL .............................................................................. 
+
+;--------------------------------------------------------
+;愛撫
+;--------------------------------------------------------
+IF SELECTCOM == 0
+	IF (CFLAG:40 & 64) && CFLAG:42 <= 50
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINT ごしに,
+	ELSEIF CFLAG:40 & 28
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT ごしに,
+	;ELSEIF CFLAG:40
+	;	PRINT 下着ごしに,
+	ENDIF
+	IF TEQUIP:89 == 0 && TEQUIP:90 == 0
+		PRINTFORM %SAVESTR:PLAYER%は
+		SIF (STAIN:0 < 2 || STAIN:0 == 16 || STAIN:0 == 17 || TALENT:MASTER:64 || ASSIPLAY) && TEQUIP:45 == 0 && CFLAG:16 != -1
+			PRINT Kissをしながら
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%の
+	IF TALENT:135
+		PRINT 未熟な
+	ELSEIF TALENT:100
+		PRINT 未発達な
+	ELSEIF TALENT:115
+		PRINT でっぷり太った
+	ENDIF
+	IF TALENT:青肌
+		PRINT 青い肌の
+	ELSEIF TALENT:褐色肌
+		PRINT 褐色肌の
+	ELSEIF TALENT:白皙
+		PRINT 白皙の
+	ENDIF
+	IF TEQUIP:90
+		PRINTL 身体を触手が弄んだ...
+	ELSEIF TEQUIP:89
+		PRINTL 身体を犬の舌が舐めまわした...
+	ELSE
+		PRINTL 身体を丹念に愛撫した...
+	ENDIF
+	SIF TALENT:153 && CFLAG:110 <= DAY+10 && (CFLAG:42 != 11 || (CFLAG:40 & 64) == 0)
+		PRINTFORML %SAVESTR:TARGET%のまん丸く膨れた腹部の中から,微かに赤ん坊が蹴り返してくる......
+;--------------------------------------------------------
+;クンニ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 1
+	IF TEQUIP:89
+		PRINTFORM 犬の舌が
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は
+	ENDIF
+	;岩清水
+	IF TEQUIP:57
+		PRINTFORM %SAVESTR:TARGET%を顔の上に跨らせ,音を立てながら秘唇を啜り上げ
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の秘唇を丁寧に舐めほぐし
+	ENDIF
+	IF TALENT:121 && PALAM:5 >= PALAMLV:3
+		PRINT ,そそり勃ったペニスに舌を這わせて舐め上げ
+	ELSEIF TALENT:121
+		PRINT ,ペニスの付け根を舌で舐め上げ
+	ELSEIF PALAM:5 >= PALAMLV:3
+		PRINT ,尖りきったクリトリスを舌で吸い上げ
+	ENDIF
+	PRINTL た...
+;--------------------------------------------------------
+;アナル愛撫
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 2
+	SIF TEQUIP:90 == 0
+		PRINTFORM %SAVESTR:PLAYER%は
+	IF TEQUIP:90
+		PRINTFORML 粘液に塗れた触手が%SAVESTR:TARGET%のアナルを刺激している...
+	ELSEIF TEQUIP:13
+		PRINTFORML 小刻みに震えるアナルワ-ムを前後に抜き差しした...
+	ELSEIF TEQUIP:19
+		PRINTFORML ビ-ズの紐を引っ張って軽く出し入れしてやった...
+	ELSEIF TEQUIP:46
+		PRINTFORML 排泄感に震える菊穴をプラグでグリグリとほじってやった...
+	ELSEIF TEQUIP:49
+		PRINTFORML かすかに音を立てる電極でグリグリと菊穴をこねくりまわした...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%のアナルを弄っ
+		SIF PALAM:5 >= PALAMLV:3 && ABL:3 >= 3
+			PRINT て,指先で直腸までかきまわし
+		PRINTL た...
+	ENDIF
+;--------------------------------------------------------
+;自慰
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 3
+	
+	IF TALENT:122
+		LOCALS:0 = 陰茎をしごき
+		LOCALS:1 = 牡
+	ELSE
+		LOCALS:0 = 秘部をまさぐり
+		LOCALS:1 = 牝
+	ENDIF
+	
+	IF A < V
+		PRINTFORML %SAVESTR:TARGET%に自慰を命令してみたが拒否された.もう少し調教が必要なようだ.
+	ELSEIF A > V && A < 50
+		PRINTFORM %SAVESTR:PLAYER%が自慰を命令すると,%SAVESTR:TARGET%は
+		;着衣設定
+		IF CFLAG:40 & 8
+			CALL PRINT_CLOTHTYPE_MAIN2
+			PRINT の前をめくり上げて性器をあらわにし,
+		ENDIF
+		SIF TALENT:15
+			PRINT プライドの高さを見せながら
+		IF TALENT:22
+			PRINT 無表情な顔で黙々と
+		ELSEIF TALENT:10 || TALENT:14
+			PRINT 震える指先で,
+		ELSEIF TALENT:11
+			PRINT 反抗的に睨んできたが,
+		ELSEIF TALENT:12
+			PRINT 屈辱に唇を噛み締めて,
+		ELSEIF TALENT:35
+			PRINT 恥ずかしさに耳まで真っ赤になりながら,
+		ENDIF
+		SIF TEQUIP:53
+			PRINT ビデオカメラの前で
+		PRINTL オナニ-を始めた.
+	ELSEIF A >=50 && A < 80
+		PRINTFORML 調教の成果が出たのか,%SAVESTR:TARGET%は%SAVESTR:PLAYER%の命令に従って従順にオナニ-を始めた.
+	ELSEIF A >= 80
+		PRINTFORML %SAVESTR:PLAYER%からの自慰の命令に嫌がるそぶりも見せず,%SAVESTR:TARGET%は完全に飼いならされた%LOCALS:1%の表情でオナニ-を始めた.
+	ENDIF
+	IF TEQUIP:11 && TEQUIP:13 && ABL:2 >= 5 && ABL:3 >= 5 && ABL:0 >= 5 && ABL:1 >= 5 && PALAM:5 >= PALAMLV:4 && PREVCOM == 3
+		PRINTFORML %SAVESTR:TARGET%はよだれをふきこぼし,ビクビクと身体を痙攣させながら鳴き叫んでいる
+		PRINTFORML どうやら絶頂から降りられず,イキっぱなしになっているようだ...
+	ELSEIF TEQUIP:11 && ABL:2 >= 5 && ABL:0 >= 5 && ABL:1 >= 5 && PALAM:5 >= PALAMLV:4 && PREVCOM == 3
+		PRINTFORML %SAVESTR:TARGET%は愛液が飛び散るのもお構いなしに,ワ-ムを激しく出し入れしている
+		PRINTFORML どうやらもうほかの事を気にする余裕も無いようだ...
+	ELSEIF TEQUIP:13 && ABL:3 >= 5 && ABL:0 >= 5 && ABL:1 >= 5 && PALAM:5 >= PALAMLV:4 && PREVCOM == 3
+		PRINTFORML %SAVESTR:TARGET%はガクガク身体を震わせながら,アヌスにアナルワ-ムを突きこんでいる
+		PRINTFORML どうやら襞をえぐられるたびに何度も絶頂してしまっているようだ...
+	ELSEIF ABL:10 >= 3 && ABL:0 >= 5 && ABL:1 >= 5 && PALAM:5 >= PALAMLV:4 && PREVCOM == 3
+		PRINTFORML %SAVESTR:TARGET%は嬌声をあげながら一心不乱に自らの%LOCALS:0%続けている
+		PRINTFORML どうやら止めたくても手が勝手に動いて止まらないようだ...
+	ENDIF
+
+;--------------------------------------------------------
+;フェラする
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 4
+	IF TEQUIP:89
+		PRINTFORM 犬は
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%の
+	SIF PALAM:5 >= PALAMLV:3
+		PRINT 硬くそそり勃った
+	PRINTL ペニスを口に咥えて舐めまわした...
+;--------------------------------------------------------
+;胸愛撫
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 5
+	;コロシアム
+	IF TEQUIP:55
+		IF TFLAG:400 == 201
+			PRINTFORMW 倒れた%SAVESTR:TARGET%にのし掛かると%SAVESTR:ASSI%は胸を搾るように揉み始めた......
+		ELSEIF TFLAG:400 == 202
+			PRINTFORMW 最下層民は何日も洗ってないような手で%SAVESTR:TARGET%の胸を掴むと絞り出すように揉み始めた......
+		ELSEIF TFLAG:400 == 203
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の上に乗っかかるとカビ犬は胸を嬲り始めた......
+		ELSEIF TFLAG:400 == 204
+			PRINTFORMW オ-クは丸々とした太い指で%SAVESTR:TARGET%の胸を掴むと絞り出すように揉み始めた......
+		ELSEIF TFLAG:400 == 205
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の上に乗っかかると腐れ豚は胸を嬲り始めた......
+		ELSEIF TFLAG:400 == 206
+			PRINTFORMW トロルは太い指で%SAVESTR:TARGET%の胸を掴んで揉み始めた......
+		ENDIF
+	ENDIF
+	IF TEQUIP:89
+		PRINTFORM 犬はぴちゃぴちゃと音を立てて,
+	ELSEIF TEQUIP:55 && (ASSI != PLAYER)
+		PRINTFORM モンスタ-は臭い息を吐きながら
+	ELSEIF TEQUIP:90 == 0
+		PRINTFORM %SAVESTR:PLAYER%は
+		IF TALENT:青肌
+			PRINTFORM %SAVESTR:TARGET%の青い肌に手を伸ばすと,
+		ELSEIF TALENT:褐色肌
+			PRINTFORM %SAVESTR:TARGET%の褐色肌に手を伸ばすと,
+		ELSEIF TALENT:白皙
+			PRINTFORM %SAVESTR:TARGET%の白皙に手を伸ばすと,
+		ENDIF
+		SIF CFLAG:7 & 1
+			PRINTL 乳首を貫く金属製のピアスを軽く引っ張りながら,
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%の
+	IF TALENT:116
+		PRINT 真っ平らな
+	ELSEIF TALENT:100 && TALENT:109
+		PRINT 僅かに膨らみが感じられる程度の
+	ELSEIF TALENT:109
+		PRINT 標準よりやや小さめの
+	ELSEIF TALENT:110 && TEQUIP:89 == 0
+		PRINTFORM 手から溢れそうなほどの
+	ELSEIF TALENT:114
+		PRINT 片乳だけで一抱えもある
+	ENDIF
+	IF TEQUIP:90
+		PRINTL 胸を絞り上げるように,幾本もの触手が絡みついた...
+	ELSEIF TEQUIP:89
+		PRINTL 胸をねぶりまわしている...
+	ELSEIF TEQUIP:55
+		PRINTL 胸を揉みしだいている...
+	ELSEIF TALENT:130 && PALAM:5 > PALAMLV:3 && TEQUIP:16 == 0 && TEQUIP:15 == 0
+		PRINTL 乳房の先端の,
+		PRINTL すっかり硬くなった突起を口で吸い上げた
+		PRINTL 口から溢れんばかりの大量の母乳が流れ込んできた...
+		SIF TALENT:85 && TEQUIP:44 == 0 && ASSIPLAY == 0 && PALAM:4 > PALAMLV:4 && TFLAG:899 == 0 && TEQUIP:55 == 0
+			PRINTFORML そんな%SAVESTR:PLAYER%の頭を,%SAVESTR:TARGET%は愛しげにぎゅっと抱きしめた
+	ELSEIF TALENT:130 && TEQUIP:16 == 0 
+		PRINTL 乳房にむしゃぶりついた
+		PRINTFORML 口にふくんだ%SAVESTR:TARGET%の乳首から,甘ったるいミルクが噴き出してくる...
+	ELSEIF PALAM:5 > PALAMLV:3 && TEQUIP:16 == 0 && TEQUIP:15 == 0
+		PRINTL 胸の先端の,すっかり硬くなった突起をつまみあげた...
+	ELSEIF TALENT:116
+		PRINTL 胸を撫で回した...
+	ELSE
+		PRINTL 胸を揉みしだいた...
+	ENDIF
+;--------------------------------------------------------
+;キスする
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 6
+	IF TEQUIP:89 && CFLAG:42 == 11 && (CFLAG:40 & 64)
+		PRINTFORM ノラ犬は
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML を舐めまわしている......
+	ELSEIF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		PRINTFORM %SAVESTR:PLAYER%は
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML にKissをした......
+	ELSEIF TEQUIP:89
+		IF TALENT:136 && TFLAG:899 == 0
+			PRINTFORML %SAVESTR:TARGET%とノラ犬はまるで仲睦まじい恋人同士のように,
+			PRINTFORML ぴちゃぴちゃとお互いの舌をなめあっている......
+			SIF TALENT:85 && TFLAG:899 == 0
+				PRINTFORML その様子は傍から見ていて嫉妬心を覚えるほどだ......
+		ELSEIF ABL:39 >= 3 && TFLAG:899 == 0
+			PRINTFORML 犬が獣臭い息を吹きつけながら,%SAVESTR:TARGET%の口腔を隅々まで舐め回すと,
+			PRINTFORML %SAVESTR:TARGET%も舌を伸ばして犬の口を舐め返した......
+		ELSE
+			PRINTFORML 犬は獣臭い息を吐きながら,%SAVESTR:TARGET%の口腔を隅々まで舐め回した...
+		ENDIF
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の口腔を隅々まで舐め回
+		IF ABL:10 >= 2 && EXP:40 >= 1000 && TALENT:PLAYER:122 == 0 && TFLAG:899 == 0
+			PRINTFORML し,ねっとりと舌を絡めあいながら唾液を交換した...
+		ELSEIF ABL:10 >= 2 && TFLAG:899 == 0
+			PRINTFORML し,%SAVESTR:TARGET%も積極的に舌を絡めてきた...
+		ELSE
+			PRINTL した...
+		ENDIF
+		SIF (CFLAG:7 & 16) || (CFLAG:7 & 32)
+			PRINTFORM %SAVESTR:TARGET%の
+			SIF CFLAG:7 & 16
+				PRINTFORM 舌先
+			SIF (CFLAG:7 & 16) && (CFLAG:7 & 32)
+				PRINTFORM と
+			SIF CFLAG:7 & 32
+				PRINTFORM 口元
+			SIF (CFLAG:7 & 16) || (CFLAG:7 & 32)
+				PRINTFORML に彩られたピアスの感触が感じられる......
+	ENDIF
+;--------------------------------------------------------
+;秘貝開帳
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 7
+	IF TALENT:310 <= 20 || TALENT:125
+		LOCALS:0 = 無毛の
+	ELSEIF TALENT:310 >= 21 && TALENT:310 <= 100
+		LOCALS:0 = 生えかけの陰毛に覆われた
+	ELSEIF TALENT:310 >= 101 && TALENT:310 <= 200
+		LOCALS:0 = うっすらと陰毛に覆われた
+	ELSEIF TALENT:310 >= 201 && TALENT:310 <= 300
+		LOCALS:0 = 陰毛の生え揃った
+	ELSEIF TALENT:310 >= 301 && TALENT:310 <= 400
+		LOCALS:0 = 伸び放題の陰毛が生え茂った
+	ELSEIF TALENT:310 >= 401
+		LOCALS:0 = アナルまで繁茂した陰毛に覆われた
+	ENDIF
+
+	PRINTFORM %SAVESTR:PLAYER%に命令され,%SAVESTR:TARGET%は
+	SIF TEQUIP:53
+		PRINT ビデオカメラの前で
+	;着衣設定
+	IF CFLAG:40 & 8 && ABL:17 != 0
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT の前を大きくめくり上げ,
+	ENDIF
+	;露出癖
+	IF ABL:17 == 0
+		IF TALENT:22
+			PRINT 無表情な顔で
+		ELSEIF TALENT:10 || TALENT:14
+			PRINT 震えながら
+		ELSEIF TALENT:11
+			PRINT 反抗的に睨んできたが,再度命令されるとしぶしぶといった様子で
+		ELSEIF TALENT:12
+			PRINT 屈辱に唇を噛み締めて,
+		ELSEIF TALENT:35
+			PRINT 恥ずかしさに耳まで真っ赤になりながら,
+		ENDIF
+		;着衣設定
+		IF CFLAG:40 & 8
+			CALL PRINT_CLOTHTYPE_MAIN2
+			PRINT の裾を大きくめくり上げ,
+		ENDIF
+		PRINTFORML 自分の%LOCALS:0%陰裂に指を挿し入れ,そっと左右に拡げて見せた
+	ELSEIF ABL:17 == 1
+		PRINTFORML 顔を真っ赤にしながらも,おずおずと,%LOCALS:0%性器をはっきり拡げて見せた
+	ELSEIF ABL:17 == 2
+		PRINTFORML 下腹部に手を置き,人差し指と中指でサインを作るように,%SAVESTR:PLAYER%に%LOCALS:0%自分の秘所を曝した
+	ELSEIF ABL:17 == 3
+		PRINTFORM 嬉々とした表情で,片手で%LOCALS:0%陰唇を拡げ,空いた手で
+		IF TALENT:121
+			PRINT ペニス
+		ELSE
+			PRINT 陰核
+		ENDIF
+		PRINTL を弄り始めた
+	ELSEIF ABL:17 == 4
+		PRINTFORML 両手の指を使って%LOCALS:0%陰唇だけでなく,膣口も同時に拡げた
+	ELSEIF ABL:17 >= 5
+		PRINTFORML 両手の指を%LOCALS:0%陰唇にひっかけ,膣口ごと%SAVESTR:PLAYER%に見せつけるように大きく拡げた
+	ENDIF
+	IF TFLAG:38 >= 2
+		PRINTFORML ぱっくり開いた膣口からは,膣内を満たしたザ-メンがとめどなくあふれ出してくる......
+	ELSEIF TFLAG:38
+		PRINTFORML 開かれた陰唇から,Ejaculationされたての精液が流れ出してきた......
+	ENDIF
+
+	;貞操帯
+	SIF CFLAG:42 == 79 && (CFLAG:40 & 64) 
+		PRINTFORML そして,%SAVESTR:TARGET%のヴァギナは頑丈な貞操帯でしっかりと守られている
+
+	;ピアシング状態
+	SIF CFLAG:7 & 8 || CFLAG:7 & 4
+		PRINTFORM %SAVESTR:TARGET%の
+	IF CFLAG:7 & 8
+		SIF PALAM:5 >= PALAMLV:4
+			PRINT 勃起した
+		IF TALENT:121
+			PRINT ペニス
+		ELSE
+			PRINT クリトリス
+		ENDIF
+		SIF CFLAG:7 & 4
+			PRINT と
+	ENDIF
+	SIF CFLAG:7 & 4
+		PRINT 左右のラビア
+	SIF CFLAG:7 & 8 || CFLAG:7 & 4
+		PRINTL には,柔らかい肉を貫いて金属製のピアスが光っている......
+
+;--------------------------------------------------------
+;指挿入れ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 8
+	PRINTFORM %SAVESTR:PLAYER%は,%SAVESTR:TARGET%の
+	;着衣設定
+	IF CFLAG:40 & 8 && ABL:17 != 0
+		PRINT まとっている
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT の裾をめくり上げ,
+	ENDIF
+	IF EXP:0 == 0
+		PRINT 男を知らない
+	ELSEIF PALAM:3 >= PALAMLV:4
+		PRINT 濡れそぼった
+	ENDIF
+	IF TALENT:132
+		PRINT 幼いワレメ
+	ELSE
+		PRINT 秘裂
+	ENDIF
+	IF TEQUIP:11
+		PRINTFORML の中で,妖しくうねるワ-ムを前後に抜き差しした
+	ELSE
+		PRINTFORM に自分の指を
+		IF PREVCOM == 8 && ABL:PLAYER:12 >= 3
+			PRINTFORML 挿し入れて優しく動かしている...
+		ELSE
+			PRINTFORML ゆっくりと挿入した...
+		ENDIF
+	ENDIF
+	;Gスポット刺激
+	IF TEQUIP:11 && PREVCOM == 8 && ABL:PLAYER:12 >= 3
+		PRINTFORML %SAVESTR:PLAYER%は巧みにワ-ムを操り,敏感な天井をなぶった...
+	ELSEIF PREVCOM == 8 && ABL:PLAYER:12 >= 3
+		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%の膣の中で指を曲げ,ザラついた天井を刺激した...
+	ELSEIF TEQUIP:11 && PALAM:5 >= PALAMLV:3 && ABL:2 >= 2
+		PRINTFORML %SAVESTR:TARGET%の膣は,蜜に濡れたワ-ムにねっとりと絡み付いている...
+	ELSEIF TEQUIP:11 && PALAM:5 <= PALAMLV:3 && ABL:2 >= 2
+		PRINTFORML %SAVESTR:TARGET%はワ-ムの刺激に悶えている...
+	ELSEIF TEQUIP:11 && PALAM:5 >= PALAMLV:3 && ABL:2 <= 3
+		PRINTFORML %SAVESTR:TARGET%は頬を染めて時折声を上げている...
+	ELSEIF TEQUIP:11 && PALAM:5 <= PALAMLV:3 && ABL:2 <= 3
+		PRINTFORML %SAVESTR:TARGET%は少し苦しそうな表情をしている...
+	ELSEIF EXP:0 <= 1
+		PRINTFORML %SAVESTR:TARGET%は膣内の異物感に怯えている...
+	ELSEIF EXP:0 >= 1 && EXP:0 <= 30
+		PRINTFORML %SAVESTR:TARGET%は指の感触に吐息を吐いて耐えている...
+	ELSEIF EXP:0 >= 31 && EXP:0 <= 50
+		PRINTFORML %SAVESTR:TARGET%は指の感触を楽しんでいるようだ...
+	ELSEIF EXP:0 >= 51 && EXP:0 <= 80
+		PRINTFORML %SAVESTR:TARGET%は指のうごめく感触にうっとりとしている...
+	ELSEIF EXP:0 >= 81 && EXP:0 <= 120
+		PRINTFORML %SAVESTR:TARGET%はお腹の中をかき回される感覚に熱い吐息を吐いて悶えている...
+	ELSEIF EXP:0 >= 121
+		PRINTFORML %SAVESTR:TARGET%は涎をたらし,自ら腰を振って快楽を貪っている...
+	ENDIF
+;--------------------------------------------------------
+;アナル舐め
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 9
+	IF TEQUIP:89
+		PRINTFORM 犬は熱い息を吹きかけながら,
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%の
+	SIF EXP:1 <= 10
+		PRINT 硬く閉ざされた
+	PRINT アヌスを丁寧に舐めほぐし
+	SIF EXP:1 >= 50 && PALAM:5 >= PALAMLV:3
+		PRINT ,舌先を突き入れて穴の中までかきまわしてやっ
+	PRINTL た...
+;--------------------------------------------------------
+;振動の宝石
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 10
+	PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の
+	IF TALENT:122 && PALAM:5 >= PALAMLV:3
+		PRINTL 勃起したペニスに震える振動の宝石を押し当てた...
+	ELSEIF TALENT:122
+		PRINTL ペニスに震える振動の宝石を押し当てた...
+	ELSEIF TALENT:121 && PALAM:5 >= PALAMLV:3
+		PRINTL ぬかるんだ秘唇に震える振動の宝石を押し当てた...
+	ELSEIF TALENT:121
+		PRINTL 秘唇に震える振動の宝石を押し当てた...
+	ELSEIF PALAM:5 >= PALAMLV:3
+		PRINTL 硬く尖ったクリトリスに震える振動の宝石を押し当てた...
+	ELSE
+		PRINTL クリトリスに震える振動の宝石を押し当てた...
+	ENDIF
+;--------------------------------------------------------
+;ワーム
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 11
+	IF TEQUIP:11
+		PRINTFORML %SAVESTR:TARGET%から蠢くワ-ムをゆっくりと引き抜いた.
+		IF TFLAG:899 == 0
+			IF EXP:0 >= 201
+				PRINTFORM %SAVESTR:TARGET%は,膣内の喪失感に耐えかねて
+				SIF TALENT:45 == 0 && TALENT:310 == 0
+					PRINTFORM 涙と
+				PRINTFORM 涎をこぼし
+			ELSEIF EXP:0 >= 151 && EXP:0 <= 200
+				PRINTFORM %SAVESTR:TARGET%の膣内に溜まっていた粘液が掻き出されて滴り,水溜りを作っ
+			ELSEIF EXP:0 >= 121 && EXP:0 <= 150
+				PRINTFORM ワ-ムが抜かれた%SAVESTR:TARGET%の肉襞からボタボタと愛液が滴っ
+			ELSEIF EXP:0 >= 71 && EXP:0 <= 120
+				PRINTFORM %SAVESTR:TARGET%はもじもじと股を擦り合わせて%SAVESTR:PLAYER%の方を見
+			ELSEIF EXP:0 >= 41 && EXP:0 <= 70
+				PRINTFORM %SAVESTR:TARGET%は熱のこもった吐息を吐い
+			ELSEIF EXP:0 >= 21
+				PRINTFORM %SAVESTR:TARGET%はゆるんだ膣口をひくつかせ
+			ELSEIF EXP:0 >= 1 && EXP:0 <= 20
+				PRINTFORM %SAVESTR:TARGET%はホッとしたような表情をし
+			ENDIF
+			PRINTL ている...
+		ENDIF
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の
+		SIF PALAM:3 >= PALAMLV:5
+			PRINT たっぷりと
+		SIF PALAM:3 >= PALAMLV:3
+			PRINT 粘液をたたえた
+		IF TALENT:132
+			PRINT 幼いワレメに
+		ELSE
+			PRINT 秘裂に
+		ENDIF
+		PRINTL ワ-ムの先端をあてがい馴染ませていく...
+		IF TFLAG:899 == 0
+			PRINTFORM %SAVESTR:TARGET%は
+			IF TALENT:0 && (TALENT:85 || TALENT:76) && ABL:11 >= 5
+				PRINT 自分が処女である事を忘れているかのような笑みを見せ
+			ELSEIF TALENT:0 && TALENT:85
+				PRINTFORM 少し寂しそうな目で%SAVESTR:PLAYER%を見
+			ELSEIF TALENT:0 && TALENT:76
+				PRINT 処女である事もお構いなしに,腰を揺らしておねだりをし
+			ELSEIF TALENT:0 && TALENT:27
+				PRINT 何かを諦めた表情をし
+				SIF TALENT:45 == 0 && TALENT:310 == 0
+					PRINT 目にうっすら涙を浮かべ
+			ELSEIF TALENT:0
+				PRINT ガタガタと震え,喪失の恐怖に怯え
+			ELSEIF EXP:0 >= 201
+				PRINT 挿入への期待だけでガクガクと腰を震わせてイきそうになっ
+			ELSEIF EXP:0 >= 151 && EXP:0 <= 200
+				PRINTFORM とろけきった目で%SAVESTR:PLAYER%を見つめ,自分から陰唇を擦りつけ
+			ELSEIF EXP:0 >= 121 && EXP:0 <= 150
+				PRINT 恍惚とした表情で待ちきれないように腰をくねらせ
+			ELSEIF EXP:0 >= 71 && EXP:0 <= 120
+				PRINTFORM もの欲しそうに目を潤ませ%SAVESTR:PLAYER%の方を見
+			ELSEIF EXP:0 >= 41 && EXP:0 <= 70
+				PRINT ワ-ムの擦れる感触に陶酔しきった吐息をつい
+			ELSEIF EXP:0 >= 1 && EXP:0 <= 40
+				PRINT ワ-ムの擦れる感触に身をよじらせ愛液を滲ませて
+			ELSE
+				PRINT ワ-ムの擦れる感触に肉襞をひくつかせ
+			ENDIF
+			PRINTL ている...
+		ENDIF
+		PRINTFORM %SAVESTR:TARGET%の
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		PRINTFORML 性器にワ-ムを挿し込んだ
+	ENDIF
+;--------------------------------------------------------
+;振動の杖
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 12
+	PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%の秘所に振動している振動の杖を押しつけた...
+	IF TFLAG:899 == 0
+		PRINTFORM %SAVESTR:TARGET%は
+		IF ABL:0 <= 2 && PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINT とてもくすぐったがっているよう
+		ELSEIF ABL:0 <= 2 && PALAM:5 >= PALAMLV:3
+			PRINT ,......何も言えなくなっているよう
+		ELSEIF TALENT:85 && ABL:0 >= 4 && PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINT 待ちわびたように足を開き,受け入れているよう
+		ELSEIF TALENT:85 && ABL:0 >= 4 && PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINTFORM 快楽に涎をたらしながら,何度も%SAVESTR:PLAYER%の名を呼ん
+		ELSEIF TALENT:85 && ABL:0 >= 4 && PALAM:5 >= PALAMLV:5
+			PRINTFORM %SAVESTR:PLAYER%を掻き抱きながら絶頂の恍惚感に浸っているよう
+		ELSEIF ABL:0 >= 3 && PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINT 強い快感に顔を赤らめているよう
+		ELSEIF ABL:0 >= 3 && PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINT 惚けた目で快楽を貪っているよう
+		ELSEIF ABL:0 >= 3 && PALAM:5 >= PALAMLV:5
+			PRINT 今にも絶頂に達してしまいそうな様子
+		ENDIF
+		PRINTL だ...
+	ENDIF
+;--------------------------------------------------------
+;アナルワーム
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 13
+	IF TEQUIP:13
+		PRINTFORML %SAVESTR:TARGET%のアヌスからアナルワ-ムを抜いた.
+		IF TFLAG:899 == 0
+			PRINTFORM %SAVESTR:TARGET%は
+			IF EXP:1 >= 180
+				PRINT 秘唇と口から涎をたらしながら,お尻を広げ続け
+			ELSEIF EXP:1 >= 141 && EXP:1 <= 179
+				PRINT 潤んだ瞳で懇願するようにお尻を振っ
+			ELSEIF EXP:1 >= 101 && EXP:1 <= 140
+				PRINT 物足りなさそうにお尻を突き出し
+			ELSEIF EXP:1 <= 20
+				PRINT 刺激に辛そうな表情で耐え
+			ELSEIF EXP:1 >= 21 && EXP:1 <= 40
+				PRINT 強制的な排泄感に頬を染め
+			ELSEIF EXP:1 >= 41 && EXP:1 <= 75
+				PRINT お尻をもじもじさせつつも,どこかほっとした表情をうかべ
+			ELSEIF EXP:1 >= 76 && EXP:1 <= 100
+				PRINT 少し名残惜しそうにお尻を揺らし
+			ENDIF
+			PRINTFORML ている...
+		ENDIF
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の菊穴にアナルワ-ムをあてがった...
+		IF TFLAG:899 == 0
+			PRINTFORM %SAVESTR:TARGET%は
+			IF EXP:1 >= 180
+				PRINT とろけきった表情で,自らのお尻を広げ
+			ELSEIF EXP:1 >= 141 && EXP:1 <= 179
+				PRINT 挿入を待ち焦がれるように腰をくねらせ
+			ELSEIF EXP:1 >= 101 && EXP:1 <= 140
+				PRINT 頬を染め,期待にお尻を揺らめかせ
+			ELSEIF EXP:1 <= 20
+				PRINT 不浄の穴を犯される恥辱と屈辱感にまみれた表情をし
+			ELSEIF EXP:1 >= 21 && EXP:1 <= 40
+				PRINT 恥じらいに染まった顔を伏せ
+			ELSEIF EXP:1 >= 41 && EXP:1 <= 75
+				PRINT 期待と否定の入り混じったような複雑な表情をし
+			ELSEIF EXP:1 >= 76 && EXP:1 <= 100
+				PRINT すぼまりに与えられるワ-ムの刺激に身体を震わせ
+			ENDIF
+			PRINTFORML ている...
+		ENDIF
+
+		PRINTFORM %SAVESTR:TARGET%の
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 粘液にまみれた
+		PRINTFORML アヌスにワ-ムを挿し込んだ
+	ENDIF
+;--------------------------------------------------------
+;電動クリキャップ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 14
+	IF TEQUIP:14
+		PRINTFORML %SAVESTR:TARGET%から電動クリキャップを外した
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の陰核に電動クリキャップを取り付けた
+	ENDIF
+;--------------------------------------------------------
+;ニプルクリキャップ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 15
+	IF TEQUIP:15
+		PRINTFORML %SAVESTR:TARGET%からクリップロ-タ-を取り外した
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の乳首にクリップロ-タ-を貼り付けた
+	ENDIF
+;--------------------------------------------------------
+;搾乳器
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 16
+	IF TEQUIP:16
+		PRINTFORML %SAVESTR:TARGET%から搾乳器を取り外した
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%に搾乳器を取り付けた
+	ENDIF
+;--------------------------------------------------------
+;オナホール
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 17
+	IF TEQUIP:17
+		PRINTFORML %SAVESTR:TARGET%からオナホ-ルを外した
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%のペニスをオナホ-ルに挿入した
+	ENDIF
+;--------------------------------------------------------
+;シャワー
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 18
+	IF TEQUIP:18
+		PRINTFORML %SAVESTR:TARGET%にシャワ-を止めさせた
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%にシャワ-を浴びさせた
+		PRINT 水しぶきが
+		IF TALENT:青肌
+			PRINT 青色の
+		ELSEIF TALENT:褐色肌
+			PRINT 褐色の
+		ELSEIF TALENT:白皙
+			PRINT 白色の
+		ENDIF
+		PRINTL 肌に弾かれるように流れていく.........
+	ENDIF
+;--------------------------------------------------------
+;アナルビーズ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 19
+	IF TEQUIP:19
+		PRINTFORML %SAVESTR:TARGET%のアヌスからアナルビ-ズを勢い良く引き抜いた...
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の菊穴にアナルビ-ズをひとつづつ飲み込ませていった...
+	ENDIF
+;--------------------------------------------------------
+;正常位
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 20
+	PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が正常位,正常位-キス,正常位-胸愛撫であり,抜かないフラグがある場合
+	;また,前々回のコマンドが正常位,正常位-胸愛撫,正常位-キス,正常位SPで,前回の調教がGスポ-子宮口攻めの場合
+	IF TFLAG:60 && ((PREVCOM == 20 || PREVCOM == 128 || PREVCOM == 129) || ((TFLAG:59 == 20 || TFLAG:59 == 128 || TFLAG:59 == 129 || TFLAG:59 == 130) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		;調教者がオトコかふたなりである
+		IF TALENT:PLAYER:121 || TALENT:PLAYER:122
+			PRINTFORML %SAVESTR:TARGET%の膣内の感触を味わいながら,再び腰を動かし始めた...
+		ELSE
+		;ペニスバンドを使用している場合
+			PRINTFORML %SAVESTR:TARGET%の膣内から抜かずに,再び腰を動かし始めた...
+		ENDIF
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;同様に前回の調教が正常位以外のセックスか騎乗位の場合
+	;また,前々回のコマンドが正常位以外のセックス,騎乗位で,前回の調教がGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 21 || PREVCOM == 22 || PREVCOM == 23 || PREVCOM == 34 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134) || ((TFLAG:59 == 21 || TFLAG:59 == 22 || TFLAG:59 == 23 || TFLAG:59 == 34 || TFLAG:59 == 131 || TFLAG:59 == 132 || TFLAG:59 == 133 || TFLAG:59 == 134) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 膣内から抜き去ることなく%SAVESTR:TARGET%を仰向けに寝かせ,再び腰を動かし始めた...
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	ELSE
+		SIF TALENT:PLAYER:121 == 0 && TALENT:PLAYER:122 == 0	
+			PRINTFORM 自らの腰に装着したペニスバンドで,
+		PRINTFORM %SAVESTR:TARGET%の
+		IF EXP:0 == 0
+			PRINT 男を知らない
+		ELSEIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		ENDIF
+		IF TALENT:132
+			PRINT 幼いワレメを
+		ELSE
+			PRINT 秘裂を
+		ENDIF
+		PRINTL 貫いた...
+	ENDIF
+;--------------------------------------------------------
+;後背位
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 21
+	;コロシアム
+	IF TEQUIP:55
+		IF TFLAG:400 == 201
+			PRINTFORM 倒れた%SAVESTR:TARGET%の腰を掴むと興奮した%SAVESTR:ASSI%は
+			SIF TALENT:ASSI:121 == 1 || TALENT:ASSI:122 == 1
+				PRINT 生ペニスを
+			SIF TALENT:ASSI:121 != 1 && TALENT:ASSI:122 != 1 && ITEM:PBAND == 1
+				PRINT ペニスバンドを
+			PRINTFORMW 無理矢理膣に挿入させた......
+		ELSEIF TFLAG:400 == 202
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の腰を抱えると,最下層民は汚い恥垢まみれのペニスを強引に膣に挿入させた......
+		ELSEIF TFLAG:400 == 203
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%に後ろからのし掛かるとカビ犬はペニスを膣に挿入した
+		ELSEIF TFLAG:400 == 204
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の尻を抱えると,オ-クは瘤まみれの醜いペニスを強引に膣に挿入させた......
+		ELSEIF TFLAG:400 == 205
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%に後ろからのし掛かると腐れ豚は腐汁したたるペニスを膣に挿入した
+		ELSEIF TFLAG:400 == 206
+			PRINTFORML トロルは自慢の巨大なペニスを勃起させると%SAVESTR:TARGET%に掴みかかった......
+		ENDIF
+	ENDIF
+	;獣姦かつ前回のコマンドも後背位で抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 21 && TEQUIP:89
+		PRINTFORML 犬は%SAVESTR:TARGET%の臀部に自分の下半身を密着させ,腰を振り続けている......
+		SIF ABL:39 >= 3 && PALAM:5 > PALAMLV:4
+			PRINTFORML %SAVESTR:TARGET%も犬の動きに合わせて腰を振っている
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;獣姦の場合
+	ELSEIF TEQUIP:89
+		PRINTFORML %SAVESTR:PLAYER%が合図すると,ノラ犬は%SAVESTR:TARGET%の体に後ろからのしかかり,
+		IF EXP:0 == 0
+			PRINT 男を知らない
+		ELSEIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		ENDIF
+		IF TALENT:132
+			PRINT 幼いワレメ
+		ELSE
+			PRINT 秘裂
+		ENDIF
+		PRINTFORML の最奥まで,根元が赤くふくれた犬のペニスを突き入れた...
+	;コロシアムで助手以外の場合
+	ELSEIF TEQUIP:55 && (ASSI != PLAYER)
+		IF TFLAG:400 == 206
+			PRINTFORML トロルは%SAVESTR:TARGET%を両手で掴みあげると,彼女の身体をオナホのように激しく上下させた
+			PRINTFORML %SAVESTR:TARGET%は泡を吹いて手足をじたばたさせたが,やがてぐったりしてしまった
+		ELSE
+			PRINTFORM モンスタ-は%SAVESTR:TARGET%にのしかかり
+			IF EXP:0 == 0
+				PRINT 男を知らない
+			ELSEIF PALAM:3 >= PALAMLV:4
+				PRINT びしょびしょになっている
+			ENDIF
+			IF TALENT:132
+				PRINT 幼いワレメ
+			ELSE
+				PRINT 肉壺
+			ENDIF
+			PRINTFORML を狂ったように陵辱している......
+		ENDIF
+	;前回と今回の調教者が同じで,前回の調教が後背位,後背位-胸愛撫,後背位スパンキング,立ちバックであり,抜かないフラグがある場合
+	;また,前々回のコマンドが後背位,後背位-胸愛撫,後背位スパンキング,立ちバック,後背位SPで,前回のコマンドが挿入Gスポ攻めか挿入子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 21 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133) || ((TFLAG:59 == 21 || TFLAG:59 == 131 || TFLAG:59 == 132 || TFLAG:59 == 133 || TFLAG:59 == 134) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		;調教者がオトコかふたなりである
+		IF TALENT:PLAYER:119 || TALENT:PLAYER:121 || TALENT:PLAYER:122
+			PRINTFORML %SAVESTR:TARGET%の膣内の感触を味わいながら,再び腰を動かし始めた...
+		ELSE
+		;ペニスバンドを使用している場合
+			PRINTFORML %SAVESTR:TARGET%の膣内から抜かずに,再び腰を動かし始めた...
+		ENDIF
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;同様に,前回の調教が後背位以外のセックスか騎乗位である場合
+	;また,前々回のコマンドが後背位以外のセックスか騎乗位で,前回の調教がGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 20 || PREVCOM == 22 || PREVCOM == 23 || PREVCOM == 34 || PREVCOM == 128 || PREVCOM == 129 || PREVCOM == 130) || ((TFLAG:59 == 20 || TFLAG:59 == 22 || TFLAG:59 == 23 || TFLAG:59 == 34 || TFLAG:59 == 128 || TFLAG:59 == 129 || TFLAG:59 == 130) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 膣内から抜き去ることなく%SAVESTR:TARGET%の後ろに回り,再び腰を動かし始めた...
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は,後ろから%SAVESTR:TARGET%の
+		IF EXP:0 == 0
+			PRINT 男を知らない
+		ELSEIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		ENDIF
+		IF TALENT:132
+			PRINT 幼いワレメ
+		ELSE
+			PRINT 秘裂
+		ENDIF
+		PRINTFORM の最奥まで,
+		IF TALENT:PLAYER:121 || TALENT:PLAYER:122
+			PRINT 硬くそりかえった陰茎を
+		ELSE
+			PRINT 腰に固定したペニスバイブを
+		ENDIF
+		PRINTFORML 突き入れた...
+	ENDIF
+;--------------------------------------------------------
+;対面座位
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 22
+	PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が対面座位であり,抜かないフラグがある場合
+	;また,前々回のコマンドが対面座位で,前回のコマンドがGスポ-子宮口攻めの場合
+	IF TFLAG:60 && (PREVCOM == 22 || (TFLAG:59 == 22 && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%とKissをし,舌を絡めながら再び腰を揺すり始めた...
+	;同様に前回の調教が正常位,正常位-胸愛撫,正常位-キス,正常位SPか騎乗位の場合
+	;また,前々回のコマンドが正常位,正常位-胸愛撫,正常位-キス,正常位SPか騎乗位で,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 20 || PREVCOM == 34 || PREVCOM == 128 || PREVCOM == 129 || PREVCOM == 130) || ((TFLAG:59 == 20 || TFLAG:59 == 34 || TFLAG:59 == 128 || TFLAG:59 == 129 || TFLAG:59 == 130) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 膣内からペニスを抜き去ることなく%SAVESTR:TARGET%の身体をぎゅっと抱き寄せ,腰を揺すり始めた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の身体を抱き上げ,ゆっくりと降ろしながら
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		IF TALENT:132
+			PRINT 幼いワレメ
+		ELSE
+			PRINT 秘裂
+		ENDIF
+		PRINTFORML に挿入した...
+	ENDIF
+;--------------------------------------------------------
+;背面座位
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 23
+	PRINTFORM %SAVESTR:PLAYER%は
+	;羞恥プレイ中で,前回と今回の調教者が同じで,前回の調教が背面座位であり,抜かないフラグがある場合
+	;また,前々回のコマンドが背面座位で,前回のコマンドがGスポ-子宮口攻めの場合
+	IF TEQUIP:57 && TFLAG:60 && (PREVCOM == 23 || (TFLAG:59 == 23 && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+			PRINTFORML %SAVESTR:TARGET%の結合部と胸に再び手を這わせ,見せ付けるように腰を動かした...
+	;同様に,羞恥プレイ中で前回の調教が後背位,後背位-胸愛撫,後背位スパンキング,立ちバック,後背位SPか騎乗位である場合
+	;また,前々回のコマンドが後背位,後背位-胸愛撫,後背位スパンキング,立ちバック,後背位SPか騎乗位で,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TEQUIP:57 && TFLAG:60 && ((PREVCOM == 21 || PREVCOM == 34 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134) || ((TFLAG:59 == 21 || TFLAG:59 == 131 || TFLAG:59 == 132 || TFLAG:59 == 133 || TFLAG:59 == 134 || TFLAG:59 == 34) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+			PRINTFORML 膣内からペニスを抜き去ることなく%SAVESTR:TARGET%の身体を背中から抱き寄せ,脚を大きく開かせた...
+
+	;通常プレイ中で,前回と今回の調教者が同じで,前回の調教が背面座位であり,抜かないフラグがある場合
+	;また,前々回のコマンドが背面座位で,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && (PREVCOM == 23 || (TFLAG:59 == 23 && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%を背後から抱きしめ,再び%SAVESTR:TARGET%の身体を揺らし始めた...
+	;同様に,前回の調教が後背位,後背位-胸愛撫,後背位スパンキング,立ちバック,後背位SPか騎乗位である場合
+	;また,前々回のコマンドが後背位,後背位-胸愛撫,後背位スパンキング,立ちバック,後背位SPか騎乗位で,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 21 || PREVCOM == 34 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134) || ((TFLAG:59 == 21 || TFLAG:59 == 131 || TFLAG:59 == 132 || TFLAG:59 == 133 || TFLAG:59 == 134 || TFLAG:59 == 34) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 膣内からペニスを抜き去ることなく%SAVESTR:TARGET%の身体を背中から抱き寄せ,身体を揺さぶり始めた...
+
+	ELSEIF TEQUIP:57
+			PRINTFORM %SAVESTR:TARGET%の身体を抱き上げ,ゆっくりと
+			SIF PALAM:3 >= PALAMLV:4
+				PRINT 濡れそぼった
+			IF TALENT:132
+				PRINT 幼いワレメ
+			ELSE
+				PRINT 秘裂
+			ENDIF
+			PRINTFORML に挿入すると,脚を大きく開かせた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の身体を抱き上げ,
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 濡れそぼった
+		IF TALENT:132
+			PRINT 幼いワレメ
+		ELSE
+			PRINT 秘裂
+		ENDIF
+		PRINTFORML を待ち構えていたモノでゆっくり貫いた...
+	ENDIF
+	IF TEQUIP:57
+		IF ABL:17 >= 5
+			PRINTFORML %SAVESTR:TARGET%は鏡に映る痴態を蕩けた目で見つめながら歓喜の声を上げている...
+		ELSEIF ABL:17 >= 3
+			PRINTFORML %SAVESTR:TARGET%は羞恥と快楽に溺れたような表情で鏡の中の痴態を凝視している...
+		ELSEIF ABL:17 >= 1
+			PRINTFORML %SAVESTR:TARGET%は顔を羞恥に染めながら時折艶っぽい声を上げている...
+		ELSE
+			PRINTFORML %SAVESTR:TARGET%は手で顔を覆い隠しながら羞恥に身体を震わせている...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;逆レイプ 
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 24
+	PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%の腰を掴むと,
+	IF TALENT:PLAYER:0 && CFLAG:PLAYER:71 == 0
+		PRINT 男を知らない
+	ELSEIF PALAM:PLAYER:3 >= PALAMLV:4
+		PRINT 濡れそぼった
+	ENDIF
+	IF TALENT:PLAYER:132
+		PRINT 幼いワレメ
+	ELSE
+		PRINT 秘裂
+	ENDIF
+	PRINTFORM の最奥まで,
+	IF TALENT:TARGET:121 || TALENT:TARGET:122
+		PRINT 硬くそりかえった陰茎を
+	ELSE
+		PRINT 腰に固定したペニスバイブを
+	ENDIF
+	PRINTFORML 突き入れた...
+	IF EXP:PLAYER:0 > 0 && ABL:TARGET:20 >= 3
+		IF PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINTFORML %SAVESTR:TARGET%は%SAVESTR:PLAYER%を犯すことに悦びを覚え,サディスティックな表情を浮かべている.........
+		ELSEIF PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%は鼻息を荒くしながら,%SAVESTR:PLAYER%を後ろから何度も犯している.........
+		ELSEIF PALAM:5 >= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%はかなり興奮しているのか,%SAVESTR:PLAYER%の尻に赤い跡が残るぐらい掴み,後ろから壊さんばかりに犯し続けている.........
+		ENDIF
+	ELSEIF PLAYER == MASTER && TALENT:MASTER:0 == 0
+		IF PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINTFORML %SAVESTR:TARGET%は自分の主人を犯す悦びに浸りながら,サディスティックな表情を浮かべている.........
+		ELSEIF PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%は鼻息を荒くしながら,%SAVESTR:PLAYER%を後ろから何度も犯している.........
+		ELSEIF PALAM:5 >= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%はかなり興奮しているのか,%SAVESTR:PLAYER%の尻に赤い跡が残るぐらい掴み,後ろから壊さんばかりに犯し続けている.........
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;逆アナルレイプ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 25
+	PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%の腰を掴むと,
+	IF TALENT:TARGET:121 || TALENT:TARGET:122
+		PRINT 硬くそりかえった陰茎を
+	ELSE
+		PRINT 腰に固定したペニスバイブを
+	ENDIF
+	SIF ABL:PLAYER:3 >= 3
+		PRINT 充分に開発された
+	SIF PALAM:PLAYER:3 >= PALAMLV:4
+		PRINT 粘液にまみれた
+	PRINTFORML アナルに根元まで挿し込んだ...
+	IF EXP:PLAYER:1 > 0 && ABL:TARGET:20 >= 3
+		IF PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINTFORML %SAVESTR:TARGET%は%SAVESTR:PLAYER%のアナルを犯すことに悦びを覚え,サディスティックな表情を浮かべている.........
+		ELSEIF PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%は鼻息を荒くしながら,%SAVESTR:PLAYER%のアナルを後ろから何度も犯している.........
+		ELSEIF PALAM:5 >= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%はかなり興奮しているのか,%SAVESTR:PLAYER%の尻に赤い跡が残るぐらい掴み,後ろから壊さんばかりにアナルを犯し続けている.........
+		ENDIF
+	ELSEIF PLAYER == MASTER
+		IF PALAM:5 >= PALAMLV:0 && PALAM:5 <= PALAMLV:3
+			PRINTFORML %SAVESTR:TARGET%は自分の主人のアナルを犯す悦びに浸りながら,サディスティックな表情を浮かべている.........
+		ELSEIF PALAM:5 >= PALAMLV:3 && PALAM:5 <= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%は鼻息を荒くしながら,%SAVESTR:PLAYER%のアナルを後ろから何度も犯している.........
+		ELSEIF PALAM:5 >= PALAMLV:5
+			PRINTFORML %SAVESTR:TARGET%はかなり興奮しているのか,%SAVESTR:PLAYER%の尻に赤い跡が残るぐらい掴み,後ろから壊さんばかりにアナルを犯し続けている.........
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;正常位アナル
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 26
+	PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が正常位アナルであり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 26 && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		;調教者がオトコかふたなりである
+		IF TALENT:PLAYER:121 || TALENT:PLAYER:122
+			PRINTFORML %SAVESTR:TARGET%の菊穴の感触を味わいながら,再び腰を動かし始めた...
+		ELSE
+		;ペニスバンドを使用している場合
+			PRINTFORML %SAVESTR:TARGET%の腸内から抜かずに,再び腰を動かし始めた...
+		ENDIF
+	;同様に前回の調教が後背位アナルか騎乗位アナルの場合
+	ELSEIF TFLAG:60 && (PREVCOM == 27 || PREVCOM == 28 || PREVCOM == 36) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 腸内から抜き去ることなく%SAVESTR:TARGET%を仰向けに寝かせ,再び腰を動かし始めた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 粘液にまみれた
+		PRINTL アヌスを貫いた...
+	ENDIF
+;--------------------------------------------------------
+;後背位アナル
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 27
+	;コロシアム
+	IF TEQUIP:55
+		IF TFLAG:400 == 201
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%を%SAVESTR:ASSI%は押さえつけた......
+		ELSEIF TFLAG:400 == 202
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%を最下層民は容赦無く追いかける......
+		ELSEIF TFLAG:400 == 203
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%をカビ犬は容赦無く追いかける......
+		ELSEIF TFLAG:400 == 204
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%をオ-クは容赦無く追いかける......
+		ELSEIF TFLAG:400 == 205
+			PRINTFORMW 這って逃げようとする%SAVESTR:TARGET%を腐れ豚は容赦無く追いかける......
+		ELSEIF TFLAG:400 == 206
+			PRINTFORML トロルは自慢の巨大なペニスを勃起させると%SAVESTR:TARGET%に掴みかかった......
+		ENDIF
+	ENDIF
+	SIF TEQUIP:89 == 0 && TEQUIP:55 == 0 || (TEQUIP:55 && (ASSI == PLAYER))
+		PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が後背位アナルであり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 27 && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		;獣姦プレイ中
+		IF TEQUIP:89
+			PRINTFORML 犬は%SAVESTR:TARGET%の臀部に自分の下半身を密着させ,腰を振り続けている......
+			SIF EXP:56 >= 200 && PALAM:5 > PALAMLV:4
+				PRINTFORML %SAVESTR:TARGET%も犬の動きに合わせて腰を振っている
+		;コロシアムで助手以外の場合
+		ELSEIF TEQUIP:55 && (ASSI != PLAYER)
+			IF TFLAG:400 == 206
+				PRINTFORML トロルは%SAVESTR:TARGET%を両手で掴みあげると,彼女の肛門をオナホのように激しく上下させた
+				SIF EXP:56 >= 500 && PALAM:5 > PALAMLV:4
+					PRINTFORML %SAVESTR:TARGET%はそれでもアナルの快楽に逆らいきれないようだ
+			ELSE
+				PRINTFORML モンスタ-は%SAVESTR:TARGET%の背後から襲いかかり,無防備なアヌスに肉棒をねじ込んだ......
+				SIF EXP:56 >= 500 && PALAM:5 > PALAMLV:4
+					PRINTFORML %SAVESTR:TARGET%はアナルの快楽に負けて淫らに腰を振っている
+			ENDIF
+		;調教者がオトコかふたなりである
+		ELSEIF TALENT:PLAYER:121 || TALENT:PLAYER:122
+			PRINTFORML %SAVESTR:TARGET%のアヌスの感触を味わいながら,再び腰を動かし始めた...
+		ELSE
+		;ペニスバンドを使用している場合
+			PRINTFORML %SAVESTR:TARGET%の腸内から抜かずに,再び腰を動かし始めた...
+		ENDIF
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;同様に,前回の調教が正常位アナルか騎乗位アナルである場合
+	ELSEIF TFLAG:60 && (PREVCOM == 26 || PREVCOM == 29 || PREVCOM == 36) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 腸内から抜き去ることなく%SAVESTR:TARGET%の後ろに回り,再び腰を動かし始めた...
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	ELSE
+		;コロシアムで助手以外の場合
+		IF TEQUIP:55 && (ASSI != PLAYER)
+			IF TFLAG:400 == 206
+				PRINTFORML トロルは%SAVESTR:TARGET%を両手で掴みあげると,彼女の肛門をオナホのように激しく上下させた
+				SIF EXP:56 >= 500 && PALAM:5 > PALAMLV:4
+					PRINTFORML %SAVESTR:TARGET%はそれでもアナルの快楽に逆らいきれないようだ
+			ELSE
+				PRINTFORML モンスタ-は%SAVESTR:TARGET%の背後から襲いかかり,無防備なアヌスに肉棒をねじ込んだ......
+				SIF EXP:56 >= 500 && PALAM:5 > PALAMLV:4
+					PRINTFORML %SAVESTR:TARGET%はアナルの快楽に負けて淫らに腰を振っている
+			ENDIF
+		ELSE
+			SIF TEQUIP:89
+				PRINT さかりのついた犬が,そのペニスを
+			PRINTFORM 背後から%SAVESTR:TARGET%の
+			SIF ABL:3 >= 3
+				PRINT 充分に開発された
+			SIF PALAM:3 >= PALAMLV:4
+				PRINT 粘液にまみれた
+			PRINTFORML アナルに根元まで挿し込んだ...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;対面座位アナル
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 28
+	PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が対面座位であり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 28 && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%とKissをし,舌を絡めながら再び腰を揺すり始めた...
+	;同様に前回の調教が正常位,騎乗位の場合
+	ELSEIF TFLAG:60 && (PREVCOM == 26 || PREVCOM == 36) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 腸内からペニスを抜き去ることなく%SAVESTR:TARGET%の身体をぎゅっと抱き寄せ,腰を揺すり始めた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の身体を抱き上げ,ゆっくりと降ろしながら
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 粘液にまみれた
+		PRINTFORML アヌスへと挿入した...
+	ENDIF
+;--------------------------------------------------------
+;背面座位アナル
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 29
+	PRINTFORM %SAVESTR:PLAYER%は
+	;前回と今回の調教者が同じで,前回の調教が背面座位であり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 29 && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%を背後から抱きしめ,再び%SAVESTR:TARGET%の身体を揺らし始めた...
+	;同様に,前回の調教が後背位か騎乗位である場合
+	ELSEIF TFLAG:60 && (PREVCOM == 27 || PREVCOM == 36) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 腸内からペニスを抜き去ることなく%SAVESTR:TARGET%の身体を背中から抱き寄せ,身体を揺さぶり始めた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の身体を抱き上げ,
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 粘液にまみれた
+		PRINTFORML アヌスを待ち構えていたモノでゆっくり貫いた...
+	ENDIF
+;--------------------------------------------------------
+;手淫
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 30
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85 && ASSIPLAY == 0 && TEQUIP:89 == 0
+		PRINT 愛しむような表情で,
+	SIF TALENT:76
+		PRINT 自分から
+	IF TEQUIP:89
+		PRINTFORM 犬の
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%の
+	ENDIF
+	PRINTFORML ペニスに指を絡めて擦りあげている...
+;--------------------------------------------------------
+;フェラチオ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 31
+	;コロシアム
+	IF TEQUIP:55
+		IF TFLAG:400 == 201
+			PRINTFORM 倒れた%SAVESTR:TARGET%の頭を掴むと興奮した%SAVESTR:ASSI%は
+			SIF TALENT:ASSI:121 == 1 || TALENT:ASSI:122 == 1
+				PRINT 生ペニスを
+			SIF TALENT:ASSI:121 != 1 && TALENT:ASSI:122 != 1 && ITEM:PBAND == 1
+				PRINT ペニスバンドを
+			PRINTFORMW 無理矢理口に含ませようとした......
+		ELSEIF TFLAG:400 == 202
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の頭を掴むと,最下層民は汚い恥垢まみれのペニスを強引に咥えさせて口内を犯そうとした......
+		ELSEIF TFLAG:400 == 203
+			PRINTFORMW 倒れた%SAVESTR:TARGET%はカビ犬のペニスを舐めるよう命令された......
+		ELSEIF TFLAG:400 == 204
+			PRINTFORMW オ-クは倒れた%SAVESTR:TARGET%の頭を掴むと,瘤まみれの醜いペニスを強引に咥えさせて口内を犯そうとした......
+		ELSEIF TFLAG:400 == 205
+			PRINTFORMW 倒れた%SAVESTR:TARGET%は腐れ豚のペニスを舐めるよう命令された......
+		ELSEIF TFLAG:400 == 206
+			PRINTFORMW 倒れた%SAVESTR:TARGET%の頭を掴んで立たせると,トロルは自慢の巨大なペニスを強引に咥えさせようとした......
+		ENDIF
+	ENDIF
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85 && ASSIPLAY == 0 && TEQUIP:89 == 0 && TEQUIP:55 == 0
+		PRINT 慈しむような表情で,
+	SIF TALENT:76
+		PRINT 自ら
+	IF TEQUIP:89
+		PRINTFORM 犬の
+	ELSEIF TEQUIP:55 && (ASSI != PLAYER)
+		PRINTFORM モンスタ-の
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%の
+	ENDIF
+	PRINTFORML ペニスに舌を這わせて舐めまわしている...
+;--------------------------------------------------------
+;パイズリ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 32
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85 && ASSIPLAY == 0
+		PRINT うっとりとした表情をしながら,
+	IF TALENT:109
+		PRINTFORM 薄い胸で懸命に%SAVESTR:PLAYER%のペニスを
+	ELSEIF TALENT:110
+		PRINTFORM 豊満な胸で%SAVESTR:PLAYER%のペニスを包み込んで
+	ELSEIF TALENT:114
+		PRINTFORM 両の乳房の間にすっかりうずまった%SAVESTR:PLAYER%のペニスを
+	ELSE
+		PRINTFORM 胸で%SAVESTR:PLAYER%のペニスをはさんで
+	ENDIF
+	PRINTL 擦りあげている...
+;--------------------------------------------------------
+;素股
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 33
+	PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%のペニスを股にはさみ,
+	IF (TALENT:85 || TALENT:76) && PALAM:5 > PALAMLV:5 && ABL:11 >= 5
+		PRINTFORM 快楽に溺れきった表情で%SAVESTR:PLAYER%を見つめながら
+	ELSEIF TALENT:85 && PALAM:5 > PALAMLV:5
+		PRINT 今にもとろけそうな表情を浮かべながら
+	ELSEIF TALENT:76 && PALAM:5 > PALAMLV:5
+		PRINTFORM 懇願するような眼差しで
+	ELSEIF PALAM:5 > PALAMLV:4
+		PRINT 口の端からよだれをこぼしながら
+	ELSEIF (TALENT:85 || TALENT:76) && PALAM:5 > PALAMLV:3
+		PRINTFORM 陶酔しきった瞳で%SAVESTR:PLAYER%を見つめながら
+	ELSEIF TALENT:85
+		PRINT 幸せそうな表情を浮かべながら
+	ELSEIF TALENT:76
+		PRINTFORM 淫猥な目つきで挑発しながら
+	ELSEIF TALENT:36
+		PRINTFORM 大胆に腰を動かしながら
+	ELSEIF TALENT:22
+		PRINTFORM うっすらと上気した顔で
+	ELSE
+		PRINT 恥ずかしそうに
+	ENDIF
+	IF TALENT:132
+		PRINT 幼いワレメを
+	ELSE
+		PRINT 陰唇を
+	ENDIF
+	PRINTL ペニスに擦りつけている...
+;--------------------------------------------------------
+;騎乗位
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 34
+	;獣姦かつ前回のコマンドも騎乗位で抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 34 && TEQUIP:89
+		PRINTFORML %SAVESTR:TARGET%は荒い息を立てる犬の上で腰を振り続けている......
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;獣姦の場合
+	ELSEIF TEQUIP:89
+		PRINTFORML %SAVESTR:TARGET%は仰向けになった犬の上に自分からまたがると,
+		PRINTFORML ノラ犬の勃起したペニスを自らの意思でヴァギナへと挿入した......
+	;前回と今回の調教者が同じで,前回の調教が騎乗位であり,抜かないフラグがある場合
+	;また,前々回のコマンドが騎乗位で,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && (PREVCOM == 34 || (TFLAG:59 == 34 && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%は挿入されたままのペニスを締め付け,再び腰を動かし始めた...
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	;同様に,前回の調教が正常位系コマンドか後背位系コマンドである場合
+	;また,前々回のコマンドが正常位系コマンドか後背位系コマンドで,前回のコマンドがGスポ-子宮口攻めの場合
+	ELSEIF TFLAG:60 && ((PREVCOM == 20 || PREVCOM == 128 || PREVCOM == 129 || PREVCOM == 130 || PREVCOM == 21 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134) || ((TFLAG:59 == 20 || TFLAG:59 == 128 || TFLAG:59 == 129 || TFLAG:59 == 130 || TFLAG:59 == 21 || TFLAG:59 == 131 || TFLAG:59 == 132 || TFLAG:59 == 133 || TFLAG:59 == 134) && (PREVCOM == 120 || PREVCOM == 121))) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:PLAYER%は膣内から抜き去ることなく%SAVESTR:TARGET%を抱き上げ,下から腰を突き上げた...
+		SIF TFLAG:31
+			TFLAG:31 = 2
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%の上にまたがり,ゆっくりと腰を下ろし
+		IF TALENT:132 && EXP:0 == 0
+			PRINT ,男を知らない幼いワレメでペニスを飲み込んでいった...
+		ELSEIF EXP:0 == 0
+			PRINT ,男を知らない秘裂でペニスを飲み込んでいった...
+		ELSE
+			PRINT てきた...
+		ENDIF
+		IF EXP:0 >= EXPLV:3
+			PRINTL  
+			PRINTFORM %SAVESTR:TARGET%は
+			IF TALENT:99
+				PRINT 覆いかぶさるようにのしかかり
+			ELSEIF TALENT:100
+				PRINT 小さな身体で懸命に
+			ENDIF
+			SIF TALENT:153 && CFLAG:110 <= DAY+10
+				PRINT 膨れ上がった臨月腹を抱えて
+			SIF TALENT:110 || TALENT:114
+				PRINT 大きく胸を揺らしながら
+			PRINT 自ら腰を動かしている...
+		ENDIF
+		PRINTL  
+	ENDIF
+;--------------------------------------------------------
+;泡踊り
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 35
+	PRINTFORM %SAVESTR:TARGET%はソ-プを泡立たせて自分の
+	IF TALENT:青肌
+		PRINT 青色の
+	ELSEIF TALENT:褐色肌
+		PRINT 褐色の
+	ELSEIF TALENT:白皙
+		PRINT 白色の
+	ENDIF
+	PRINT 肌に塗りたくり,
+	SIF TALENT:85
+		PRINT うっとりとした表情をしつつ
+	IF TALENT:99
+		PRINTFORM %SAVESTR:PLAYER%をすっぽり包み込むようにして
+	ELSEIF TALENT:100
+		PRINTFORM %SAVESTR:PLAYER%に小さな身体を目一杯擦りつけて
+	ELSEIF TALENT:110 || TALENT:114
+		PRINTFORM %SAVESTR:PLAYER%に豊満な胸とふくよかな肌を擦りつけて
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%に全身を擦りつけて
+	ENDIF
+	PRINTL 愛撫した...
+;--------------------------------------------------------
+;騎乗位アナル
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 36
+	;前回と今回の調教者が同じで,前回の調教が騎乗位であり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 36 && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML %SAVESTR:TARGET%は挿入されたままのペニスを締め付け,再び腰を動かし始めた...
+	;同様に,前回の調教が正常位か後背位である場合
+	ELSEIF TFLAG:60 && (PREVCOM == 26 || PREVCOM == 22 || PREVCOM == 28 || PREVCOM == 29) && ((ASSIPLAY && TFLAG:50) || (ASSIPLAY == 0 && TFLAG:50 == 0))
+		PRINTFORML 腸内から抜き去ることなく%SAVESTR:TARGET%を抱き上げ,下から腰を突き上げた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%の上にまたがると,
+		SIF PALAM:3 >= PALAMLV:4
+			PRINT 粘液にまみれた
+			PRINTL アヌスでゆっくりとモノを飲み込んでいった...
+	ENDIF
+	IF EXP:0 >= EXPLV:3
+		PRINTFORM %SAVESTR:TARGET%は
+		IF TALENT:99
+			PRINT 覆いかぶさるようにのしかかり
+		ELSEIF TALENT:100
+			PRINT 小さな身体で懸命に
+		ENDIF
+	SIF TALENT:110 || TALENT:114
+		PRINT 大きく胸を揺らしながら
+		PRINTL 自ら腰を動かしている...
+	ENDIF
+;--------------------------------------------------------
+;アナル奉仕
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 37
+	IF TEQUIP:89
+		PRINTFORML %SAVESTR:TARGET%は犬のアナルに口付けしている...
+	ELSE
+		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%に自分のアナルに口付けさせた...
+	ENDIF
+;--------------------------------------------------------
+;足コキ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 38
+	PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%のペニスを足裏で
+	IF TALENT:83 || ABL:20 > 2
+		PRINT 踏みつけるように
+	ELSEIF TALENT:85 || TALENT:76
+		PRINT 丹念に
+	ENDIF
+	PRINTL シゴいている...
+;--------------------------------------------------------
+;スパンキング
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 40
+	PRINTFORM %SAVESTR:PLAYER%は
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORM の表面を
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の
+		SIF TALENT:312 == 23
+			PRINT 大きな
+		PRINT お尻を
+	ENDIF
+	PRINTFORML 平手で叩いた
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML の中の%SAVESTR:TARGET%には,大して効いていないようだ...
+	ELSEIF PREVCOM == 40 && (CFLAG:40 & 16) == 0
+		PRINTFORML %SAVESTR:TARGET%の叩かれた部分がどんどんと赤みを増していく...
+	ELSEIF (CFLAG:40 & 16) == 0
+		PRINTFORML %SAVESTR:TARGET%の叩かれた部分が赤くなった...
+	ENDIF
+;--------------------------------------------------------
+;鞭
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 41
+	PRINTFORM %SAVESTR:PLAYER%は
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の身体
+	ENDIF
+	PRINTFORML に鞭を振り下ろした...
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML の中の%SAVESTR:TARGET%には,大して効いていないようだ...
+	ELSEIF PREVCOM == 41
+		PRINTFORML %SAVESTR:TARGET%のミミズ腫れがどんどん増えていく...
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の身体に真っ赤なミミズ腫れができた...
+	ENDIF
+;--------------------------------------------------------
+;針
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 42
+	PRINTFORM %SAVESTR:PLAYER%は
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML を針でつついた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の
+		IF TALENT:青肌
+			PRINT 青い
+		ELSEIF TALENT:褐色肌
+			PRINT 褐色の
+		ELSEIF TALENT:白皙
+			PRINT 白色の
+		ENDIF
+		PRINTL 素肌を針でつついた...
+	ENDIF
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML の中の%SAVESTR:TARGET%には,大して効いていないようだ...
+	ENDIF
+;--------------------------------------------------------
+;アイマスク
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 43
+	IF TEQUIP:43
+		PRINTFORML %SAVESTR:TARGET%からアイマスクをはずしてやった
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%にアイマスクを着けさせた
+	ENDIF
+;--------------------------------------------------------
+;縄
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 44
+	PRINTFORM %SAVESTR:PLAYER%は
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%
+	ENDIF
+	IF TEQUIP:44
+		PRINTFORML の縄をほどいた
+	ELSE
+		PRINTFORML を縄で縛った
+	ENDIF
+;--------------------------------------------------------
+;ボールギャグ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 45
+	IF TEQUIP:45
+		PRINTFORML %SAVESTR:TARGET%からボ-ルギャグを取ってやった
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%にボ-ルギャグを嵌めさせた
+	ENDIF
+;--------------------------------------------------------
+;浣腸器+プラグ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 46
+	IF TEQUIP:46
+		PRINTFORML %SAVESTR:TARGET%は肛門栓を抜かれ,腸内の汚物を肛門から撒き散らした.
+		IF TFLAG:899 == 0
+			IF ABL:21 == 0
+				PRINTFORML %SAVESTR:TARGET%は苦悶と恥辱の表情を浮かべている
+			ELSEIF ABL:21 == 1
+				PRINTFORML %SAVESTR:TARGET%は脂汗を浮かべ,いまだ下腹に残る排泄感に堪えている.
+			ELSEIF ABL:21 == 2
+				PRINTFORML %SAVESTR:TARGET%は恥ずかしがりながらも,開放感にほっとした表情を浮かべている.
+			ELSEIF ABL:21 == 3
+				PRINTFORML %SAVESTR:TARGET%は,肛門を通り過ぎる排泄物の感覚に時折艶っぽい喘ぎ声を上げている.
+			ELSEIF ABL:21 == 4
+				PRINTFORML %SAVESTR:TARGET%は,うっとりした表情を浮かべ,排泄感を愉しんでいる.
+			ELSEIF ABL:21 >= 5
+				PRINTFORML %SAVESTR:TARGET%は,排泄感と恥辱を心ゆくまで味わっている.
+				PRINTFORML %SAVESTR:TARGET%の表情は快感にだらしなく緩み,肛門から汚物をひりだすと同時に,膣口からも愛液をボタボタと滴らせている.
+			ENDIF
+		ENDIF
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の菊穴に浣腸液を流し込み,栓をした
+	ENDIF
+;--------------------------------------------------------
+;ボンデージ装着
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 47
+	IF TEQUIP:47
+		PRINTFORML %SAVESTR:ASSI%のボンデ-ジルックを脱がせた...
+	ELSE
+		PRINTFORM %SAVESTR:ASSI%の
+		IF TALENT:ASSI:青肌
+			PRINT 青い
+		ELSEIF TALENT:ASSI:褐色肌
+			PRINT 褐色の
+		ELSEIF TALENT:ASSI:白皙
+			PRINT 白色の
+		ENDIF
+		PRINTL 素肌に革製のボンデ-ジルックを装着させた...
+	ENDIF
+
+;--------------------------------------------------------
+;足コキする
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 48
+	PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の
+	SIF PALAM:5 >= PALAMLV:3
+		PRINT 硬くそそり勃った
+	PRINTL ペニスを足でしごき上げた...
+
+;--------------------------------------------------------
+;アナル電極
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 49
+	IF TEQUIP:49
+		PRINTFORML %SAVESTR:TARGET%のアヌスから電極を抜いてやった...
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%の菊穴に電極を挿入してスイッチを入れた...
+	ENDIF
+;--------------------------------------------------------
+;ローション
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 50
+	CALL PRINT_CLOTHTYPE
+	PRINTFORML の%SAVESTR:TARGET%にロ-ションをぬりたくった...
+;--------------------------------------------------------
+;媚薬
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 51
+	IF TEQUIP:90
+		PRINTFORML 催淫効果のある液体が触手から染み出してきた
+	ELSEIF TEQUIP:55
+		PRINTFORML 媚薬成分が体内に浸透していった
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%に
+		SIF ABL:PLAYER:12 >= 3
+			PRINT 口移しで
+		SIF ABL:10 <= 2
+			PRINT 無理やり
+		PRINTFORML 媚薬を飲ませた
+	ENDIF
+	PRINTFORML %SAVESTR:TARGET%は荒い息をついて肌を紅潮させている...
+;--------------------------------------------------------
+;利尿剤
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 52
+	IF TEQUIP:90
+		PRINTFORML 極細い触手が,利尿作用のある液体を尿道から直接流し込んだ...
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%に
+		SIF ABL:PLAYER:12 >= 3
+			PRINT 口移しで
+		SIF ABL:10 <= 2
+			PRINT 無理やり
+		PRINTFORML 利尿剤を飲ませた
+	ENDIF
+	IF TFLAG:899 == 0
+		PRINTFORM %SAVESTR:TARGET%は荒い息をつき,
+		SIF TALENT:45 == 0 && TALENT:310 == 0
+			PRINTFORM 涙を浮かべて
+		PRINTFORML 尿意に耐えている...
+	ENDIF
+;--------------------------------------------------------
+;ビデオカメラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 53
+	IF TEQUIP:53
+		PRINTL ★★★ビデオ撮影を終了します★★★
+	ELSE
+		PRINTL ★★★ビデオ撮影を開始します★★★
+	ENDIF
+;--------------------------------------------------------
+;野外プレイ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 54
+	IF TEQUIP:54
+		PRINTFORML 部屋に戻ってきた...
+	ELSE
+		CALL PRINT_CLOTHTYPE
+		PRINTFORM の%SAVESTR:TARGET%
+		IF ASSI > 0
+			IF CFLAG:40 == CFLAG:ASSI:40 && CFLAG:41 == CFLAG:ASSI:41 && CFLAG:42 == CFLAG:ASSI:42
+				PRINTFORM と%SAVESTR:ASSI%
+			ELSE
+				PRINT と
+				T = TARGET
+				TARGET = ASSI
+				CALL PRINT_CLOTHTYPE
+				TARGET = T
+				PRINTFORM の%SAVESTR:ASSI%
+			ENDIF
+		ENDIF
+		IF (CFLAG:40 & 64) && CFLAG:42 == 71
+			PRINTFORML をリ-ドでつないで,%CALLNAME:MASTER%は外に出かけた...
+		ELSE
+			PRINTFORML に首輪をつけて,%CALLNAME:MASTER%は外に出かけた...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;会話する
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 56
+	;口上が存在すればそちらを優先
+;	IF TALENT:160 || TALENT:161 || TALENT:162 || TALENT:163 || TALENT:164 || TALENT:165 || TALENT:166
+		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%に話しかけた...
+	;決闘中は口上優先
+;	ELSEIF TEQUIP:55
+;		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%に話しかけた...
+	;ビデオ撮影中なら自己紹介
+;	ELSEIF TEQUIP:53
+;		PRINTFORML %SAVESTR:PLAYER%が%SAVESTR:TARGET%に自己紹介するよう促すと,
+;		IF TALENT:89 || ABL:17 >= 5
+;			PRINTFORM %SAVESTR:TARGET%は自分の本名やこれまでの性体験について
+;			SIF ABL:31 >= 3
+;				PRINTFORM ,更にはオナニーの時にする妄想の内容についてまで
+;			PRINTFORML 嬉々として喋り始めた......
+;			PRINTFORML このビデオが街中にバラまかれるという期待だけで股間を濡らしている......
+;			TFLAG:32 |= 2
+;		ELSEIF PALAM:5 >= PALAMLV:4 && (TALENT:76 || ABL:11 >= 5)
+;			PRINTFORML %SAVESTR:TARGET%はカメラに向かって卑猥な言葉を口走り始めた
+;			TFLAG:32 |= 2
+;		ELSEIF TALENT:85 || ABL:10 >= 3 || ABL:11 >= 4 || ABL:17 >= 2
+;			PRINTFORML %SAVESTR:TARGET%はカメラに向かって自己紹介を行った
+;			TFLAG:32 |= 2
+;		ELSE
+;			PRINTFORML %SAVESTR:TARGET%は横を向いたきり何も喋ろうとしない
+;		ENDIF
+;	ELSE
+;		PRINTFORM %SAVESTR:PLAYER%が
+;		IF PALAM:5 >= PALAMLV:4 && (TALENT:85 || ABL:10 >= 5) && TFLAG:60
+;			PRINTFORML 話しかけると,%SAVESTR:TARGET%は腰を振りながら愛の言葉を口走った
+;		ELSEIF PALAM:5 >= PALAMLV:4 && (TALENT:76 || ABL:11 >= 5) && TFLAG:60
+;			PRINTFORML 話しかけると,%SAVESTR:TARGET%は腰を振りながら卑猥な言葉を叫び続けた
+;		ELSEIF (PALAM:4 >= PALAMLV:4 || ABL:10 >= 5 || TALENT:85) && PALAM:5 >= PALAMLV:4
+;			PRINTFORM 話しかけると,%SAVESTR:TARGET%は
+;			IF TEQUIP:11 || TEQUIP:13 || TEQUIP:14 || TEQUIP:15 || TEQUIP:16 || TEQUIP:17
+;				PRINT 快楽に
+;			ELSEIF TEQUIP:44 || TEQUIP:49
+;				PRINT 苦痛に
+;			ENDIF
+;			PRINTFORML 声を上ずらせながらも,必死に言葉を返してきた
+;		ELSEIF PALAM:4 >= PALAMLV:4 || TALENT:85 || ABL:10 >= 5
+;			PRINTFORML 話しかけると,%SAVESTR:TARGET%は打ち解けた様子で喋り返してきた
+;		ELSEIF PALAM:4 >= PALAMLV:2 ||  ABL:10 >= 3
+;			PRINTFORML 話しかけると,%SAVESTR:TARGET%はぽつぽつと言葉を返してきた
+;		ELSE
+;			PRINTFORML 話しかけたが,%SAVESTR:TARGET%はまともに聞いていないようだ...
+;		ENDIF
+;	ENDIF
+;--------------------------------------------------------
+;羞恥プレイ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 57
+	IF TEQUIP:57
+		PRINTFORML %SAVESTR:TARGET%を連れて鏡の前から離れた...
+	ELSE
+		CALL PRINT_CLOTHTYPE
+		PRINTFORML の%SAVESTR:TARGET%を鏡の前に連れて来た...
+	ENDIF
+;--------------------------------------------------------
+;お風呂場プレイ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 58
+	IF TEQUIP:58
+		PRINTFORML %SAVESTR:PLAYER%と%SAVESTR:TARGET%は部屋に戻ってきた...
+	ELSE
+		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%を風呂場に連れて行った...
+	ENDIF
+;--------------------------------------------------------
+;新妻プレイ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 59
+	IF TEQUIP:59
+		PRINTFORML %SAVESTR:TARGET%のエプロンを脱がしてやった...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%の
+		IF TALENT:青肌
+			PRINT 青い
+		ELSEIF TALENT:褐色肌
+			PRINT 褐色の
+		ELSEIF TALENT:白皙
+			PRINT 白色の
+		ENDIF
+		PRINTL 素肌にエプロンをつけさせた...
+	ENDIF
+;--------------------------------------------------------
+;助手にキス
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 60
+	PRINTFORML %SAVESTR:ASSI%と%SAVESTR:TARGET%は舌を絡ませKissをしている...
+;--------------------------------------------------------
+;クンニ強制
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 61
+	PRINTFORML %SAVESTR:TARGET%に%SAVESTR:PLAYER%の陰唇を舐めさせた...
+;--------------------------------------------------------
+;助手を犯す
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 62
+	;前回の調教が助手を犯すであり,抜かないフラグがある場合
+	IF TFLAG:60 && PREVCOM == 62
+		PRINTFORML %SAVESTR:TARGET%に見せつけながら,%SAVESTR:ASSI%を犯し続けた...
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%に見せつけながら,%SAVESTR:ASSI%の
+		IF EXP:ASSI:0 == 0
+			PRINT 初めてを
+		ELSE
+			PRINT ヴァギナを
+		ENDIF
+		PRINTL 貫いていった...
+	ENDIF
+;--------------------------------------------------------
+;貝あわせ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 63
+	PRINTFORML %SAVESTR:PLAYER%と%SAVESTR:TARGET%は互いの性器を擦りあわせた...
+;--------------------------------------------------------
+;3P
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 64
+	IF ASSIPLAY
+		IF TFLAG:40 == 1
+			PRINTFORM %CALLNAME:MASTER%は%SAVESTR:TARGET%の秘唇に挿入しながら,
+		ELSEIF TFLAG:40 == 2
+			PRINTFORM %CALLNAME:MASTER%は%SAVESTR:TARGET%のアナルに埋め込みながら,
+		ELSEIF TFLAG:40 == 3
+			PRINTFORM %CALLNAME:MASTER%は%SAVESTR:TARGET%に咥えさせながら,
+		ENDIF
+		IF TFLAG:41 == 1
+			PRINTFORML %SAVESTR:ASSI%に秘唇を貫かせた...
+		ELSEIF TFLAG:41 == 2
+			PRINTFORML %SAVESTR:ASSI%にアナルに突き入れさせた...
+		ELSEIF TFLAG:41 == 3
+			PRINTFORML %SAVESTR:ASSI%に口内を蹂躙させた...
+		ENDIF
+	ELSE
+		IF TFLAG:41 == 1
+			PRINTFORM %SAVESTR:ASSI%に%SAVESTR:TARGET%の秘唇を貫かせながら,
+		ELSEIF TFLAG:41 == 2
+			PRINTFORM %SAVESTR:ASSI%に%SAVESTR:TARGET%のアナルに突き入れさせながら,
+		ELSEIF TFLAG:41 == 3
+			PRINTFORM %SAVESTR:ASSI%に%SAVESTR:TARGET%の口内を犯させながら,
+		ENDIF
+		IF TFLAG:40 == 1
+			PRINTFORML %CALLNAME:MASTER%は秘唇に挿入した...
+		ELSEIF TFLAG:40 == 2
+			PRINTFORML %CALLNAME:MASTER%はアナルに埋め込んだ...
+		ELSEIF TFLAG:40 == 3
+			PRINTFORML %CALLNAME:MASTER%は口を蹂躙した...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;助手を犯させる
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 65
+	PRINTFORML %SAVESTR:TARGET%に%SAVESTR:PLAYER%を抱かせる事にした...
+;--------------------------------------------------------
+;二本フェラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 66
+	PRINTFORML %SAVESTR:TARGET%に%CALLNAME:MASTER%と%SAVESTR:PLAYER%のペニスに同時に奉仕させた...
+;--------------------------------------------------------
+;ダブルフェラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 68
+	;調教対象が愛か淫乱で助手が愛か淫乱
+	IF (TALENT:TARGET:愛 || TALENT:TARGET:淫乱) && (TALENT:ASSI:愛 || TALENT:ASSI:淫乱)
+		PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%は二人一緒に%CALLNAME:MASTER%のペニスに舌を這わせる.
+		IF TALENT:TARGET:愛 && TALENT:ASSI:淫乱
+			PRINTFORML %SAVESTR:ASSI%は亀頭にむしゃぶりつくようにフェラをし,%SAVESTR:TARGET%は根元を優しく唇で締め付ける.
+			PRINTFORML 二人のコンビネ-ションは絶え間ない快楽を%CALLNAME:MASTER%のペニスに与えていった.........
+		ELSEIF TALENT:TARGET:淫乱 && TALENT:ASSI:愛
+			PRINTFORML %SAVESTR:TARGET%は亀頭にむしゃぶりつくようにフェラをし,%SAVESTR:ASSI%は根元を優しく唇で締め付ける.
+			PRINTFORML 二人のコンビネ-ションは絶え間ない快楽を%CALLNAME:MASTER%のペニスに与えていった.........
+		ELSEIF TALENT:ASSI:愛 && TALENT:TARGET:愛
+			PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%は%CALLNAME:MASTER%のペニスを縦半分ずつ分けるようにねっとりと舌を絡め合わせている.
+			PRINTFORML その淫靡なナメクジが這うような感覚は%CALLNAME:MASTER%のペニスを興奮させた.........
+		ELSEIF TALENT:ASSI:淫乱 && TALENT:TARGET:淫乱
+			PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%はお互い競い合うように%CALLNAME:MASTER%のペニスにむしゃぶりついている.
+			PRINTFORML お互いに鼻と鼻をぶつけそうな激しさながらもペニスへの奉仕は忘れていないようだ.........
+		ENDIF
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%は二人一緒に%CALLNAME:MASTER%のペニスに舌を這わせている...
+	ENDIF
+;--------------------------------------------------------
+;シックスナイン
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 69
+	PRINTFORM %SAVESTR:TARGET%と
+	IF TEQUIP:89
+		PRINTFORM 犬は
+	ELSEIF ASSI > 0 && ASSIPLAY
+		PRINTFORM %SAVESTR:ASSI%は
+	ENDIF
+	PRINTL 互いの性器を舐めあった...
+;--------------------------------------------------------
+;ダブル素股
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 70
+	PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%は自分達の性器の間に%CALLNAME:MASTER%のペニスを挟み,二人一緒にしごきあげた...
+;--------------------------------------------------------
+;ダブルパイズリ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 71
+	PRINTFORML %SAVESTR:TARGET%と%SAVESTR:ASSI%は二人の乳房で%CALLNAME:MASTER%のペニスを両側から挟み,擦りあげている...
+;--------------------------------------------------------
+;陰毛を剃る
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 72
+	IF TEQUIP:44
+		PRINTFORM 大股開きに縛り上げられた%SAVESTR:TARGET%の
+	ELSEIF ABL:10 >= 3 && ABL:17 >= 4
+		PRINTFORM 自分からせがむように大股開きに性器を突き出した%SAVESTR:TARGET%の
+	ELSE
+		PRINTFORM 足を開かせた%SAVESTR:TARGET%の
+	ENDIF
+	SIF TALENT:310 > 400
+		PRINT 伸び放題に繁った
+	PRINTFORML 陰毛を,%SAVESTR:PLAYER%は綺麗に剃り落とした...
+;--------------------------------------------------------
+;イラマチオ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 80
+	PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の
+		IF TALENT:304 == 8
+			PRINT ツインテ-ルを両手で掴むと
+		ENDIF
+	PRINTFORML 喉の奥までペニスを乱暴に突き入れた...
+;--------------------------------------------------------
+;フィストファック
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 81
+	PRINTFORML %SAVESTR:TARGET%の膣は%SAVESTR:PLAYER%の拳でかき回された.
+	IF TFLAG:899 == 0
+		IF ABL:2 == 2
+			PRINTFORML %SAVESTR:TARGET%の膣はぽっかり口を開いている
+		ELSEIF ABL:2 == 3
+			PRINTFORML %SAVESTR:TARGET%の膣は拡がったままなかなか戻らない
+		ELSEIF ABL:2 == 4
+			PRINTFORML %SAVESTR:TARGET%の性器からは肉ビラがはみ出し,ぽっかり開いた膣口のおくには子宮口が見えている.
+		ELSEIF ABL:2 >= 5
+			PRINTFORML %SAVESTR:TARGET%は,自分の膣口を指で拡げ,恍惚としている.
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;アナルフィスト
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 82
+	PRINTFORML %SAVESTR:TARGET%の肛門は%SAVESTR:PLAYER%の拳でかき回された.
+	IF TFLAG:899 == 0
+		IF ABL:3 == 2
+			PRINTFORML %SAVESTR:TARGET%の肛門はぽっかり口を開いている
+		ELSEIF ABL:3 == 3
+			PRINTFORML %SAVESTR:TARGET%の肛門は拡がったままなかなか戻らない
+		ELSEIF ABL:3 == 4
+			PRINTFORML %SAVESTR:TARGET%の肛門からは肉ビラがはみ出し,腸の中が丸見えになっている.
+		ELSEIF ABL:3 >= 5
+			PRINTFORML %SAVESTR:TARGET%は,自分の肛門を指で拡げ,恍惚としている.
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;両穴フィスト
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 83
+	PRINTFORML %SAVESTR:TARGET%の膣と肛門は%SAVESTR:PLAYER%の拳でかき回された.
+	IF TFLAG:899 == 0
+		IF ABL:2 <= 4 || ABL:3 <= 4
+			PRINTFORML %SAVESTR:TARGET%は両足を広げぐったりしている.
+			PRINTFORML 拡がりきった膣口と肛門からは粘液が垂れ流しだ.
+		ELSEIF ABL:2 >= 5 && ABL:3 >= 5
+			PRINTFORML %SAVESTR:TARGET%は余韻を味わっている.
+			PRINTFORML 両手の指が,すっかり拡がって中身を曝している,膣口と肛門の周りを撫で回している.
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;Ｇスポット刺激
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 84
+	PRINTFORM %SAVESTR:PLAYER%は,%SAVESTR:TARGET%の
+	;着衣設定
+	IF CFLAG:40 & 8 && ABL:17 != 0
+		PRINT まとっている
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT の裾をめくり上げ,
+	ENDIF
+	IF EXP:0 == 0
+		PRINT 男を知らない
+	ELSEIF PALAM:3 >= PALAMLV:4
+		PRINT 濡れそぼった
+	ENDIF
+	IF TALENT:132
+		PRINT 幼いワレメ
+	ELSE
+		PRINT 秘裂
+	ENDIF
+	IF TEQUIP:11
+		PRINTFORML の中で,妖しくうねるワ-ムを前後に抜き差しした
+	ELSE
+		PRINTFORM に自分の指を
+		IF (PREVCOM == 8 || PREVCOM == 84) && ABL:PLAYER:12 >= 3
+			PRINTFORML 挿し入れて優しく動かしている...
+		ELSE
+			PRINTFORML ゆっくりと挿入した...
+		ENDIF
+	ENDIF
+	;Gスポット刺激
+	IF TEQUIP:11 && ABL:PLAYER:12 >= 3
+		PRINTFORML %SAVESTR:PLAYER%は巧みにワ-ムを操り,敏感な天井をなぶった...
+	ELSEIF ABL:PLAYER:12 >= 3
+		PRINTFORML %SAVESTR:PLAYER%は%SAVESTR:TARGET%の膣の中で指を曲げ,ザラついた天井を刺激した...
+	ENDIF
+;--------------------------------------------------------
+;放尿
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 85
+	;触手プレイ中に放尿
+	IF TEQUIP:90
+		PRINTFORML 触手に絡め取られた%SAVESTR:TARGET%は,尿を空中にまき散らした...
+	;縄使用中に放尿
+	ELSEIF TEQUIP:44
+		PRINTFORML 縛り上げられた%SAVESTR:TARGET%は身動きのできないままおもらしを始めた
+		SIF CFLAG:42 != 69 || (CFLAG:40 & 64) == 0
+			PRINTFORML 湯気を立てる尿が%SAVESTR:TARGET%の上に逆流し,体中を汚していく...
+	;オムツの中に放尿
+	ELSEIF CFLAG:42 == 69 && (CFLAG:40 & 64) && ABL:10 >= 3 && ABL:17 >= 3
+		PRINTFORML %SAVESTR:PLAYER%が命令すると,%SAVESTR:TARGET%はその場でオムツの中へ放尿を始めた
+		PRINTFORML %SAVESTR:TARGET%はうっとりとした顔で体を震わせている...
+	ELSEIF CFLAG:42 == 69 && (CFLAG:40 & 64)
+		PRINTFORML %SAVESTR:PLAYER%に命令され,%SAVESTR:TARGET%は顔を真っ赤にしながらオムツの中へ放尿した...
+	;ズーコの着ぐるみの中で放尿
+	ELSEIF CFLAG:42 == 11 && (CFLAG:40 & 64) && ABL:10 >= 3 && ABL:17 >= 3
+		PRINTFORM %SAVESTR:PLAYER%が命令すると,%SAVESTR:TARGET%は嬉々として
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML の中で放尿を始めた...
+		PRINTFORML 新たな種類の快楽を発見しつつあるようだ
+	ELSEIF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		PRINTFORM %SAVESTR:TARGET%は
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORML の中で放尿した...
+		PRINTFORML 外側からではよく分からないが,どうも中ですすり泣いているらしい...
+	;服を着たまま放尿
+	ELSEIF (CFLAG:40 & 8) && ABL:10 >= 3 && ABL:17 >= 3 && TALENT:28 && TEQUIP:44 == 0
+		PRINTFORM %SAVESTR:TARGET%は何のためらいも見せずに,勢い良く
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINTFORML の中へ尿を迸らせ始めた...
+		PRINTFORM こちらと視線が合ったかと思うと,いきなり
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINTFORML の前をめくり上げ,
+		IF (CFLAG:40 & 1)
+			PRINT おしっこでぐしょぐしょになったパンツ
+		ELSE
+			PRINT おしっこをほとばしらせ続けている性器
+		ENDIF
+		PRINTFORML を見せながらVサインをしてみせた
+		PRINTFORML 何を考えているのやら...
+	ELSEIF ((CFLAG:40 & 8) || (CFLAG:40 & 16)) && ABL:10 >= 3 && ABL:17 >= 3
+		PRINTFORM %SAVESTR:TARGET%は何のためらいも見せずに,勢い良く
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINTFORML を着たまま尿を迸らせ始めた...
+	ELSEIF (CFLAG:40 & 8) || (CFLAG:40 & 16)
+		PRINTFORM %SAVESTR:TARGET%はじっと俯いたまま,黙って
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINTFORML の中へ放尿した...
+	;パンツの中に放尿
+	ELSEIF (CFLAG:40 & 1) && ABL:10 >= 3 && ABL:17 >= 3
+		PRINTFORML %SAVESTR:TARGET%は恍惚とした顔でパンツの中へと放尿を始めた...
+		PRINTFORML ぐしょぐしょに濡れたパンツの感触が癖になりつつあるようだ...
+	ELSEIF (CFLAG:40 & 1)
+		PRINTFORML %SAVESTR:TARGET%は顔を真っ赤にしながらパンツの中へ放尿した...
+	ELSEIF TALENT:57 && ABL:10 >= 3 && ABL:21 >= 3 && TALENT:132
+		PRINTFORM %SAVESTR:PLAYER%が%SAVESTR:TARGET%の両足を抱え上げ,おしっこの穴を指先でくすぐると,
+		PRINTFORML %SAVESTR:TARGET%は小さな身体を震わせて,反射的に尿を迸らせてしまった...
+	ELSEIF TALENT:57 && ABL:10 >= 3 && ABL:21 >= 3
+		PRINTFORM %SAVESTR:PLAYER%が%SAVESTR:TARGET%の尿道口を軽く指先で刺激すると,
+		PRINTFORML %SAVESTR:TARGET%は我慢できずに,反射的に尿を迸らせてしまった...
+	ELSEIF ABL:10 >= 3 && TALENT:28 && ABL:17 >= 3 && TEQUIP:53
+		PRINTFORM %SAVESTR:TARGET%は後ろ手を突いて足をＭ字に大きく開くと,
+		PRINTFORML ビデオカメラに向かってピ-スサインをしながら放尿した...
+	ELSEIF ABL:10 >= 3 && ABL:17 >= 3 && TEQUIP:54
+		PRINTFORML %SAVESTR:TARGET%は%SAVESTR:PLAYER%の命じるままに,
+		PRINTFORML 人通りの多い道の真ん中で足を開いて性器をむき出しにすると,
+		PRINTFORML 通行人の目もはばからず,立ったまま尿を迸らせ始めた...
+	ELSEIF ABL:10 >= 3 && ABL:17 >= 3
+		PRINTFORM %SAVESTR:TARGET%は
+		SIF TEQUIP:44 == 0
+			PRINTFORM 後ろ手を突いて足をＭ字に大きく開くと,
+		PRINTFORML %SAVESTR:PLAYER%に見せ付けるようにして放尿した...
+	ELSEIF TEQUIP:54
+		PRINTFORML %SAVESTR:TARGET%は羞恥と屈辱感にまみれ,
+		SIF TALENT:45 == 0 && TALENT:310 == 0
+			PRINTFORM 涙を浮かべながら,
+		PRINTFORML 草むらの中で放尿した...
+	ELSEIF TEQUIP:57
+		PRINTFORML %SAVESTR:TARGET%は鏡に映る自分を見ないようにしながらしゃがみこんで放尿し始めた...
+	ELSEIF TALENT:132
+		PRINTFORML %SAVESTR:TARGET%は%SAVESTR:PLAYER%に幼い子供のように両足を抱え上げられて放尿した...
+	ELSE
+		PRINTFORML %SAVESTR:TARGET%は羞恥に頬を染めながら,その場にしゃがみこんで放尿し始めた...
+	ENDIF
+;--------------------------------------------------------
+;ピアシング
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 87
+	PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の
+	IF P == 1
+		IF PALAM:5 >= PALAMLV:4
+			PRINT 勃起した
+		ELSEIF ABL:1 >= 4
+			PRINT 敏感な
+		ELSEIF TALENT:132
+			PRINT 幼い
+		ENDIF
+		PRINT 両乳首
+	ELSEIF P == 2
+		PRINT おへそ
+	ELSEIF P == 4
+		IF PALAM:5 >= PALAMLV:4
+			PRINT 淫らにヒクつく
+		ELSEIF ABL:2 >= 4
+			PRINT 敏感な
+		ELSEIF TALENT:132
+			PRINT 幼い
+		ENDIF
+		PRINT 左右の小陰唇
+	ELSEIF P == 8
+		IF PALAM:5 >= PALAMLV:4
+			PRINT 勃起した
+		ELSEIF ABL:0 >= 4
+			PRINT 敏感な
+		ELSEIF TALENT:132
+			PRINT 小さな
+		ENDIF
+		IF TALENT:121 || TALENT:122
+			PRINT ペニス
+		ELSE
+			PRINT クリトリス
+		ENDIF
+	ELSEIF P == 16
+		PRINT 舌先
+	ELSEIF P == 32
+		IF TALENT:307 == 1
+			PRINT 肉感的な
+		ELSEIF TALENT:307 == 2
+			PRINT 薄い
+		ELSEIF TALENT:307 == 3
+			PRINT 瑞々しい
+		ENDIF
+			PRINT 唇
+	ELSEIF P == 64
+		PRINT 鼻穴
+	ENDIF
+	IF CFLAG:7 & P
+		PRINTFORMW からピアスを取り外した...
+	ELSE
+		PRINTFORMW にピアスを取り付けた...
+	ENDIF
+;--------------------------------------------------------
+;獣姦プレイ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 89
+	IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+		CALL PRINT_CLOTHTYPE_SPECIAL
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%
+	ENDIF
+	SIF (CFLAG:42 != 11 || (CFLAG:40 & 64) == 0) && TEQUIP:89
+		PRINT の体
+	IF TEQUIP:89
+		PRINTFORML から犬を引き離した...
+	ELSE
+		PRINTFORML に犬をけしかけた...
+	ENDIF
+;--------------------------------------------------------
+;触手生物
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 100
+	IF TEQUIP:90
+		PRINTFORML 触手をケ-ジに戻し,%SAVESTR:TARGET%の体を解放した...
+	ELSE
+		PRINTFORM %SAVESTR:PLAYER%の操る異形の触手が,
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			CALL PRINT_CLOTHTYPE_SPECIAL
+		ELSE
+			PRINTFORM %SAVESTR:TARGET%の体
+		ENDIF
+		PRINTFORML を絡め取った...
+	ENDIF
+;--------------------------------------------------------
+;触手挿入
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 101
+	IF TEQUIP:11
+		PRINTFORML 触手が%SAVESTR:TARGET%の性器から引き抜かれた
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 細かい突起に覆われた触手が%SAVESTR:TARGET%の性器に潜り込んでいった
+	ENDIF
+;--------------------------------------------------------
+;アナル触手
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 102
+	IF TEQUIP:13
+		PRINTFORML 触手は%SAVESTR:TARGET%のアヌスから引き抜かれた
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 長大な触手が%SAVESTR:TARGET%のアナルに潜り込んだ
+	ENDIF
+;--------------------------------------------------------
+;触手クリ責め
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 103
+	IF TEQUIP:14
+		PRINTFORML 触手は%SAVESTR:TARGET%のクリ責めを中断した
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 細かく枝分かれした触手が%SAVESTR:TARGET%のクリトリスを責めはじめた
+	ENDIF
+;--------------------------------------------------------
+;触手乳首責め
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 104
+	IF TEQUIP:15
+		PRINTFORML 触手は%SAVESTR:TARGET%の乳首から離れた
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 細かく蠢く触手が%SAVESTR:TARGET%の乳首を弄り始めた
+	ENDIF
+;--------------------------------------------------------
+;触手搾乳
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 105
+	IF TEQUIP:16
+		PRINTFORML 触手は%SAVESTR:TARGET%の乳首を解放した
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 吸盤状の触手が%SAVESTR:TARGET%の乳首を吸いあげはじめた
+	ENDIF
+;--------------------------------------------------------
+;触手緊縛
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 106
+	IF TEQUIP:44
+		PRINTFORML 触手は%SAVESTR:TARGET%の拘束を解いた
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 無数の触手が%SAVESTR:TARGET%の体を縛りあげた
+	ENDIF
+;--------------------------------------------------------
+;触手浣腸
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 107
+	IF TEQUIP:46
+		PRINTFORML 触手が抜き取られると,%SAVESTR:TARGET%は汚物を肛門から撒き散らした
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 極太の触手が%SAVESTR:TARGET%の菊穴をふさぎ,体液を流し込んだ
+	ENDIF
+;--------------------------------------------------------
+;触手口辱
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 108
+	IF TEQUIP:98
+		PRINTFORML 触手は%SAVESTR:TARGET%の口から引き抜かれた
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML 濡れ光る触手が%SAVESTR:TARGET%の口に侵入した
+	ENDIF
+;--------------------------------------------------------
+;触手ペニス責め
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 109
+	IF TEQUIP:17
+		PRINTFORML 触手は%SAVESTR:TARGET%のペニスを解放した
+	ELSE
+		IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+			PRINTFORM 触手の群れは
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORM の隙間を通って潜り込み,
+		ENDIF
+		PRINTFORML いやらしく肉ヒダをうねらせた触手が%SAVESTR:TARGET%のペニスに巻き付き,一斉にしごき始めた
+	ENDIF
+;--------------------------------------------------
+;挿入Ｇスポ責め
+;--------------------------------------------------
+ELSEIF SELECTCOM == 120
+	;騎乗Ｇスポ責め
+	IF PREVCOM == 34 && TFLAG:899 == 0
+		PRINTFORMW %SAVESTR:TARGET%は上体を大きく逸らし,膣内の天井にペニスを擦り付けた...
+		IF EXP:0 <= 30
+			PRINTFORMW %SAVESTR:TARGET%は戸惑いながらもその行為を続けている...
+		ELSEIF EXP:0 <= 50
+			PRINTFORMW %SAVESTR:TARGET%は掴んだ快感を追って腰をくねらせている...
+		ELSEIF EXP:0 <= 80
+			PRINTFORMW %SAVESTR:TARGET%は尻をすぼめ,小刻みに腰をしゃくって嬌声を上げている...
+		ELSEIF EXP:0 <= 120
+			PRINTFORML %SAVESTR:TARGET%は後ろに手を衝いて,腰をガクガク揺らして快楽を貪っている...
+			PRINTFORMW 反り返ったペニスの先端が,鋭角にＧスポットを抉っている...
+		ELSE
+			PRINTFORML %SAVESTR:TARGET%は女の急所を,自らの腰の痙攣で思う存分刺激している...
+			PRINTFORMW ぐぽんと重い水音がするたび,鼻に抜けただらしのない声が漏れている...
+		ENDIF
+	;挿入Ｇスポ責め
+	ELSE
+		;正常位か正常位-キスか正常位-胸愛撫か正常位SP
+		IF PREVCOM == 20 || PREVCOM == 128 || PREVCOM == 129 || PREVCOM == 130
+			PRINTFORMW 腰をしゃくり,%SAVESTR:TARGET%の膣内の天井を小刻みに擦りあげた...
+		;後背位か後背位-胸愛撫か後背位-スパンキングか立ちバックか後背位SP
+		ELSEIF PREVCOM == 21 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134
+			PRINTFORMW 上体を屈め,%SAVESTR:TARGET%の膣内の天井を抉るように突き入れた...
+		;対面座位
+		ELSEIF PREVCOM == 22
+			PRINTFORMW 上体を離し,%SAVESTR:TARGET%の下腹を押さえて膣内の天井を擦りあげた...
+		;背面座位
+		ELSEIF PREVCOM == 23
+			PRINTFORMW %SAVESTR:TARGET%を持ち上げ,揺するように膣内の天井を執拗に刺激した...
+		;乱れ牡丹
+		;ELSEIF PREVCOM == 612
+			;PRINTFORML %SAVESTR:PLAYER%は鏡の前でさらなる%SAVESTR:PLAYER%の痴態を見せ付けるように,
+			;PRINTFORMW %SAVESTR:TARGET%を持ち上げ,揺するように膣内の天井を執拗に刺激した...
+		ENDIF
+		IF TFLAG:899 == 0
+			IF EXP:0 <= 30
+				PRINTFORMW %SAVESTR:TARGET%はむずがるように腰を揺すっている...
+			ELSEIF EXP:0 <= 50
+				PRINTFORMW %SAVESTR:TARGET%は口を結んで不慣れな快楽を堪えている...
+			ELSEIF EXP:0 <= 80
+				PRINTFORMW %SAVESTR:TARGET%は弱点を責められ,あまりの快感に目をぱちぱちさせている...
+			ELSEIF EXP:0 <= 120
+				PRINTFORML %SAVESTR:PLAYER%は腰に力を入れ,膣内でビクビクと震わせてやった...
+				PRINTFORMW %SAVESTR:TARGET%は過敏な天井を擦られる感触に熱い吐息を漏らしている...
+			ELSE
+				PRINTFORML %SAVESTR:TARGET%は喉を鳴らして涎を飲み,足指を丸めて頭を振って悶えている...
+				PRINTFORMW まともに呼吸もできず,口をぱくつかせて声にならない喘ぎを繰り返す...
+			ENDIF
+		ENDIF
+	ENDIF
+;--------------------------------------------------
+;挿入子宮口責め
+;--------------------------------------------------
+ELSEIF SELECTCOM == 121
+	;騎乗子宮口責め
+	IF PREVCOM == 34 && TFLAG:899 == 0
+		PRINTFORMW %SAVESTR:TARGET%は%SAVESTR:PLAYER%の胸に手を衝き,ペニスを根元まで飲み込んだ...
+		IF EXP:0 <= 30
+			PRINTFORMW %SAVESTR:TARGET%はそのまま腰を前後に揺すっている...
+		ELSEIF EXP:0 <= 50 && TALENT:121
+			PRINTFORMW %SAVESTR:TARGET%は%SAVESTR:PLAYER%の腹にペニスを押し付けている...
+		ELSEIF EXP:0 <= 50
+			PRINTFORMW %SAVESTR:TARGET%は%SAVESTR:PLAYER%の陰毛でクリトリスを刺激しているようだ...
+		ELSEIF EXP:0 <= 80
+			PRINTFORMW %SAVESTR:TARGET%は腰をくねらせ,挿入感を愉しんでは熱い息を吐いている...
+		ELSEIF EXP:0 <= 120
+			PRINTFORML %SAVESTR:TARGET%はクン,クンと腰を沈ませ,深奥を突く感触に酔っている...
+			PRINTFORMW コリコリした子宮口は綻び,法悦とともに仔を孕む用意を始めている...
+		ELSE
+			PRINTFORML %SAVESTR:TARGET%はリズミカルに腰を小さく縦に揺すり,牝そのものの顔で涎を垂らしている...
+			PRINTFORMW 子作りの快楽に理性は蕩け,牝の肉体は子種を求めて貪欲にひくついている...
+		ENDIF
+	;挿入子宮口責め
+	ELSE
+		;正常位か正常位-キスか正常位-胸愛撫か正常位SP
+		SIF PREVCOM == 20 || PREVCOM == 128 || PREVCOM == 129 || PREVCOM == 130
+			PRINTFORMW 腰を掴んで深く突き,%SAVESTR:TARGET%の子宮をコツンと叩いた...
+		;後背位か後背位-胸愛撫か後背位-スパンキングか立ちバックか後背位SP
+		SIF PREVCOM == 21 || PREVCOM == 131 || PREVCOM == 132 || PREVCOM == 133 || PREVCOM == 134
+			PRINTFORMW 尻を掴んで深く突き,%SAVESTR:TARGET%の子宮をコツンと叩いた...
+		;対面座位
+		SIF PREVCOM == 22
+			PRINTFORMW 腰の括れを深く抱いて,%SAVESTR:TARGET%の子宮をグリグリと刺激した...
+		;背面座位
+		SIF PREVCOM == 23
+			PRINTFORMW 腰を前に押すようにして,%SAVESTR:TARGET%の深奥まで突き上げた...
+		;乱れ牡丹
+		IF PREVCOM == 612
+			PRINTFORML %SAVESTR:PLAYER%は鏡の前でさらなる%SAVESTR:PLAYER%の痴態を見せ付けるように,
+			PRINTFORMW 腰を前に押すようにして,%SAVESTR:TARGET%の深奥まで突き上げた...
+		ENDIF
+		IF EXP:0 <= 30 || (EXP:0 >= 31 && EXP:0 <= 50 && (PREVCOM == 21 || PREVCOM == 612))
+			PRINTFORMW %SAVESTR:TARGET%は異物感が強いのか,苦しそうにしている...
+		ELSEIF EXP:0 <= 50 && TALENT:121
+			PRINTFORMW %SAVESTR:TARGET%は陰毛と臍の窪みにペニスを嬲られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 50
+			PRINTFORMW %SAVESTR:TARGET%は陰毛にクリトリスを擦られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 80
+			PRINTFORMW %SAVESTR:TARGET%は長く甘い息を吐きながら,挿入感を噛み締めている...
+		ELSEIF EXP:0 <= 120
+			PRINTFORML 子宮が子種を受ける準備を済ませたらしく,先端のくびれが膣奥の窪みで引っかかる...
+			PRINTFORMW %SAVESTR:TARGET%の子宮をノックする度,口をパクパクさせて激しく震えている...
+		ELSE
+			PRINTFORML 低い位置に下りてきた%SAVESTR:TARGET%の子宮を突いて揺すってやると,
+			PRINTFORMW %SAVESTR:TARGET%は狂ったように悶え,牝として最高の快楽に溺れた...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;兜あわせ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 122
+	IF PALAM:3 > PALAMLV:3
+		PRINTFORML %CALLNAME:MASTER%は%SAVESTR:TARGET%の先走りに濡れてヒクつくペニスと己のペニスを擦り合わせた
+	ELSE
+		PRINTFORML %CALLNAME:MASTER%は%SAVESTR:TARGET%と硬く勃起したお互いのペニスを擦り合わせた
+	ENDIF
+;--------------------------------------------------------
+;パイズリフェラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 123
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85
+		PRINT うっとりとした表情をしながら,
+	IF TALENT:109
+		PRINTL 薄い胸にペニスを擦りつけ,亀頭に舌を這わせた...
+	ELSEIF TALENT:110
+		PRINTL ペニスを豊満な胸で包み込み,頭を出したペニスを舐めて刺激している...
+	ELSEIF TALENT:114
+		PRINTL 豊満すぎる程の胸でペニスを包み隠してしまい,自分の胸に顔を突っ込んでペニスを舐め上げている...
+	ELSE
+		PRINTL 胸でペニスをはさみ,ペニスを舐めて刺激している...
+	ENDIF
+;--------------------------------------------------------
+;ディープスロート
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 124
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85
+		PRINT うっとりとした表情をしながら,
+	SIF TALENT:52
+		PRINT 舌を竿に絡めて
+	PRINT 喉の奥までペニスを咥え込んで
+	IF TALENT:16 >= 3
+		PRINTL 淫猥な音を立てて深いストロ-クで刺激した...
+	ELSE
+		PRINTL いった...
+	ENDIF
+;--------------------------------------------------------
+;フェラ自慰
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 125
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85
+		PRINT 熱っぽい表情で
+	SIF TALENT:76
+		PRINT 淫猥な表情で
+	SIF TALENT:52
+		PRINT 舌を竿に絡めて
+	PRINT ペニスを咥えたまま自らの
+	IF TEQUIP:11 && TEQUIP:13
+		PRINTL 秘部とアナルに差し込まれたワ-ムを抜き差しした...
+	ELSEIF TEQUIP:11
+		PRINTL 秘部に差し込まれたワ-ムを抜き差しした...
+	ELSEIF TEQUIP:13
+		PRINTL アナルに差し込まれたワ-ムを抜き差しした...
+	ELSE
+		IF TALENT:122
+			PRINTL 陰茎をしごいた...
+		ELSE
+			PRINTL 秘部をまさぐった...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;手コキフェラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 126
+	PRINTFORM %SAVESTR:TARGET%は
+	SIF TALENT:85
+		PRINT うっとりとした表情をしながら,
+	SIF TALENT:52
+		PRINT 舌を竿に絡めて
+	IF TALENT:PLAYER:122
+		PRINTL ペニスをしゃぶりながら片方の手で玉を揉み,もう片方の手で竿の根元を扱いた...
+	ELSE
+		PRINTL ペニスをしゃぶりながら竿の根元を扱いた...
+	ENDIF
+;--------------------------------------------------------
+;バキュームフェラ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 127
+	PRINTFORM %SAVESTR:TARGET%は%SAVESTR:PLAYER%の亀頭を舌で
+	IF TALENT:52
+		PRINT ねぶり回し,
+	ELSE
+		PRINT 舐め上げ,
+	ENDIF
+	PRINT 頬を窄め卑猥な音を響かせながら,
+	SIF ABL:12 >= 4 && ABL:13 >= 3
+		PRINT 腰が抜けるかと思うほど
+	PRINTL 強烈に吸い付いた...
+;--------------------------------------------------------
+;正常位-キス
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 128
+	PRINTFORML %SAVESTR:TARGET%を貫いたまま覆いかぶさるように身体を倒し,唇を重ねて舌を絡めあった...
+;--------------------------------------------------------
+;正常位-胸愛撫
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 129
+	PRINTFORM %SAVESTR:TARGET%を貫いたまま
+	IF TALENT:110 || TALENT:114
+		PRINT 揺れ弾む乳房を揉みしだい
+	ELSEIF TALENT:109
+		PRINT 小さな胸をまさぐっ
+	ELSE
+		PRINT 揺れる胸を揉みしだい
+	ENDIF
+	PRINTL た...
+;--------------------------------------------------------
+;正常位ＳＰ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 130
+	PRINTFORML %SAVESTR:TARGET%に覆いかぶさるように身体を倒し,唇を重ねて舌を絡め合い,
+	IF TALENT:110 || TALENT:114
+		PRINT 揺れ弾む乳房を揉みしだき
+	ELSEIF TALENT:109
+		PRINT 小さな胸をまさぐり
+	ELSE
+		PRINT 揺れる胸を揉み,
+	ENDIF
+	SIF TALENT:85
+	PRINT 両手を指と指を絡めながら握り,
+	PRINTL 抉る様に腰を振って子宮を突いた...
+	IF TFLAG:899 == 0
+		IF EXP:0 <= 30 || (EXP:0 >= 31 && EXP:0 <= 50)
+			PRINTFORMW %SAVESTR:TARGET%は異物感が強いのか,苦しそうにしている...
+		ELSEIF EXP:0 <= 50 && TALENT:121
+			PRINTFORMW %SAVESTR:TARGET%は陰毛と臍の窪みにペニスを嬲られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 50
+			PRINTFORMW %SAVESTR:TARGET%は陰毛にクリトリスを擦られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 80
+			PRINTFORMW %SAVESTR:TARGET%は長く甘い息を吐きながら,挿入感を噛み締めている...
+		ELSEIF EXP:0 <= 120
+			PRINTFORML 子宮が子種を受ける準備を済ませたらしく,先端のくびれが膣奥の窪みで引っかかる...
+			PRINTFORMW %SAVESTR:TARGET%の子宮をノックする度,口をパクパクさせて激しく震えている...
+		ELSE
+			PRINTFORML 低い位置に下りてきた%SAVESTR:TARGET%の子宮を突いて揺すってやると,
+			PRINTFORM %SAVESTR:TARGET%は
+			SIF TALENT:85
+				PRINT 目尻に涙を浮かべ,
+			SIF PALAM:5 > PALAMLV:4
+				PRINT 涎を垂らし
+			SIF PALAM:3 > PALAMLV:4
+				PRINT 本気汁で膣をグショグショにして
+			PRINTFORMW 狂ったように悶え,牝として最高の快楽に溺れた...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;後背位-胸愛撫
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 131
+	PRINTFORM %SAVESTR:TARGET%の
+	IF TALENT:110 || TALENT:114
+		PRINT 揺れ弾む乳房を後ろから鷲掴みにして揉みしだきながら
+	ELSEIF TALENT:109
+		PRINT 小さな胸を後ろからまさぐりながら
+	ELSE
+		PRINT 揺れる胸を後ろから揉みしだきながら
+	ENDIF
+	PRINTL 腰を打ちつけた...
+;--------------------------------------------------------
+;後背位-スパンキング
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 132
+	PRINTFORML %SAVESTR:TARGET%を後ろから犯しながら,震える尻を平手で打った...
+	IF TFLAG:899 == 0
+		IF ABL:21 < 3
+			PRINTFORML %SAVESTR:TARGET%は臀部に走る痛みに顔を歪めながら貫かれている
+		ELSEIF ABL:21 >= 3 && ABL:21 < 5
+			PRINTFORML %SAVESTR:TARGET%は尻を叩かれながらも秘部はしとどに濡れ,尻を振っておねだりするように腰を動かして自ら快楽を貪った...
+		ELSE
+			PRINTFORML 尻を真っ赤になるほど打ち付けてやると,%SAVESTR:TARGET%は痛みと膣を抉られる快楽に興奮極まった様子で悲鳴を上げながら悶え狂った...
+		ENDIF
+	ENDIF
+;--------------------------------------------------------
+;立ちバック
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 133
+	PRINTFORM 貫いている%SAVESTR:TARGET%の上体を起こし,後ろから
+	IF TALENT:110 || TALENT:114
+		PRINTL 揺れ弾む乳房を鷲掴みにして揉みしだき,
+	ELSEIF TALENT:109
+		PRINTL 小さな胸をまさぐり,
+	ELSE
+		PRINTL 揺れる胸を揉みしだき,
+	ENDIF
+	PRINT 顎を掴んでこちらを振り向かせ
+	IF TALENT:85
+		PRINT 舌を絡め合って濃厚なKissをしながら
+	ELSE
+		PRINT 舌を絡めて口内を蹂躙しながら
+	ENDIF
+	PRINTL 腰を突き上げた...
+;--------------------------------------------------------
+;後背位ＳＰ
+;--------------------------------------------------------
+ELSEIF SELECTCOM == 134
+	PRINTFORM %SAVESTR:TARGET%の
+	IF TALENT:110 || TALENT:114
+		PRINTL 揺れ弾む乳房を後ろから鷲掴みにして揉みしだき,
+	ELSEIF TALENT:109
+		PRINTL 小さな胸を後ろからまさぐり,
+	ELSE
+		PRINTL 揺れる胸を後ろから揉みしだき,
+	ENDIF
+	PRINT 顎を掴んでこちらを振り向かせ
+	IF TALENT:85
+		PRINT 舌を絡め合って濃厚なKissをすると,
+	ELSE
+		PRINT 舌を絡めて口内を蹂躙すると,
+	ENDIF
+	PRINTFORML %SAVESTR:TARGET%の両腕を掴んで腰を引き寄せる様な体勢でペニスを突き上げて子宮口を責めた...
+	IF TFLAG:899 == 0
+		IF EXP:0 <= 30 || (EXP:0 >= 31 && EXP:0 <= 50)
+			PRINTFORMW %SAVESTR:TARGET%は異物感が強いのか,苦しそうにしている...
+		ELSEIF EXP:0 <= 50 && TALENT:121
+			PRINTFORMW %SAVESTR:TARGET%は陰毛と臍の窪みにペニスを嬲られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 50
+			PRINTFORMW %SAVESTR:TARGET%は陰毛にクリトリスを擦られ,鼻声を漏らしている...
+		ELSEIF EXP:0 <= 80
+			PRINTFORMW %SAVESTR:TARGET%は長く甘い息を吐きながら,挿入感を噛み締めている...
+		ELSEIF EXP:0 <= 120
+			PRINTFORML 子宮が子種を受ける準備を済ませたらしく,先端のくびれが膣奥の窪みで引っかかる...
+			PRINTFORMW %SAVESTR:TARGET%の子宮をノックする度,口をパクパクさせて激しく震えている...
+		ELSE
+			PRINTFORML 低い位置に下りてきた%SAVESTR:TARGET%の子宮を突いて揺すってやると,
+			PRINTFORM %SAVESTR:TARGET%は
+			SIF TALENT:85
+				PRINT 目尻に涙を浮かべ,
+			SIF PALAM:5 > PALAMLV:4
+				PRINT 涎を垂らし
+			SIF PALAM:3 > PALAMLV:4
+				PRINT 本気汁で膣をグショグショにして
+			PRINTFORMW 狂ったように悶え,牝として最高の快楽に溺れた...
+		ENDIF
+	ENDIF
+;-----------------------------------------------------------------
+;セルフクンニ
+;-----------------------------------------------------------------
+ELSEIF SELECTCOM == 135
+	PRINTFORM %SAVESTR:TARGET%は
+	PRINTFORM 自分の頭を鷲掴みにして顔面を秘裂にあてがい舌で舐め
+	IF TALENT:121 && PALAM:5 >= PALAMLV:3
+		PRINT ,そしてそそり勃ったペニスを咥え
+		SIF ABL:11 > 3
+			PRINT まるでオナホのように自らの頭を振って目を回しながら快楽を貪っ
+	ELSEIF TALENT:121
+		PRINT ,ペニスの付け根を舌で舐め上げ
+	ELSEIF PALAM:5 >= PALAMLV:3
+		PRINT ,尖りきったクリトリスを唇で愛撫し
+	ENDIF
+	PRINTL た...
+
+;-----------------------------------------------------------------
+;フリー調教
+;-----------------------------------------------------------------
+ELSEIF SELECTCOM == 150
+	
+	PRINTFORM %SAVESTR:PLAYER%は
+	
+	IF CSTR:7 == "嗅覚"
+		PRINTFORM %SAVESTR:TARGET%に刷り込むように執拗に匂いを味わわせた...
+	ELSEIF CSTR:7 == "腋"
+		PRINTFORM %SAVESTR:TARGET%の脇を丹念に愛撫し,舐めあげた......
+	ELSE
+		PRINTFORM %CSTR:7%調教を開始した...
+	ENDIF
+	
+	PRINTL  
+	
+
+
+;-----------------------------------------------------------------
+;コロシアム
+;-----------------------------------------------------------------
+
+ELSEIF SELECTCOM == 200
+	IF TEQUIP:55
+		PRINTFORML %SAVESTR:PLAYER%と%SAVESTR:TARGET%は部屋に戻ってきた...
+	ELSE
+		IF (CFLAG:40 & 64) && CFLAG:42 <= 50
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINT 姿の
+		ELSEIF CFLAG:40 & 28
+			CALL PRINT_CLOTHTYPE_MAIN2
+			PRINT 姿の
+		;ELSEIF CFLAG:40
+		;	PRINT 下着姿の
+		ELSE
+			PRINT 全裸の
+		ENDIF
+		IF BASE:1 <= 0
+			PRINTFORMW %SAVESTR:TARGET%をコロシアムに連れていった.%SAVESTR:TARGET%にはすでに戦う気力は残っていない...
+		ELSE
+			PRINTFORMW %SAVESTR:TARGET%をコロシアムに連れていった...
+		ENDIF
+		PRINTW ...............
+		PRINTW ............
+		PRINTW .........
+		;全裸判定
+		IF CFLAG:40 == 0
+			PRINTFORMW %SAVESTR:TARGET%は全裸をコロシアムの観客達に晒している.
+			PRINTFORMW 下卑た笑いと好奇の視線,そして異様な雰囲気に飲まれたのか%SAVESTR:TARGET%は押し黙った.
+		ENDIF
+	ENDIF
+ENDIF
+
+;処女喪失の後でペニスを抜いているか
+IF TFLAG:31 == 2
+	TFLAG:31 = 1
+ELSE
+	TFLAG:31 = 0
+ENDIF
+
+RETURN 1

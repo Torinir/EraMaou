@@ -1,0 +1,1693 @@
+﻿
+;勇者にスパイを接近させて交際させ
+;堕落を誘発させるシステムです
+;悪い恋人に騙されて身を崩す女の子いいよね......
+
+;------------------------------------
+@ENTER_LOVER, ARG:0
+;------------------------------------
+;ARG:0 = 対象勇者
+
+SIF ARG:0 < 0
+	RETURN 0
+
+PRINTFORML 魔王の手先を街に派遣して勇者を恋の罠に嵌めます
+PRINTFORML %SAVESTR:(ARG:0)%に接近させる手下を選んでください
+
+PRINTL [0] 誰も派遣しない
+
+FOR LOCAL, 1, 100
+	CALL NAME_LOVER,LOCAL,0
+	IF RESULT == 1
+		PRINTFORM [{LOCAL}] 
+		CALL NAME_LOVER,LOCAL,1
+		PRINT 　
+	ENDIF
+	
+	LOCAL:1 = LOCAL % 20
+	SIF LOCAL:1 == 0
+		PRINTL  
+NEXT
+PRINTL [999] 戻る
+DRAWLINE
+
+;入力
+$INPUT_LOOP
+INPUT
+
+;戻る
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT == 0
+	LOCAL = 0
+ELSE
+	LOCAL = RESULT
+	;対象が存在しているか判定する
+	CALL NAME_LOVER,LOCAL,0
+	SIF RESULT == 0
+		GOTO INPUT_LOOP
+ENDIF
+
+;恋人派遣確定
+
+LOCAL:1 = CFLAG:(ARG:0):606
+CFLAG:(ARG:0):606 = LOCAL
+
+;愛情度リセット
+SIF LOCAL != LOCAL:1
+	CFLAG:(ARG:0):607 = 0
+
+IF LOCAL > 0
+	PRINTFORM %SAVESTR:(ARG:0)%に手下の
+	CALL NAME_LOVER,LOCAL,1
+	PRINTW を接近させました
+ELSE
+	PRINTFORMW 誰も%SAVESTR:(ARG:0)%には近づいていません
+ENDIF
+
+RETURN 1
+
+;------------------------------------
+@NAME_LOVER, ARG:0, ARG:1
+;------------------------------------
+;ARG:0 = 対象恋人
+;ARG:1 = プリントフラグ.1のときプリントする
+
+LOCALS = 
+
+SIF ARG:0 <= 0
+	RETURN 0
+
+; 1～20  人間
+;21～40  異種族
+;41～60  女性-ふたなり
+;61～80  ショタ
+;81～100 犬-家畜
+;200     キャラ名
+
+SELECTCASE ARG:0
+CASE 1
+	LOCALS = 優しそうな青年
+CASE 2
+	LOCALS = 厳つい大男
+CASE 3
+	LOCALS = 粗野なごろつき
+CASE 4
+	LOCALS = 脂ぎった中年
+CASE 21
+	LOCALS = 醜いオーク
+CASE 22
+	LOCALS = エルフの美男子
+CASE 23
+	LOCALS = 裏社会のダークエルフ
+CASE 24
+	LOCALS = トロールの奴隷
+CASE 41
+	LOCALS = 娼婦
+CASE 42
+	LOCALS = 女学生
+CASE 43
+	LOCALS = 高貴なレディ
+CASE 44
+	LOCALS = 女騎士
+CASE 61
+	LOCALS = 気弱な少年
+CASE 62
+	LOCALS = 眼鏡の男子学生
+CASE 63
+	LOCALS = 活発な少年
+CASE 64
+	LOCALS = かわいい男子学生
+CASE 81
+	LOCALS = ペットの大型犬
+CASE 82
+	LOCALS = 愛馬
+CASE 83
+	LOCALS = ペットの豚
+CASE 84
+	LOCALS = 農家の牛
+CASE 200
+	LOCALS = 恋人
+ENDSELECT
+
+SIF LOCALS == ""
+	RETURN 0
+
+SIF ARG:1 == 1
+	PRINTFORM %LOCALS%
+
+RETURN 1
+
+;------------------------------------
+@DUNGEON_TOWN_LOVER, ARG:0
+#DIM LOVER
+#DIM LOVE_UP
+#DIM LOVE_LV
+#DIM LOVE_ID
+#DIM LOVE_EXP,50
+#DIM MARRIAGE
+#DIM NO_KARMA
+;------------------------------------
+;ARG:0 = 対象勇者
+
+;街中での逢瀬
+;LOVE_EXP:0 = プレイ回数
+;LOVE_EXP:1 = 煙草フラグ
+;LOVE_EXP:2 = 薬物フラグ
+;LOVE_EXP:3 = フェラフラグ
+;LOVE_EXP:4 = V性交フラグ
+;LOVE_EXP:5 = A性交フラグ
+;LOVE_EXP:6 = レズフラグ
+;LOVE_EXP:7 = 獣姦フラグ
+;LOVE_EXP:8 = 被写フラグ
+;LOVE_EXP:9 = 前戯フラグ
+
+FOR LOCAL,0,50
+	LOVE_EXP:LOCAL = 0
+NEXT
+
+
+LOCALS = ERROR
+
+SIF ARG:0 <= 0
+	RETURN 0
+
+LOVER = CFLAG:(ARG:0):606
+LOVE_LV = CFLAG:(ARG:0):607
+NO_KARMA = 0
+;902が代入されている場合,恋人と結婚状態
+MARRIAGE = CFLAG:(ARG:0):601
+
+IF LOVER <= 0
+	;恋人がいない場合,早速作りに行く
+	CALL DUNGEON_TOWN_LOVER_CHARA_ENTER,ARG:0
+	SIF RESULT == 0
+		RETURN 0
+	LOVER = CFLAG:(ARG:0):606
+ENDIF
+
+LOVE_ID = CFLAG:(ARG:0):610
+
+; 1～20  人間
+;21～40  異種族
+;41～60  女性-ふたなり
+;61～80  ショタ
+;81～100 犬-家畜
+
+SELECTCASE LOVER
+CASE 1
+	LOCALS = 優しそうな青年
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に困っている所を助けられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ENDIF
+CASE 2
+	LOCALS = 厳つい大男
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%は子作りに励んでいるようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に危ない所を助けられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,押し倒された......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ENDIF
+CASE 3
+	LOCALS = 粗野なごろつき
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%は%LOCALS%の求めに応じたようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%は子作りに励んでいるようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;A性交フラグ
+		LOVE_EXP:5 += 1
+		;煙草フラグ
+		LOVE_EXP:1 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に街角でナンパされた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,煙草をふかした......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;A性交フラグ
+		LOVE_EXP:5 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 2
+	ENDIF
+CASE 4
+	LOCALS = 脂ぎった中年
+	IF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に酒場で奢られた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,高価な装飾品をもらった......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;A性交フラグ
+		LOVE_EXP:5 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ENDIF
+CASE 21
+	LOCALS = 醜いオーク
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に困っている所を助けられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ENDIF
+CASE 22
+	LOCALS = エルフの美男子
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%は子作りに励んでいるようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に困っている所を助けられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ENDIF
+CASE 23
+	LOCALS = 裏社会のダークエルフ
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%は%LOCALS%の求めに応じたようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%は子作りに励んでいるようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;A性交フラグ
+		LOVE_EXP:5 += 1
+		;煙草フラグ
+		LOVE_EXP:1 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に街角でナンパされた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,デ-トした......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,煙草をふかした......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;A性交フラグ
+		LOVE_EXP:5 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;煙草フラグ
+		LOVE_EXP:1 += 2
+		;薬物フラグ
+		LOVE_EXP:2 += 1
+	ENDIF
+CASE 24
+	LOCALS = トロールの奴隷
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,働いている%LOCALS%に目を奪われた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は奴隷主人に無理を言って%LOCALS%と語り合った......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は奴隷主人から買い取った%LOCALS%と約束して,デ-トした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 3
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ENDIF
+CASE 41
+	LOCALS = 娼婦
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,困っている%LOCALS%を助けた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,食事をした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 2
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ENDIF
+CASE 42
+	LOCALS = 女学生
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,困っている%LOCALS%を助けた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,食事をした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;レズフラグ
+		LOVE_EXP:6 += 2
+	ENDIF
+CASE 43
+	LOCALS = 高貴なレディ
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に声をかけられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,仕事の話をした......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,食事をした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%のプライベ-トル-ムに招かれた......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 2
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ENDIF
+CASE 44
+	LOCALS = 女騎士
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%に声をかけられた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,仕事の話をした......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,食事をした......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;レズフラグ
+		LOVE_EXP:6 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;レズフラグ
+		LOVE_EXP:6 += 3
+	ENDIF
+CASE 61
+	LOCALS = 気弱な少年
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,困っている%LOCALS%を助けた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,日が暮れるまで遊んだ......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ENDIF
+CASE 62
+	LOCALS = 眼鏡の男子学生
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%の家庭教師を依頼された......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,プライベ-トの話も弾んだ......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,恋の話をした......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に日常的に会っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の勉強はそっちのけで,抱き合っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ENDIF
+CASE 63
+	LOCALS = 活発な少年
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,困っている%LOCALS%を助けた......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と再会し,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と約束して出会い,日が暮れるまで遊んだ......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に行き,料理をした......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に泊まったようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の家に駆け込み,激しく抱き合った......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ENDIF
+CASE 64
+	LOCALS = かわいい男子学生
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく身体を重ねているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は仲睦まじい淫らな結婚生活を送っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,%LOCALS%の家庭教師を依頼された......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,他愛もない話に花を咲かせた......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,プライベ-トの話も弾んだ......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に勉強を教え,恋の話をした......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に日常的に会っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の勉強はそっちのけで,抱き合っているようだ......
+		;V性交フラグ
+		LOVE_EXP:4 += 1
+		;フェラフラグ
+		LOVE_EXP:3 += 3
+	ENDIF
+CASE 81
+	LOCALS = ペットの大型犬
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく交尾を始めたようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%はけだもののように盛りあう交尾生活を送っているようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,ペットショップで不思議な魅力を放つ%LOCALS%を購入した......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%とたくさん遊び,世話をしてやった......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%だけが自分の心を分かってくれると思うようになった......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%にオスとしての魅力を感じるようになった......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に性的興奮を覚えるようになった......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%との交尾に夢中になっていた......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ENDIF
+CASE 82
+	LOCALS = 愛馬
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく交尾を始めたようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%はけだもののように盛りあう交尾生活を送っているようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,騎乗用の%LOCALS%を購入した......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%とたくさん遊び,世話をしてやった......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%だけが自分の心を分かってくれると思うようになった......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%にオスとしての魅力を感じるようになった......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に性的興奮を覚えるようになった......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%との交尾に夢中になっていた......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ENDIF
+CASE 83
+	LOCALS = ペットの豚
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく交尾を始めたようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%はけだもののように盛りあう交尾生活を送っているようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,ペットショップで不思議な魅力を放つ%LOCALS%を購入した......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%とたくさん遊び,世話をしてやった......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%だけが自分の心を分かってくれると思うようになった......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%にオスとしての魅力を感じるようになった......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に性的興奮を覚えるようになった......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%との交尾に夢中になっていた......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 3
+	ENDIF
+CASE 84
+	LOCALS = 農家の牛
+	IF MARRIAGE == 902 && LOVE_LV < 10
+		;結婚10日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はぎこちない様子だ......
+	ELSEIF MARRIAGE == 902 && LOVE_LV < 30
+		;結婚30日未満
+		PRINTFORM 新婚の%SAVESTR:(ARG:0)%と%LOCALS%はようやく交尾を始めたようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSEIF MARRIAGE == 902
+		;結婚30日以降
+		PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%はけだもののように盛りあう交尾生活を送っているようだ......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 2
+	ELSEIF LOVE_LV <= 0
+		PRINTFORM %SAVESTR:(ARG:0)%はある日,近所に不思議な魅力を持った%LOCALS%がいることを知った......
+	ELSEIF LOVE_LV < 10
+		PRINTFORM %SAVESTR:(ARG:0)%は農家に手伝いに行き,%LOCALS%の世話をしてやった......
+	ELSEIF LOVE_LV < 20
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%だけが自分の心を分かってくれると思うようになった......
+	ELSEIF LOVE_LV < 30
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%にオスとしての魅力を感じるようになった......
+	ELSEIF LOVE_LV < 40
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に性的興奮を覚えるようになった......
+		;フェラフラグ
+		LOVE_EXP:3 += 1
+		;獣姦フラグ
+		LOVE_EXP:7 += 1
+	ELSE
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%との交尾に夢中になっていた......
+		;フェラフラグ
+		LOVE_EXP:3 += 2
+		;V性交フラグ
+		LOVE_EXP:4 += 2
+		;獣姦フラグ
+		LOVE_EXP:7 += 3
+	ENDIF
+CASE 200
+	;キャラ同士の恋愛
+	LOCALS = 
+	CALL SEARCH_FAMILY,ARG:0,"LOVE"
+	LOVE_ID = RESULT
+	NO_KARMA = 1
+	SIF LOVE_ID < 0
+		RETURN 0
+	LOCALS += SAVESTR:LOVE_ID
+	IF CFLAG:(ARG:0):1 == 2 && CFLAG:LOVE_ID:1 == 2
+		;まず,双方侵攻中の場合
+		;パーティを結成していないとダメ
+		SIF CFLAG:(ARG:0):533 <= 0
+			RETURN 0
+		;同じパーティにいないとダメ
+		SIF CFLAG:(ARG:0):533 != CFLAG:LOVE_ID:533
+			RETURN 0
+		
+		PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%とKissを交わした......
+		;キスフラグ
+		LOVE_EXP:0 += 1
+		
+	ELSEIF CFLAG:(ARG:0):1 == 0 && CFLAG:LOVE_ID:1 == 0
+		;双方が奴隷の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と人目をはばからず抱き合っている......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%を洗脳するように魔の素晴らしさを説いている......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%から魔の素晴らしさを説かれている......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は互いに励まし合って折れない心を確かめている......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 7 && CFLAG:LOVE_ID:1 == 7
+		;双方が苗床の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と互いの孕み腹を讃えている......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって魔を孕む素晴らしさを説いている......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は喜んで魔を孕む%LOCALS%を見て心が折れかけている......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は魔を孕みつつも互いに励まし合って折れない心を確かめている......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 8 && CFLAG:LOVE_ID:1 == 8
+		;双方が晒し台の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%と互いにどちらが観客を満足させるか競っている......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって観衆を満足させている自分を誇っている......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は痴態を見せつける%LOCALS%を見て心が折れかけている......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%と%LOCALS%は観衆に晒されながらも互いに励まし合って折れない心を確かめている......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 0 && CFLAG:LOVE_ID:1 == 2
+		;自分が奴隷の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%が魔に目覚めるのを心待ちにしている......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%が助けに来ることを信じている......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 2 && CFLAG:LOVE_ID:1 == 0
+		;相手が奴隷の場合
+		
+		IF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は風の噂で%LOCALS%が魔に堕ちたことを聞いて罪悪感に苛まれた......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%を助けることを誓った......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 3 && CFLAG:LOVE_ID:1 == 2
+		;自分が迎撃の場合
+		
+		PRINTFORM %SAVESTR:(ARG:0)%は自らの手で%LOCALS%を魔に堕とす瞬間を心待ちにしている......
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 2 && CFLAG:LOVE_ID:1 == 3
+		;相手が迎撃の場合
+		
+		PRINTFORM %SAVESTR:(ARG:0)%は風の噂で%LOCALS%が魔王軍に寝返ったことを聞いて酷く混乱した......
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 7 && CFLAG:LOVE_ID:1 == 2
+		;自分が苗床の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%が自分の隣で魔を孕む妄想を何度も繰り返していた......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%が助けにくる妄想を何度も繰り返していた......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 2 && CFLAG:LOVE_ID:1 == 7
+		;相手が苗床の場合
+		
+		IF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は風の噂で%LOCALS%が喜んで魔を孕んでいると聞いて,異様なほど興奮し耐え切れず自慰した......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は風の噂で%LOCALS%が魔を孕んでいると聞いて,泣きながら自慰した......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 8 && CFLAG:LOVE_ID:1 == 2
+		;自分が晒し台の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は水晶球に向かって%LOCALS%宛に犯されている状況を喜んで実況した......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は水晶球に向かって%LOCALS%宛に涙ながらに助けを乞うた......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 2 && CFLAG:LOVE_ID:1 == 8
+		;相手が晒し台の場合
+		
+		IF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は送られてきた水晶球に映る%LOCALS%の淫らな告白に,異様なほど興奮し耐え切れず自慰した......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は送られてきた水晶球に映る%LOCALS%の無残な姿に,罪悪感を感じ泣きながら自慰した......
+		ENDIF
+		
+		PRINTL  
+		RETURN 0
+		
+	ELSEIF CFLAG:(ARG:0):1 == 7 && CFLAG:LOVE_ID:1 == 0
+		;自分が苗床で相手が奴隷の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%の孕んだ腹を%LOCALS%は愛おしそうに撫でている......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって魔を孕む快楽を説いている......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%の孕んだ腹を愛おしそうに眺める%LOCALS%に絶望している......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって魔を孕んだことを謝罪している......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 0 && CFLAG:LOVE_ID:1 == 7
+		;自分が奴隷で相手が苗床の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%の孕んだ腹を愛おしそうに撫でている......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって魔を孕む快楽を説いている......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%が魔を孕む快楽に溺れていることに絶望している......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は魔を孕んだ%LOCALS%に向かって勇気づけている......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 8 && CFLAG:LOVE_ID:1 == 0
+		;自分が晒し台で相手が奴隷の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって痴態を見せつけるように腰を高く掲げた......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は自らの痴態を絶望する%LOCALS%に向かって実況した......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%への凌辱を愛おしそうに眺める%LOCALS%に絶望している......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は%LOCALS%に向かって凌辱されていることを謝罪している......
+		ENDIF
+		
+	ELSEIF CFLAG:(ARG:0):1 == 0 && CFLAG:LOVE_ID:1 == 8
+		;自分が奴隷で相手が晒し台の場合
+		
+		IF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 > 0
+			;双方が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は晒されている%LOCALS%とKissを交わしながら自慰した......
+		ELSEIF CFLAG:(ARG:0):0 > 0 && CFLAG:LOVE_ID:0 == 0
+			;自分が陥落している場合
+			PRINTFORM %SAVESTR:(ARG:0)%は絶望している%LOCALS%に向かって魔の素晴らしさを説いた......
+		ELSEIF CFLAG:(ARG:0):0 == 0 && CFLAG:LOVE_ID:0 > 0
+			;相手が陥落している
+			PRINTFORM %SAVESTR:(ARG:0)%は喜んで尻を掲げる%LOCALS%に異様な興奮を覚え,自慰し始めた......
+		ELSE
+			;どちらも陥落していない
+			PRINTFORM %SAVESTR:(ARG:0)%は晒されている%LOCALS%に向かって泣きながら謝罪し,命じられた自慰を始めた......
+		ENDIF
+		
+	;もっと分岐挟める気がする
+	ELSE
+		RETURN 0
+	ENDIF
+	
+	
+ENDSELECT
+
+;貞操帯-処女封印
+IF CFLAG:(ARG:0):42 == 79 && (CFLAG:(ARG:0):40 & 64) && FLAG:37
+	;貞操帯の場合アナルに
+	LOVE_EXP:5 += LOVE_EXP:4
+	LOVE_EXP:4 = 0
+ELSEIF TALENT:(ARG:0):273
+	;貞操封印の場合アナルに
+	LOVE_EXP:5 += LOVE_EXP:4
+	LOVE_EXP:4 = 0
+ENDIF
+
+;キスボーナス
+SIF LOVE_LV >= 10
+	LOVE_EXP:0 += 1
+SIF LOVE_LV >= 20
+	LOVE_EXP:0 += 1
+SIF LOVE_LV >= 30
+	LOVE_EXP:0 += 2
+SIF LOVE_LV >= 40
+	LOVE_EXP:0 += 3
+SIF LOVE_LV >= 60
+	LOVE_EXP:0 += 5
+
+;フェラボーナス
+IF LOVE_EXP:3 > 0
+	;技巧
+		LOVE_EXP:3 += ABL:(ARG:0):12
+	;奉仕技術
+		LOVE_EXP:3 += ABL:(ARG:0):13
+	;奉仕精神
+		LOVE_EXP:3 += ABL:(ARG:0):16
+	;精液中毒
+		LOVE_EXP:3 += ABL:(ARG:0):32
+	;舌使い
+	SIF TALENT:(ARG:0):52
+		LOVE_EXP:3 += 1
+	;汚臭鈍感
+	SIF TALENT:(ARG:0):61
+		LOVE_EXP:3 += 1
+	;汚臭敏感
+	SIF TALENT:(ARG:0):62
+		LOVE_EXP:3 -= 1
+	;汚臭敏感+精液中毒
+	SIF TALENT:(ARG:0):62 && ABL:(ARG:0):32 > 0
+		LOVE_EXP:3 += ABL:(ARG:0):32 * 3
+	
+ENDIF
+
+;V性交ボーナス
+IF LOVE_EXP:4 > 0
+	;V感覚
+		LOVE_EXP:4 += ABL:(ARG:0):2
+	;V鈍感
+	SIF TALENT:(ARG:0):103
+		LOVE_EXP:4 -= 1
+	;V敏感
+	SIF TALENT:(ARG:0):104
+		LOVE_EXP:4 += 1
+	;セックス狂
+	SIF TALENT:(ARG:0):75
+		LOVE_EXP:4 += 1
+	;淫壺
+	SIF TALENT:(ARG:0):232
+		LOVE_EXP:4 += 1
+	
+ENDIF
+
+;A性交ボーナス
+IF LOVE_EXP:5 > 0
+	;A感覚
+		LOVE_EXP:5 += ABL:(ARG:0):3
+	;A鈍感
+	SIF TALENT:(ARG:0):105
+		LOVE_EXP:5 -= 1
+	;A敏感
+	SIF TALENT:(ARG:0):106
+		LOVE_EXP:5 += 1
+	;尻穴狂い
+	SIF TALENT:(ARG:0):77
+		LOVE_EXP:5 += 1
+	;淫肛
+	SIF TALENT:(ARG:0):233
+		LOVE_EXP:5 += 1
+	
+ENDIF
+
+;オトコでない場合,レズフラグボーナス
+IF LOVE_EXP:6 > 0 && TALENT:(ARG:0):122 == 0
+	;レズっ気
+		LOVE_EXP:6 += ABL:(ARG:0):22
+	;レズ中毒
+		LOVE_EXP:6 += ABL:(ARG:0):33
+	;両刀
+	SIF TALENT:(ARG:0):81
+		LOVE_EXP:6 += 1
+	;男嫌い
+	SIF TALENT:(ARG:0):82
+		LOVE_EXP:6 += 1
+ENDIF
+
+;獣姦フラグボーナス
+IF LOVE_EXP:7 > 0
+	;種族人狼
+	SIF TALENT:(ARG:0):種族 == 2
+		LOVE_EXP:7 += 1
+	;かわいい動物が好き
+	SIF TALENT:(ARG:0):317 == 12
+		LOVE_EXP:7 += 1
+	;獣姦中毒
+		LOVE_EXP:7 += ABL:(ARG:0):39
+	;牝犬
+	SIF TALENT:(ARG:0):136
+		LOVE_EXP:7 += 3
+	
+	;Vフラグボーナス
+	SIF LOVE_EXP:4 > 0
+		LOVE_EXP:4 += LOVE_EXP:7
+	;フェラボーナス
+	SIF LOVE_EXP:3 > 0
+		LOVE_EXP:3 += LOVE_EXP:7
+	
+ENDIF
+
+;被写フラグボーナス
+;LOVE_EXP:8
+
+;臆病
+SIF TALENT:(ARG:0):10
+	LOVE_EXP:8 -= 1
+;自制心
+SIF TALENT:(ARG:0):20
+	LOVE_EXP:8 -= 1
+;好奇心
+SIF TALENT:(ARG:0):23
+	LOVE_EXP:8 += 1
+;一線越えない
+SIF TALENT:(ARG:0):27
+	LOVE_EXP:8 -= 1
+;目立ちたがり
+SIF TALENT:(ARG:0):28
+	LOVE_EXP:8 += 2
+;露出狂
+SIF TALENT:(ARG:0):89
+	LOVE_EXP:8 += 3
+;露出癖
+	LOVE_EXP:8 += ABL:(ARG:0):17
+
+;前戯フラグボーナス
+;LOVE_EXP:9
+
+;性交の前戯,レズ行為の合計
+LOVE_EXP:9 += LOVE_EXP:5 + LOVE_EXP:4 + LOVE_EXP:6
+
+IF LOVE_EXP:9 > 0
+	;C感覚
+		LOVE_EXP:9 += ABL:(ARG:0):0
+	;B感覚
+		LOVE_EXP:9 += ABL:(ARG:0):1
+	;C鈍感
+	SIF TALENT:(ARG:0):101
+		LOVE_EXP:9 -= 1
+	;C敏感
+	SIF TALENT:(ARG:0):102
+		LOVE_EXP:9 += 1
+	;B鈍感
+	SIF TALENT:(ARG:0):107
+		LOVE_EXP:9 -= 1
+	;B敏感
+	SIF TALENT:(ARG:0):108
+		LOVE_EXP:9 += 1
+	;自慰狂い
+	SIF TALENT:(ARG:0):74
+		LOVE_EXP:9 += 1
+	;乳狂い
+	SIF TALENT:(ARG:0):78
+		LOVE_EXP:9 += 1
+	;淫核
+	SIF TALENT:(ARG:0):230
+		LOVE_EXP:9 += 1
+	;淫乳
+	SIF TALENT:(ARG:0):231
+		LOVE_EXP:9 += 1
+	
+ENDIF
+
+;追加文
+
+IF LOVE_EXP:0 > 0 && CFLAG:(ARG):16 == 0
+	PRINTFORML ≪ファ-ストKiss≫
+	CFLAG:(ARG):16 = 1
+	CSTR:(ARG:0):4 = %LOCALS%
+ELSEIF LOVE_EXP:3 > 0 && CFLAG:(ARG):16 == 0
+	PRINTFORML ≪ファ-ストKiss≫
+	CFLAG:(ARG):16 = 101
+	CSTR:(ARG:0):4 = %LOCALS%
+ENDIF
+
+IF TALENT:(ARG:0):0 == 1 && LOVE_EXP:4 > 0
+	PRINTFORML ≪処女喪失≫
+	TALENT:(ARG:0):0 = 0
+	CFLAG:(ARG):15 = 100
+	CSTR:(ARG:0):3 = %LOCALS%
+ENDIF
+
+SIF LOVE_EXP:8 > 0
+	PRINTFORML %SAVESTR:(ARG:0)%はそれを水晶球に保存し,知り合いに見せびらかしたようだ......
+
+;清算
+
+PRINTL  
+
+;キス回数
+SIF LOVE_EXP:0 > 0
+	PRINTFORM Kiss:{LOVE_EXP:0}回 
+;煙草回数
+SIF LOVE_EXP:1 > 0
+	PRINTFORM 煙草:{LOVE_EXP:1}本 
+;薬物経験
+IF LOVE_EXP:2 > 0
+	PRINTFORM 薬物経験+{LOVE_EXP:2} 
+	EXP:(ARG:0):57 += LOVE_EXP:2
+ENDIF
+
+;フェラ経験
+IF LOVE_EXP:3 > 0
+	PRINTFORM フェラ経験+{LOVE_EXP:3} 
+	EXP:(ARG:0):22 += LOVE_EXP:3
+ENDIF
+
+;快C-快B
+;性交の前戯,レズ行為の合計
+IF LOVE_EXP:9 > 0
+	PRINTFORM %PALAMNAME:0%の珠+{LOVE_EXP:9 * 5} 
+	JUEL:(ARG:0):0 += LOCAL * 5
+	PRINTFORM %PALAMNAME:14%の珠+{LOVE_EXP:9 * 5} 
+	JUEL:(ARG:0):14 += LOCAL * 5
+ENDIF
+
+;V経験-快V
+IF LOVE_EXP:4 > 0
+	PRINTFORM V exp+{LOVE_EXP:4} 
+	EXP:(ARG:0):0 += LOVE_EXP:4
+	PRINTFORM %PALAMNAME:1%の珠+{LOVE_EXP:4 * 5} 
+	JUEL:(ARG:0):1 += LOVE_EXP:4 * 5
+ENDIF
+
+;A経験-快A
+IF LOVE_EXP:5 > 0
+	PRINTFORM A経験+{LOVE_EXP:5} 
+	EXP:(ARG:0):1 += LOVE_EXP:5
+	PRINTFORM %PALAMNAME:2%の珠+{LOVE_EXP:5 * 5} 
+	JUEL:(ARG:0):2 += LOVE_EXP:5 * 5
+ENDIF
+
+;性交経験
+IF (LOVE_EXP:5 + LOVE_EXP:4)  > 0
+	PRINTFORM Sex exp+{(LOVE_EXP:5 + LOVE_EXP:4)} 
+	EXP:(ARG:0):5 += (LOVE_EXP:5 + LOVE_EXP:4)
+ENDIF
+
+;精液経験
+LOCAL = (LOVE_EXP:5 + LOVE_EXP:4 + LOVE_EXP:3) / 2
+IF LOCAL > 0
+	PRINTFORM Semen exp+{LOCAL} 
+	EXP:(ARG:0):20 += LOCAL
+ENDIF
+
+;獣姦経験
+IF LOVE_EXP:7  > 0
+	PRINTFORM 獣姦経験+{LOVE_EXP:7} 
+	EXP:(ARG:0):56 += LOVE_EXP:7
+ENDIF
+
+;被写経験
+IF LOVE_EXP:8  > 0
+	PRINTFORM 被写経験+{LOVE_EXP:8} 
+	EXP:(ARG:0):70 += LOVE_EXP:8
+ENDIF
+
+;膣内射精
+;V経験-快V
+IF (LOVE_EXP:4 / 2) > 0
+	SELECTCASE LOVER
+	CASE 1 TO 20
+		;成人男性
+		CFLAG:(ARG:0):102 = 4
+		CFLAG:(ARG:0):105 = LOVE_EXP:4
+	CASE 21 TO 40
+		;異種族男性
+		CFLAG:(ARG:0):102 = 6
+		CFLAG:(ARG:0):107 = LOVE_EXP:4
+	CASE 41 TO 60
+		;女性-ふたなり
+		CFLAG:(ARG:0):102 = 4
+		CFLAG:(ARG:0):105 = LOVE_EXP:4
+	CASE 61 TO 80
+		;少年
+		CFLAG:(ARG:0):102 = 4
+		CFLAG:(ARG:0):105 = LOVE_EXP:4
+	CASE 81
+		;犬
+		CFLAG:(ARG:0):102 = 5
+		CFLAG:(ARG:0):106 = LOVE_EXP:4
+	CASE 82 TO 100
+		;その他の獣
+		CFLAG:(ARG:0):102 = 6
+		CFLAG:(ARG:0):107 = LOVE_EXP:4
+	ENDSELECT
+ENDIF
+
+IF MARRIAGE != 902 && NO_KARMA == 0
+	PRINTW (カルマが減少しました:-1)
+	CALL KARMA, ARG:0, -1
+ELSE
+	WAIT
+ENDIF
+
+CFLAG:(ARG:0):607 += 1
+
+RETURN 1
+
+;------------------------------------
+@DUNGEON_TOWN_LOVER_CHARA_ENTER, ARG:0
+#DIM LOVER
+;------------------------------------
+;ARG:0の勇者が同じく勇者の恋人を探す
+
+;恋人フラグが無いとダメ
+SIF GETBIT(FLAG:8,2) == 0
+	RETURN 0
+
+;恋人がすでにいるとダメ
+SIF CFLAG:(ARG:0):606 > 0
+	RETURN 0
+
+;配偶者がすでにいるとダメ
+SIF CFLAG:(ARG:0):601 > 0
+	RETURN 0
+
+LOCAL = RAND:CHARANUM
+
+;自分はダメ
+SIF LOCAL == ARG:0
+	RETURN 0
+
+;同じ状況でないとダメ
+;同じく侵攻中とか,同じく奴隷状態など
+SIF CFLAG:LOCAL:1 != CFLAG:(ARG:0):1
+	RETURN 0
+
+;対象に恋人がすでにいるとダメ
+SIF CFLAG:LOCAL:606 > 0
+	RETURN 0
+
+;対象に配偶者がすでにいるとダメ
+SIF CFLAG:LOCAL:601 > 0
+	RETURN 0
+
+IF TALENT:(ARG:0):122 == 1 && TALENT:LOCAL:122 == 1
+	;オトコ - オトコの場合
+	;BLっ気が双方に無いとダメ
+	SIF ABL:(ARG:0):23 == 0 && ABL:LOCAL:23 == 0
+		RETURN 0
+ELSEIF  TALENT:(ARG:0):122 == 0 && TALENT:LOCAL:122 == 0
+	;女 - 女の場合
+	;レズっ気が双方に無いとダメ
+	SIF ABL:(ARG:0):22 == 0 && ABL:LOCAL:22 == 0
+		RETURN 0
+ENDIF
+
+;侵攻中の場合同じパーティにいないとダメ
+SIF CFLAG:(ARG:0):1 == 2 && (CFLAG:(ARG:0):533 != CFLAG:LOCAL:533)
+	RETURN 0
+
+IF LOCAL == 0
+	;あなたの場合愛じゃないとダメ
+	SIF TALENT:(ARG:0):85 == 0
+		RETURN 0
+	PRINTFORML %SAVESTR:(ARG:0)%が交際を申し込んできた......
+	PRINTFORML 受け入れますか?
+	CALL SELECT_YES_NO
+	SIF RESULT == 1
+		RETURN 0
+ENDIF
+
+;ID情報を交換
+CALL CHARA_ID_OUTPUT,ARG:0
+CFLAG:LOCAL:610 = RESULT
+CALL CHARA_ID_OUTPUT,LOCAL
+CFLAG:(ARG:0):610 = RESULT
+
+;名前情報を交換
+CFLAG:LOCAL:608 = CFLAG:(ARG:0):6
+CFLAG:(ARG:0):608 = CFLAG:LOCAL:6
+
+;恋人フラグをON
+CFLAG:LOCAL:606 = 200
+CFLAG:(ARG:0):606 = 200
+
+PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:LOCAL%と惹かれあい,交際を始めたようだ......
+
+RETURN 1
+
+

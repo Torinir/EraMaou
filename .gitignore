@@ -1,0 +1,8 @@
+/.project
+#*.config
+/sav
+/debug
+*.log
+*.bak
+*.orig
+Thumbs.db

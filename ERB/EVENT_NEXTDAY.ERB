@@ -1,0 +1,2366 @@
+﻿;=================================================
+;日付変更時に起きるイベント
+;=================================================
+;eraIM@Sから流用
+
+@EVENT_NEXTDAY
+#DIM NEXTDAY_COUNT
+
+;キャラの素質変更に関わるチェック
+FOR NEXTDAY_COUNT, 1, CHARANUM
+	SIF NEXTDAY_COUNT == 0
+		CONTINUE
+
+	TARGET = NEXTDAY_COUNT
+
+	;不思議の根持ちで精液経験が150以上で[ふたなり]に変化
+	IF TALENT:121 == 0 && TALENT:122 == 0
+		SIF TALENT:326 == 1 && EXP:20 >= 150
+			CALL EVENT_FUTA_F
+	ENDIF
+
+	;放尿経験40以上([幼稚]があれば15以上)で[おもらし癖]がつく
+	IF TALENT:57 == 0
+		SIF TALENT:132 && EXP:31 >= 15
+			CALL EVENT_MORASI
+		SIF TALENT:132 == 0 && EXP:31 >= 40
+			CALL EVENT_MORASI
+	ENDIF
+	;反発刻印３があり
+	IF MARK:3 == 3
+		;かつ[幼稚]か[心弱い]である時に,欲望が5かつ従順が5かつマゾっ気が5かつ異常経験が5以上になると幼児退行する
+		IF (TALENT:132 || TALENT:134) && ABL:11 >= 5 && ABL:10 >= 5 && ABL:21 >= 5 && EXP:50 >= 5
+			CALL EVENT_YOUJI
+		;欲望が5かつ従順が5かつマゾっ気が5かつ露出5と異常経験が７以上に加え[おもらし癖]がつくと[幼児退行]する
+		ELSEIF ABL:11 >= 5 && ABL:10 >= 5 && ABL:21 >= 5 && ABL:17 >= 5 && EXP:50 >= 7 && TALENT:57 == 1
+			CALL EVENT_YOUJI
+		ENDIF
+	ENDIF
+
+	;[青肌][悪魔羽][悪魔尻尾][悪魔眼]が全て揃っていると種族が魔族になる.
+	IF TALENT:314 != 9
+		SIF TALENT:244 == 1  &&  TALENT:245 == 1  &&  TALENT:246 == 1  &&  TALENT:247 == 1
+			CALL EVENT_MAZOKU
+	ENDIF
+
+	;媚薬中毒
+	CALL APHRODISIAC_ADDICT
+	
+NEXT
+
+;排卵誘発剤の効果終了処理
+REPEAT CHARANUM
+	IF CFLAG:COUNT:109
+		PRINTFORML %SAVESTR:COUNT%の排卵誘発剤の効果が切れたようだ
+		DRAWLINE
+		CFLAG:COUNT:109 = 0
+	ENDIF
+REND
+
+;お香の使用回数をクリア
+FLAG:61 = 0
+
+;妊娠発覚
+CALL GET_CHILD_ALL
+
+;出産･育児室関連
+FOR LOCAL, 0, CHARANUM
+	IF TALENT:LOCAL:153 || TALENT:LOCAL:154
+		;出産3日前からは臨月突入で調教不可に
+		IF (CFLAG:LOCAL:110 - 3) == DAY
+			DRAWLINE
+			CALL REACH_FULL_TERM(LOCAL)
+		;出産前日には育児室への訪問を問うイベント発生
+		ELSEIF (CFLAG:LOCAL:110 - 1) == DAY
+			DRAWLINE
+			PRINTFORML %SAVESTR:LOCAL%は出産が近づいているようだ......
+			DRAWLINE
+		;出産予定日なら出産
+		ELSEIF CFLAG:LOCAL:110 == DAY
+			DRAWLINE
+			CALL CHILD_BIRTH(LOCAL)
+		;出産5日で親離れで調教可能に
+		ELSEIF (CFLAG:LOCAL:110 + 5) == DAY
+			DRAWLINE
+			CALL DEPEARENT(LOCAL)
+		ELSEIF TALENT:LOCAL:154
+			DRAWLINE
+			PRINTFORML %SAVESTR:LOCAL%は育児中です......
+			DRAWLINE
+		ENDIF
+	ENDIF
+NEXT
+
+;着衣設定の場合,汚れた衣類を洗濯する
+;SIF FLAG:37
+;	CALL WASHING_CLOTH
+
+;処女チェック
+REPEAT CHARANUM
+	SIF COUNT == 0
+		CONTINUE
+	TARGET = COUNT
+
+	;処女なら処女献上チェック
+	IF TALENT:0
+		CALL OFFERVIRGIN_CHECK
+	ENDIF
+
+	COUNT = TARGET
+REND
+
+;性交中毒による夜這いチェック
+CALL NIGHT_STALKING_CHECK
+
+;運営費
+;CALL RUNNING_COST
+
+;指輪と召喚
+CALL CURSE_EQUIP_RING
+
+;5/21
+CALL SUMMON_MONSTER, 0
+
+;施設効果
+CALL DUNGEON_ROOM_DAY
+
+;キャライベント
+REPEAT CHARANUM
+	SIF COUNT == 0
+		CONTINUE
+
+	TARGET = COUNT
+	
+	CALL PILLORY
+	
+	CALL SABBATH
+	
+	CALL NTR_VIDEO
+	
+	CALL EVENT_VIDEO_DAY
+	
+	;カルマ増減
+	;処女の場合カルマ上昇
+	SIF TALENT:0 == 0 && RAND:3 == 0
+		CALL KARMA, TARGET, 1
+	;愛の場合カルマ上昇
+	SIF TALENT:85 == 1 && RAND:3 == 0
+		CALL KARMA, TARGET, 1
+	;侵攻中の場合カルマ上昇
+	SIF CFLAG:1 == 2 && RAND:3 == 0
+		CALL KARMA, TARGET, 1
+	;何は無くともちょっとずつ変動
+	IF RAND:2 == 0
+		CALL KARMA, TARGET, 1
+	ELSE
+		CALL KARMA, TARGET, -1
+	ENDIF
+	
+	;信仰値増加
+	;聖女-神官-巫女は信仰値が上昇
+	IF TALENT:勇者になる前の生活 == 12 || TALENT:202 || TALENT:206
+		CALL FAITH, TARGET, 1
+	ELSEIF CFLAG:152 < 30
+		;そうでない場合,中途半端な信仰は減少
+		CALL FAITH, TARGET, -1
+	ELSEIF RAND:4 == 0
+		;ランダムで増えたり
+		CALL FAITH, TARGET, 1
+	ELSEIF RAND:3 == 0
+		;減ったり
+		CALL FAITH, TARGET, -1
+	ENDIF
+	
+	COUNT = TARGET
+REND
+
+;税収
+CALL TAX_GET
+
+RETURN 1
+;=================================================
+;朝に起こるイベント
+;=================================================
+@EVENT_NEWDAY
+;彼女はときどき帰ってくる
+;D = 0
+;CALL SOMETIMES_SHE_COMES_BACK
+;SIF D
+;	RETURN 1
+
+A = 0
+REPEAT CHARANUM
+	SIF A >= CHARANUM
+		BREAK
+	
+	;影の寿命
+	IF TALENT:A:292 && CFLAG:A:1 != 11
+		CFLAG:A:820 -= 1
+		PRINTFORML %SAVESTR:A%の残り寿命は{CFLAG:A:820}日です
+	ENDIF
+	
+	;影の寿命
+	IF TALENT:A:292 && CFLAG:A:820 <= 0 && CFLAG:A:1 != 11
+		PRINTFORML %SAVESTR:A%は光の中へ消えていく......
+		CFLAG:A:9 = 1
+		CALL EXECUTION_MINI("NO_LOG")
+		COUNT = 1
+		A = 0
+	ENDIF
+	
+	A += 1
+REND
+
+;起床(朝フェラ)→日付確認(誕生日)→朝食(おねしょ)の順番で処理が良いかなーと.
+
+;朝フェラ
+CALL MORNING_FELLATIO
+
+;誕生日
+;CALL HAPPY_BIRTHDAY
+
+;おねしょ
+CALL ONESHO
+
+;特定日付のイベント
+;CALL PARTICULAR_DATE
+
+;犬の散歩
+CALL DOG_WALK
+
+RETURN 1
+;===========================================================
+;娼館の維持費と奴隷達の生活費
+;===========================================================
+@RUNNING_COST
+;基礎維持運営費
+A = 500
+
+;日付が30日を超えると$1000追加
+SIF DAY > 31
+	A += 1000
+;日付が50日を超えると$2000追加
+SIF DAY > 51
+	A += 2000
+
+;個室を拡張していると$500追加
+SIF FLAG:48 & 1
+	A += 500
+;ＳＭグッズを購入していると$100追加
+SIF FLAG:48 & 2
+	A += 100
+;護衛を雇用していると$1000追加
+SIF FLAG:48 & 4
+	A += 1000
+;浴室を拡張していると$500追加
+SIF FLAG:48 & 32
+	A += 500
+;多目的ホールを建てていると$1800追加
+SIF FLAG:48 & 8
+	A += 1800
+;マイクを購入していると$100追加
+SIF FLAG:48 & 16
+	A += 100
+;警備員を雇用していると人数*$500追加
+SIF FLAG:48 & 64
+	A += FLAG:40 * 500
+
+;娼館人気が50以上で1割増,70以上で2割増,90以上で3割増
+IF EXP:MASTER:91 >= 50
+	TIMES A , 1.10
+ELSEIF EXP:MASTER:91 >= 70
+	TIMES A , 1.20
+ELSEIF EXP:MASTER:91 >= 90
+	TIMES A , 1.30
+ENDIF
+
+;貢献度が100以上で1割減,200以上で2割減,400以上で3割減,700以上で4割減......
+IF EXP:MASTER:90 >= 3000
+	TIMES A , 0.10
+ELSEIF EXP:MASTER:90 >= 2000
+	TIMES A , 0.30
+ELSEIF EXP:MASTER:90 >= 1200
+	TIMES A , 0.50
+ELSEIF EXP:MASTER:90 >= 700
+	TIMES A , 0.60
+ELSEIF EXP:MASTER:90 >= 400
+	TIMES A , 0.70
+ELSEIF EXP:MASTER:90 >= 200
+	TIMES A , 0.80
+ELSEIF EXP:MASTER:90 >= 100
+	TIMES A , 0.90
+ENDIF
+
+;基礎生活費(生活費機能実装までの暫定的な処理)
+;1人あたりEASY/NORMAL/EXTRAは$100,HARDは$200,LUNATICは$300,PHANTASMは$400
+IF FLAG:5 <= 2 || FLAG:5 == 9
+	A += CHARANUM*100
+ELSEIF FLAG:5 == 3
+	A += CHARANUM*200
+ELSEIF FLAG:5 == 4
+	A += CHARANUM*300
+ELSEIF FLAG:5 == 5
+	A += CHARANUM*400
+ENDIF
+;MASTERの分は無料or割引
+A -= 100
+
+;難易度EASYで0.8倍,HARDで1.2～2.5倍,POWERFULで1.4～5.0倍,PHANTASMで2.0～16.0倍
+IF FLAG:5 == 1
+	TIMES A , 0.80
+ELSEIF FLAG:5 == 3
+	IF DAY <= 20
+		TIMES A , 1.20
+	ELSEIF DAY <= 40
+		TIMES A , 1.50
+	ELSEIF DAY <= 60
+		TIMES A , 2.00
+	ELSE
+		TIMES A , 2.50
+	ENDIF
+ELSEIF FLAG:5 == 4
+	IF DAY <= 20
+		TIMES A , 1.40
+	ELSEIF DAY <= 30
+		TIMES A , 1.80
+	ELSEIF DAY <= 40
+		TIMES A , 3.00
+	ELSE
+		TIMES A , 5.00
+	ENDIF
+ELSEIF FLAG:5 == 5
+	IF DAY <= 15
+		TIMES A , 2.00
+	ELSEIF DAY <= 25
+		TIMES A , 4.00
+	ELSEIF DAY <= 35
+		TIMES A , 8.00
+	ELSE
+		TIMES A , 16.00
+	ENDIF
+ENDIF
+
+;EASYは21日目から,NORMAL以上は11日目から維持費＆生活費が発生する
+IF FLAG:5 != 9
+	IF (FLAG:5 == 1 && DAY >= 20) || (FLAG:5 >= 2 && DAY >= 10)
+		PRINTFORML 調教センタ-の維持費と奴隷達の生活費に${A}かかった......
+		DRAWLINE
+		MONEY -= A
+	ENDIF
+ENDIF
+;------------------------------------------------
+;ふたなり化
+;-------------------------------------------------
+@EVENT_FUTA_F
+PRINTFORML (む...なんだこれ?)
+$INPUT_LOOP
+PRINTFORML %NAME:TARGET%を[%TALENTNAME:121%]にしますか?
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+INPUT
+IF RESULT == 0
+	PRINTFORML %NAME:TARGET%は[%TALENTNAME:121%]になった.
+	TALENT:326 = 0
+	TALENT:121 = 1
+	TALENT:1 = 1
+ELSEIF RESULT == 1
+	PRINTFORML %NAME:TARGET%は[%TALENTNAME:326%]を失った.
+	TALENT:326 = 0
+ELSE
+	GOTO INPUT_LOOP
+ENDIF
+
+WAIT
+;-------------------------------------------------
+;おもらし
+;-------------------------------------------------
+@EVENT_MORASI
+PRINTFORML その晩,%SAVESTR:TARGET%はおねしょをしてしまったようだ...
+PRINTFORML %NAME:TARGET%は[%TALENTNAME:57%]がついた.
+TALENT:57 = 1
+
+WAIT
+;-------------------------------------------------
+;幼児退行
+;-------------------------------------------------
+@EVENT_YOUJI
+PRINTFORML (む･･･どうしたんだ?)
+PRINTFORMW %SAVESTR:TARGET%の様子がおかしい...
+PRINTFORMW %NAME:TARGET%は過酷な調教に耐え切れず,[%TALENTNAME:131%]してしまったようだ...
+TALENT:131 = 1
+
+IF TALENT:20
+	TALENT:20 = 0
+	PRINTFORML [%TALENTNAME:20%]がなくなった
+ENDIF
+IF TALENT:21
+	TALENT:21 = 0
+	PRINTFORML [%TALENTNAME:21%]がなくなった
+ENDIF
+IF TALENT:22
+	TALENT:22 = 0
+	PRINTFORML [%TALENTNAME:22%]がなくなった
+ENDIF
+IF TALENT:24
+	TALENT:24 = 0
+	PRINTFORML [%TALENTNAME:24%]がなくなった
+ENDIF
+IF TALENT:26
+	TALENT:26 = 0
+	PRINTFORML [%TALENTNAME:26%]がなくなった
+ENDIF
+IF TALENT:27
+	TALENT:27 = 0
+	PRINTFORML [%TALENTNAME:27%]がなくなった
+ENDIF
+IF TALENT:30
+	TALENT:30 = 0
+	PRINTFORML [%TALENTNAME:30%]がなくなった
+ENDIF
+IF TALENT:32
+	TALENT:32 = 0
+	PRINTFORML [%TALENTNAME:32%]がなくなった
+ENDIF
+IF TALENT:34
+	TALENT:34 = 0
+	PRINTFORML [%TALENTNAME:34%]がなくなった
+ENDIF
+IF TALENT:35
+	TALENT:35 = 0
+	PRINTFORML [%TALENTNAME:35%]がなくなった
+ENDIF
+IF TALENT:37
+	TALENT:37 = 0
+	PRINTFORML [%TALENTNAME:37%]がなくなった
+ENDIF
+IF TALENT:55
+	TALENT:55 = 0
+	PRINTFORML [%TALENTNAME:55%]がなくなった
+ENDIF
+IF TALENT:93
+	TALENT:93 = 0
+	PRINTFORML [%TALENTNAME:93%]がなくなった
+ENDIF
+IF TALENT:57 == 0
+	TALENT:57 = 1
+	PRINTFORML [%TALENTNAME:57%]がついた
+ENDIF
+
+MARK:3 = 0
+PRINTFORML [%MARKNAME:3%]が0になった
+
+WAIT
+
+;-------------------------------------------------
+;魔族化
+;-------------------------------------------------
+@EVENT_MAZOKU
+SIF TALENT:魂縛
+	RETURN
+
+TALENT:元種族 = TALENT:種族
+IF ABL:欲望 >= 3
+	TALENT:サブ種族 = TALENT:淫乱 ? 152 # 132 ;淫乱ならサキュバス,それ以外はナイトガール
+ELSE
+	TALENT:サブ種族 = 132 ;インプ
+ENDIF
+TALENT:314 = 9
+PRINTFORMW 濃厚な魔力が充ち満ちていく.........
+PRINTFORMW %SAVESTR:TARGET%は改造の結果,元の種族をやめて
+PRINTFORMW 立派な[魔族-%ITEMNAME:(TALENT:サブ種族)%]になった
+PRINTFORML 
+WAIT
+;-------------------------------------------------
+;彼女はときどき帰ってくる
+;-------------------------------------------------
+@SOMETIMES_SHE_COMES_BACK
+REPEAT CHARANUM
+	;主人公は判定から省く
+	SIF COUNT == 0
+		CONTINUE
+
+	IF BASE:COUNT:0 == 0
+		BASE:COUNT:0 = MAXBASE:COUNT:0 / 10
+		BASE:COUNT:1 = MAXBASE:COUNT:1
+		DRAWLINE
+		PRINTFORML 朝,%NAME:MASTER%が目を覚ますと,確かに死んだはずの%SAVESTR:COUNT%がそこにいた
+		PRINTFORML %SAVESTR:COUNT%は何事もなかったかのように,朝の挨拶をした
+		PRINTL  
+		WAIT 
+		PRINTFORML %SAVESTR:COUNT%が復帰しました......
+		DRAWLINE
+		WAIT
+		;一度に帰ってくるのは一人ずつ
+		D = 1
+		RETURN 1
+	ENDIF
+REND
+
+RETURN 0
+;-------------------------------------------------
+;朝フェラ
+;-------------------------------------------------
+;欲望4以上かつ奉仕精神4以上かつ精液中毒のキャラがいれば翌日朝フェラ
+;複数いる場合はランダムで当番制
+;-------------------------------------------------
+@MORNING_FELLATIO
+;主人がオトコかふたなりでないとダメ
+SIF TALENT:MASTER:122 == 0 && TALENT:MASTER:121 == 0
+	RETURN 0
+
+;朝フェラ係が決まっている場合
+L = 0
+;REPEAT CHARANUM
+;	SIF CFLAG:COUNT:60 & 1
+;		L = COUNT
+;REND
+;IF L
+;	M = L
+;	;瀕死,あるいは死んでしまった
+;	SIF BASE:L:0 <= 500
+;		L = 0
+;	;育児中
+;	SIF TALENT:L:154
+;		L = 0
+;	;臨月
+;	SIF CFLAG:L:110 - 2 <= DAY && TALENT:L:153
+;		L = 0
+;	;奉仕しない
+;	SIF TALENT:L:151
+;		L = 0
+;	;反発刻印
+;	SIF MARK:L:3 > 0
+;		L = 0
+;	;条件を満たさなくなった
+;	SIF ABL:L:11 < 4 || ABL:L:16 < 4 || ABL:L:32 < 1
+;		L = 0
+;	SIF L
+;		GOTO FELLATIO_START
+;	DRAWLINE
+;	PRINTFORMW 今朝はなんだか寂しい......
+;	PRINTFORML 毎朝,布団の中から朝の挨拶をしていた%SAVESTR:M%が,
+;	PRINTFORMW 今日は姿を見せていないのだった
+;	M = 0
+;	RETURN 1
+;ENDIF
+
+F = 0
+REPEAT CHARANUM
+	IF ABL:COUNT:11 >= 4 && ABL:COUNT:16 >= 4 && ABL:COUNT:32 >= 1
+		;死んでたり臨死中だとダメ
+		SIF BASE:COUNT:0 <= 0
+			CONTINUE
+		;瀕死だとダメ
+		SIF BASE:COUNT:0 <= 500
+			CONTINUE
+		;育児中や臨月だとダメ
+		SIF TALENT:COUNT:154 || (CFLAG:COUNT:110 - 2 <= DAY && TALENT:COUNT:153)
+			CONTINUE
+		;魔王部屋にいないとダメ
+		SIF CFLAG:COUNT:1 != 0
+			CONTINUE
+		;未婚か魔王と結婚していないとダメ
+		SIF CFLAG:COUNT:601 != 0 && CFLAG:COUNT:601 != 901
+			CONTINUE
+		;奉仕しないがあるとダメ
+		SIF TALENT:COUNT:151
+			CONTINUE
+		;反発刻印があるとダメ
+		SIF MARK:COUNT:3 > 0
+			CONTINUE
+		A = ABL:COUNT:32
+		;汚臭鈍感
+		SIF TALENT:COUNT:61
+			A += 1
+		;汚臭敏感
+		SIF TALENT:COUNT:62
+			A -= 1
+		;献身的
+		SIF TALENT:COUNT:63
+			A += 1
+		;淫乱
+		SIF TALENT:COUNT:76
+			A += 1
+		;愛
+		SIF TALENT:COUNT:85
+			A += 1
+		SIF A > 0
+			F += 1
+	ENDIF
+REND
+
+SIF F == 0
+	RETURN 0
+
+E = RAND:F
+
+REPEAT CHARANUM
+	IF ABL:COUNT:11 >= 4 && ABL:COUNT:16 >= 4 && ABL:COUNT:32 >= 1
+		;死んでたり臨死中だとダメ
+		SIF  BASE:COUNT:0 <= 0
+			CONTINUE
+		;瀕死だとダメ
+		SIF BASE:COUNT:0 <= 500
+			CONTINUE
+		;育児中や臨月だとダメ
+		SIF TALENT:COUNT:154 || (CFLAG:COUNT:110 - 2 <= DAY && TALENT:COUNT:153)
+			CONTINUE
+		;魔王部屋にいないとダメ
+		SIF CFLAG:COUNT:1 != 0
+			CONTINUE
+		;未婚か魔王と結婚していないとダメ
+		SIF CFLAG:COUNT:601 != 0 && CFLAG:COUNT:601 != 901
+			CONTINUE
+		;奉仕しないがあるとダメ
+		SIF TALENT:COUNT:151
+			CONTINUE
+		;反発刻印があるとダメ
+		SIF MARK:COUNT:3 > 0
+			CONTINUE
+		A = ABL:COUNT:32
+		;汚臭鈍感
+		SIF TALENT:COUNT:61
+			A += 1
+		;汚臭敏感
+		SIF TALENT:COUNT:62
+			A -= 1
+		;献身的
+		SIF TALENT:COUNT:63
+			A += 1
+		;淫乱
+		SIF TALENT:COUNT:76
+			A += 1
+		;愛
+		SIF TALENT:COUNT:85
+			A += 1
+
+		IF A > 0 && E == 0
+			L = COUNT
+			BREAK
+		ELSEIF A > 0
+			E -= 1
+		ENDIF
+
+	ENDIF
+REND
+
+;セルフフェラ発生を防止
+SIF L == 0
+	RETURN 0
+
+$FELLATIO_START
+DRAWLINE
+PRINTFORMW 朝,%SAVESTR:L%のフェラで目を覚ました
+EXP:L:22 += A
+PRINTFORML %EXPNAME:22%+{A}
+EXP:L:20 += A/2
+PRINTFORML %EXPNAME:20%+{A/2}
+PRINTFORML %SAVESTR:L%は精液の貼りついた顔で朝の挨拶をしてきた
+PRINTFORML %PALAMNAME:4%の珠+{A*100}
+PRINTFORML %PALAMNAME:6%の珠+{A*30}
+PRINTFORMW %PALAMNAME:7%の珠+{A*40}
+JUEL:L:4 += A*100
+JUEL:L:6 += A*30
+JUEL:L:7 += A*40
+
+;朝フェラ口上
+TARGET = L
+TFLAG:13 = 3
+CALL SELF_KOJO
+
+RETURN 1
+;-------------------------------------------------
+;[おもらし癖]持ちのおねしょチェック
+;TALENT:おもらし癖を持つキャラは放尿回数依存でおねしょ
+;-------------------------------------------------
+@ONESHO
+REPEAT CHARANUM
+	IF TALENT:COUNT:57 ==1 && RAND:12 <= EXP:COUNT:31/10 + TALENT:COUNT:132*2
+		;死んでたらダメ
+		SIF  BASE:COUNT:0 <= 0
+			CONTINUE
+		DRAWLINE
+
+;		※カテーテル等装備判定
+		IF CFLAG:COUNT:42 == 99 || CFLAG:COUNT:42 == 98
+			IF (CFLAG:COUNT:40 & 64) && FLAG:37
+;			※この上の二つのIF文でカテーテルありの装備判定.システム上における変数読み込みかなにかで個数関係で一つに繋げられず,エラーが出る?
+				IF CFLAG:COUNT:1 < 2
+;				※キャラの状態判定.魔王部屋,または待機中の場合
+					IF ABL:COUNT:10 < 3
+;					※従順度判定(3未満,6未満,それ以外で判定)
+						PRINTFORML 神秘の尿道カテ-テルの装着により,夜中,不覚にもおもらしをした感覚に襲われた%SAVESTR:COUNT%だが,
+						PRINTFORML 不思議と汚れずに済んだものの,その恥ずかしさは耐え難く,装着させた%CALLNAME:MASTER%をにらみつけてきた.
+;						※恥辱または苦痛の珠を10,20で増加.
+						SELECTCASE RAND:4
+							CASE 0
+								PRINTFORML %PALAMNAME:8%の珠+10
+								JUEL:L:8 += 10
+							CASE 1
+								PRINTFORML %PALAMNAME:8%の珠+20
+								JUEL:L:8 += 20
+							CASE 2
+								PRINTFORML %PALAMNAME:9%の珠+10
+								JUEL:L:9 += 10
+							CASE 3
+								PRINTFORML %PALAMNAME:9%の珠+20
+								JUEL:L:9 += 20
+						ENDSELECT
+					ELSEIF ABL:COUNT:10 < 6
+						PRINTFORML 神秘の尿道カテ-テルの装着で,うっかりおもらしをしてしまった,と感じた%SAVESTR:COUNT%だが,
+						PRINTFORML 特に汚れなどが無い事により,気にしない事にした.
+					ELSE
+						PRINTFORML %SAVESTR:COUNT%は神秘の尿道カテ-テルの装着をしながら,夜中ぐっすりと眠ったものの,
+						PRINTFORML おもらしした感触はあるが,部屋の不要な容器へとカテ-テルの先を伸ばしていたため
+						PRINTFORML 身奇麗なまま朝を迎えた.
+;						※恭順の珠などを10くらいの単位で増やす.
+;						※中毒しやすい,倒錯的,マゾ,露出狂,のいずれかを所持している場合はイベント追加.
+						IF TALENT:COUNT:72 == 1 || TALENT:COUNT:80 == 1 || TALENT:COUNT:88 == 1 || TALENT:COUNT:89 == 1
+							IF TALENT:COUNT:60 == 1
+;							※自慰しやすい(TALENT:COUNT:60 == 1),の場合更にイベント追加.自慰回数と欲情,恥辱の珠を増加.
+								PRINTFORML %SAVESTR:COUNT%は%CALLNAME:MASTER%におもらしした事と,
+								PRINTFORML その後,カテ-テル特有のむず痒しさから,カテ-テルを使って自慰した事を告白してきた.
+								PRINTFORML %EXPNAME:10%+1
+								PRINTFORMW %PALAMNAME:5%の珠+800
+								PRINTFORMW %PALAMNAME:8%の珠+800
+								EXP:COUNT:10 += 1
+								JUEL:COUNT:5 += 800
+								JUEL:COUNT:8 += 800
+							ELSE
+								PRINTFORML %SAVESTR:COUNT%は%CALLNAME:MASTER%におもらしした事をそっと報告し,顔を羞恥で染めた.
+								PRINTFORMW %PALAMNAME:8%の珠+300
+								JUEL:COUNT:8 += 300
+							ENDIF
+						ENDIF
+						SELECTCASE RAND:3
+							CASE 0
+								PRINTFORML %PALAMNAME:4%の珠+10
+								JUEL:L:4 += 10
+							CASE 1
+								PRINTFORML %PALAMNAME:4%の珠+20
+								JUEL:L:4 += 20
+							CASE 2
+								PRINTFORML %PALAMNAME:4%の珠+30
+								JUEL:L:4 += 30
+						ENDSELECT
+					ENDIF
+
+				ENDIF
+			ENDIF
+;			※カテーテル装備の判定式2段目の終わり.次のELSE以降がカテーテル等装備無しの判定.
+;		※↓は元々あった記述,カテーテル等装備してない状態
+
+		ELSE
+			PRINTFORML %SAVESTR:COUNT%は,おねしょをしてしまったようだ...
+			EXP:COUNT:31 += 1
+			PRINTFORML %EXPNAME:31%+1
+			;着衣設定なら衣類が汚れる
+			TARGET = COUNT
+			CALL SOILING_CLOTH_NO1
+			CALL AFTERTRAIN_CLOTH
+			;魔王部屋にいないとダメ
+			SIF CFLAG:COUNT:1 != 0
+				CONTINUE
+			;露出+マゾっ気が8以上ならみんなに報告
+			IF ABL:COUNT:17+ABL:COUNT:21 >= 8
+				PRINTFORM おねしょのことを%SAVESTR:COUNT%は
+					IF CHARANUM >= 3
+						PRINTL 朝食の席でみんなに発表した
+					ELSE
+						PRINTL 報告してきた
+					ENDIF
+				PRINTFORMW %PALAMNAME:8%の珠+1000
+				JUEL:COUNT:8 += 1000
+			ENDIF
+		ENDIF
+
+	ENDIF
+REND
+
+RETURN 1
+
+
+
+;-------------------------------------------------
+;調教対象からの処女献上
+;-------------------------------------------------
+@OFFERVIRGIN_CHECK
+
+;処女献上が禁止されてたらスキップ
+SIF FLAG:38 <= -1
+	RETURN 0
+;調教対象が空だとダメ
+SIF TARGET < 0
+	RETURN 0
+;奉仕しないが付いてるとダメ
+SIF TALENT:151
+	RETURN 0
+;未熟だとダメ
+SIF TALENT:135
+	RETURN 0
+;非処女やオトコだと発動しない
+SIF TALENT:0 == 0 || TALENT:122
+	RETURN 0
+;主人がオトコかフタナリじゃないとダメ
+SIF TALENT:MASTER:122 == 0 && TALENT:MASTER:121 == 0
+	RETURN 0
+;愛か淫乱で,かつ愛情経験200以上でないとダメ
+SIF (TALENT:85 == 0 && TALENT:76 == 0) || EXP:23 < 200
+	RETURN 0
+;従順+欲望+奉仕精神が10以下だとダメ
+SIF ABL:10+ABL:11+ABL:16 <= 10
+	RETURN 0
+;瀕死だとダメ
+SIF BASE:0 < 500
+	RETURN 0
+;処女膜再生済だとダメ
+SIF CFLAG:71 > 0
+	RETURN 0
+;貞操帯着用時,鍵を捨てていてなおかつ奴隷がその鍵を発見済でないとダメ
+SIF CFLAG:42 == 79 && (CFLAG:49 == 0 || CFLAG:50 == 0)
+	RETURN 0
+;上の式で一纏めにしたので揃ってコメントアウト
+;;貞操帯の鍵を捨ててないとダメ
+;SIF CFLAG:49 == 0
+;	RETURN 0
+;;貞操帯の鍵を見つけてないとダメ
+;SIF CFLAG:50 == 0
+;	RETURN 0
+;魔王部屋にいないとダメ
+SIF CFLAG:1 != 0
+	RETURN 0
+;前回の調教対象と同じじゃないとダメ
+SIF FLAG:1 != TARGET
+	RETURN 0
+;もうダメだぞ
+SIF FLAG:38 == 0 && CFLAG:62
+	RETURN 0
+
+
+;判定変数
+S = -2
+
+;愛の場合は従順依存
+IF TALENT:85
+	IF ABL:10 == 4
+		S += 1
+	ELSEIF ABL:10 == 5
+		S += 2
+	ELSEIF ABL:10 >= 6
+		S += 3
+	ENDIF
+ENDIF
+
+;淫乱の場合は欲望依存
+IF TALENT:76
+	IF ABL:11 == 4
+		S += 1
+	ELSEIF ABL:11 == 5
+		S += 2
+	ELSEIF ABL:11 >= 6
+		S += 3
+	ENDIF
+ENDIF
+	
+;PALAM:欲情がLV4以上
+;欲望ＬV5以上奉仕精神5以上で+1(下と合わせて+2)
+SIF ABL:11 >= 5 && ABL:16 >= 5 && PALAM:5 >= PALAMLV:4
+	S += 1
+;欲望ＬV４以上奉仕精神４以上で+1
+SIF ABL:11 >= 4 && ABL:16 >= 4 && PALAM:5 >= PALAMLV:4
+	S += 1
+
+;快感に素直,快感の否定
+IF TALENT:70
+	S += 1
+ELSEIF TALENT:71
+	S -= 2
+ENDIF
+
+;貞操観念,貞操無頓着
+IF TALENT:30
+	S -= 2
+ELSEIF TALENT:31
+	S += 1
+ENDIF
+
+;好奇心
+SIF TALENT:27
+	S += 1
+
+;一線越えない
+SIF TALENT:27
+	S -= 2
+
+;判定変数が0以下だったら終了
+SIF S <= 0
+	RETURN 0
+
+;コンドーム使用フラグ
+TEQUIP:35 = 0
+printw <処女献上>
+
+PRINTFORML 一日が終わり,%CALLNAME:MASTER%が床に就こうとしていると,
+PRINTFORMW %SAVESTR:TARGET%が思いつめた様子で部屋を訪ねてきた
+PRINTFORMW どうやら,自分の処女を%CALLNAME:MASTER%に捧げるつもりらしい......
+IF CFLAG:49
+	PRINTFORML その手には,以前に%CALLNAME:MASTER%が投げ捨てた
+	PRINTFORMW 自分の貞操帯のカギが握り締められていた
+	PRINTFORMW どうやら,今夜のために必死で探し続けていたようだ
+ENDIF
+IF TALENT:273
+	PRINTFORML 封印の力はいまや本人の欲望によって破綻寸前まで揺らいでいた
+	PRINTFORMW 彼女の望み次第でその制約はいともたやすく破れてしまうだろう
+ENDIF
+$INPUT_LOOP_01
+PRINTFORML %SAVESTR:TARGET%の処女を奪いますか?
+PRINTL  [0] - はい
+PRINTL  [1] - いいえ
+INPUT
+IF RESULT == 1
+	PRINTFORMW %SAVESTR:TARGET%は失望した顔で帰っていった
+	ABL:10 -= 2
+	SIF ABL:10 < 0
+		ABL:10 = 0
+	PRINTFORMW %ABLNAME:10%が{ABL:10}になった
+	IF CFLAG:49
+		PRINTFORMW %SAVESTR:TARGET%の貞操帯の鍵を取り戻した
+		CFLAG:49 = 0
+		;CFLAG:50も0にしないと再度捨てた時に鍵が直に奴隷の手元へ飛んでしまう
+		CFLAG:50 = 0
+	ENDIF
+	;発生が一人一度のみの場合,ここで発生済フラグを立てる
+	SIF FLAG:38 == 0
+		CFLAG:62 = 1
+	RETURN 0
+ELSEIF RESULT != 0
+	GOTO INPUT_LOOP_01
+ENDIF
+IF ITEM:24
+	$INPUT_LOOP_02
+	PRINTFORML コンド-ムを使いますか?
+	PRINTL  [0] - 使う
+	PRINTL  [1] - 生でやる
+	INPUT
+	IF RESULT == 0
+		TEQUIP:35 = 1
+		ITEM:24 -= 1
+	ELSEIF RESULT != 1
+		GOTO INPUT_LOOP_02
+	ENDIF
+ENDIF
+
+PRINTFORML %SAVESTR:TARGET%は%CALLNAME:MASTER%に処女を捧げた......
+PRINTW [処女喪失]
+TALENT:0 = 0
+
+;封印も解かれる
+IF TALENT:273
+	PRINTFORMW 貞操を守る力は砕け散り,もはや侵入を防ぐ力は欠片も無かった
+	TALENT:273 = 0
+ENDIF
+
+;経験-珠の獲得
+PRINTFORML %EXPNAME:0%+2
+PRINTFORML %EXPNAME:5%+1
+PRINTFORMW %EXPNAME:20%+1
+PRINTFORML %PALAMNAME:1%の珠+{S*400}
+PRINTFORML %PALAMNAME:4%の珠+{S*1000}
+PRINTFORML %PALAMNAME:5%の珠+{S*500}
+PRINTFORML %PALAMNAME:6%の珠+{S*1000}
+PRINTFORMW %PALAMNAME:9%の珠+{S*1000}
+EXP:0 += 2
+EXP:5 += 1
+EXP:20 += 1
+JUEL:1 += S*400
+JUEL:4 += S*1000
+JUEL:5 += S*500
+JUEL:6 += S*1000
+JUEL:9 += S*1000
+
+;コンドームを使ってない場合は膣内射精チェック
+;通常のセックスより妊娠リスクがかなり高い(理由:その方が面白いから)
+IF TEQUIP:35 == 0
+	CFLAG:101 = 30
+	CALL IN_VAGINA_M_TO_T
+	CALL CONCEPTION_CHECK_M_TO_T
+ENDIF
+TEQUIP:35 = 0
+
+;親族関係の判定
+PLAYER = MASTER
+TFLAG:14 = 0
+CALL INCEST
+;初体験の相手を記録
+IF CFLAG:15 == 0
+	;初体験の相手を記録(初期値が0のため,+1して記録)
+	CFLAG:15 = NO:PLAYER + 1
+	;初体験が近親相姦
+	;初体験の相手が自分の息子-娘という状況は生物学的にありえないので省く
+	IF TFLAG:14 == 1 && TALENT:PLAYER:122
+		CFLAG:15 = 300
+	ELSEIF TFLAG:14 == 1 && TALENT:PLAYER:122 == 0
+		CFLAG:15 = 301
+	ELSEIF TFLAG:14 == 3 && TALENT:PLAYER:122
+		CFLAG:15 = 304
+	ELSEIF TFLAG:14 == 3 && TALENT:PLAYER:122 == 0
+		CFLAG:15 = 305
+	ELSEIF TFLAG:14 == 4 && TALENT:PLAYER:122
+		CFLAG:15 = 306
+	ELSEIF TFLAG:14 == 4 && TALENT:PLAYER:122 == 0
+		CFLAG:15 = 307
+	ELSEIF TFLAG:14 == 5 && TALENT:PLAYER:122 == 0
+		CFLAG:15 = 308
+	ELSEIF TFLAG:14 == 6 && TALENT:PLAYER:122
+		CFLAG:15 = 309
+	ENDIF
+ENDIF
+
+;マスターが童貞なら童貞喪失
+IF TALENT:MASTER:1
+	TALENT:MASTER:1 = 0
+	IF CFLAG:MASTER:15 == 0
+		CFLAG:MASTER:15 = NO:TARGET + 1
+		CSTR:MASTER:3 = %SAVESTR:TARGET%
+		;初体験が近親相姦
+		;初体験の相手が自分の息子-娘という状況は生物学的にありえないので省く
+		IF TFLAG:14 == 2 && TALENT:122
+			CFLAG:MASTER:15 = 300
+		ELSEIF TFLAG:14 == 2 && TALENT:122 == 0
+			CFLAG:MASTER:15 = 301
+		ELSEIF TFLAG:14 == 3 && TALENT:122
+			CFLAG:MASTER:15 = 306
+		ELSEIF TFLAG:14 == 3 && TALENT:122 == 0
+			CFLAG:MASTER:15 = 307
+		ELSEIF TFLAG:14 == 4 && TALENT:122
+			CFLAG:MASTER:15 = 304
+		ELSEIF TFLAG:14 == 4 && TALENT:122 == 0
+			CFLAG:MASTER:15 = 305
+		ELSEIF TFLAG:14 == 5 && TALENT:122
+			CFLAG:MASTER:15 = 309
+		ELSEIF TFLAG:14 == 6 && TALENT:122 == 0
+			CFLAG:MASTER:15 = 308
+		ENDIF
+	ENDIF
+ENDIF
+TFLAG:14 = 0
+
+IF CFLAG:49
+	PRINTFORMW %SAVESTR:TARGET%の貞操帯の鍵を取り戻した
+	CFLAG:49 = 0
+	CFLAG:40 -= 64
+	;断った時と同様の理由でCFLAG:50と,このままだと外れたはずの貞操帯が衣装変更時にまた付いてしまうので
+	;CFLAG:42(特別コスチューム)も元に戻す
+	CFLAG:50 = 0
+	CFLAG:42 = 0
+ENDIF
+
+DRAWLINE
+
+RETURN 1
+;-------------------------------------------------
+;調教対象からの夜這い
+;-------------------------------------------------
+;欲望4以上かつ性交中毒のキャラがいれば夜這い
+;複数いる場合はランダムで当番制
+;-------------------------------------------------
+@NIGHT_STALKING_CHECK
+#DIM NIGHT_COUNT
+#DIM OK_FLAG,2
+#DIM NIGHT_TARGET
+#DIM PLAY
+;主人がオトコかふたなりでないとダメ
+SIF TALENT:MASTER:122 == 0 && TALENT:MASTER:121 == 0
+	RETURN 0
+
+LOCAL:1 = 0
+FOR NIGHT_COUNT, 1, CHARANUM
+	IF ABL:NIGHT_COUNT:11 >= 4 && ABL:NIGHT_COUNT:30 >= 1
+		;死んでたり臨死中だとダメ
+		SIF BASE:NIGHT_COUNT:0 <= 0
+			CONTINUE
+		;瀕死だとダメ
+		SIF BASE:NIGHT_COUNT:0 <= 500
+			CONTINUE
+		;育児中や臨月だとダメ
+		SIF TALENT:NIGHT_COUNT:154 || (CFLAG:NIGHT_COUNT:110 - 2 <= DAY && TALENT:NIGHT_COUNT:153)
+			CONTINUE
+		;魔王部屋にいないとダメ
+		SIF CFLAG:NIGHT_COUNT:1 != 0
+			CONTINUE
+		;未婚か魔王と結婚していないとダメ
+		SIF CFLAG:NIGHT_COUNT:601 != 0 && CFLAG:NIGHT_COUNT:601 != 901
+			CONTINUE
+		;奉仕しないがあるとダメ
+		SIF TALENT:NIGHT_COUNT:151
+			CONTINUE
+		;反発刻印があるとダメ
+		SIF MARK:NIGHT_COUNT:3 > 0
+			CONTINUE
+		;処女の場合は従順+欲望+A感覚+14以下だとダメ
+		SIF TALENT:NIGHT_COUNT:0 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14
+			CONTINUE
+		;オトコでない場合は"従順+欲望+V感覚+12以下"かつ"従順+欲望+A感覚+14以下"だとダメ
+		SIF TALENT:NIGHT_COUNT:122 == 0 && (ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:2 <= 12 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14)
+			CONTINUE
+		;オトコの場合は従順+欲望+A感覚+12以下だとダメ
+		SIF TALENT:NIGHT_COUNT:122 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 12
+			CONTINUE
+		;貞操帯の場合は従順+欲望+A感覚+14以下だとダメ
+		SIF CFLAG:NIGHT_COUNT:42 == 79 && (CFLAG:NIGHT_COUNT:40 & 64)  && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14
+			CONTINUE
+
+		;性交中毒
+		OK_FLAG = ABL:NIGHT_COUNT:30
+
+		;解放
+		SIF TALENT:NIGHT_COUNT:33
+			OK_FLAG += 1
+		;自制心
+		SIF TALENT:NIGHT_COUNT:20
+			OK_FLAG -= 2
+		;快感に素直
+		SIF TALENT:NIGHT_COUNT:70
+			OK_FLAG += 1
+		;快感の否定
+		SIF TALENT:NIGHT_COUNT:71
+			OK_FLAG -= 1
+		;セックス狂
+		SIF TALENT:NIGHT_COUNT:75 && TALENT:NIGHT_COUNT:0 == 0 && ABL:NIGHT_COUNT:2 >= ABL:NIGHT_COUNT:3
+			OK_FLAG += 1
+		;尻穴狂い
+		SIF TALENT:NIGHT_COUNT:77 && (TALENT:NIGHT_COUNT:0 || ABL:NIGHT_COUNT:3 > ABL:NIGHT_COUNT:2)
+			OK_FLAG += 1
+		;淫乱
+		SIF TALENT:NIGHT_COUNT:76 && TALENT:NIGHT_COUNT:0
+			OK_FLAG += 1
+		SIF OK_FLAG > 0
+			LOCAL:1 += 1
+	ENDIF
+NEXT
+
+SIF LOCAL:1 == 0
+	RETURN 0
+
+LOCAL:2 = RAND:(LOCAL:1)
+
+FOR NIGHT_COUNT, 1, CHARANUM
+	IF ABL:NIGHT_COUNT:11 >= 4 && ABL:NIGHT_COUNT:30 >= 1
+		;死んでたり臨死中だとダメ
+		SIF BASE:NIGHT_COUNT:0 <= 0
+			CONTINUE
+		;瀕死だとダメ
+		SIF BASE:NIGHT_COUNT:0 <= 500
+			CONTINUE
+		;育児中や臨月だとダメ
+		SIF TALENT:NIGHT_COUNT:154 || (CFLAG:NIGHT_COUNT:110 - 2 <= DAY && TALENT:NIGHT_COUNT:153)
+			CONTINUE
+		;魔王部屋にいないとダメ
+		SIF CFLAG:NIGHT_COUNT:1 != 0
+			CONTINUE
+		;未婚か魔王と結婚していないとダメ
+		SIF CFLAG:NIGHT_COUNT:601 != 0 && CFLAG:NIGHT_COUNT:601 != 901
+			CONTINUE
+		;奉仕しないがあるとダメ
+		SIF TALENT:NIGHT_COUNT:151
+			CONTINUE
+		;反発刻印があるとダメ
+		SIF MARK:NIGHT_COUNT:3 > 0
+			CONTINUE
+		;処女の場合は従順+欲望+A感覚+14以下だとダメ
+		SIF TALENT:NIGHT_COUNT:0 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14
+			CONTINUE
+		;オトコでない場合は"従順+欲望+V感覚+12以下"かつ"従順+欲望+A感覚+14以下"だとダメ
+		SIF TALENT:NIGHT_COUNT:122 == 0 && (ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:2 <= 12 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14)
+			CONTINUE
+		;オトコの場合は従順+欲望+A感覚+12以下だとダメ
+		SIF TALENT:NIGHT_COUNT:122 && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 12
+			CONTINUE
+		;貞操帯の場合は従順+欲望+A感覚+14以下だとダメ
+		SIF CFLAG:NIGHT_COUNT:42 == 79 && (CFLAG:NIGHT_COUNT:40 & 64)  && ABL:NIGHT_COUNT:10+ABL:NIGHT_COUNT:11+ABL:NIGHT_COUNT:3 <= 14
+			CONTINUE
+
+		;性交中毒
+		OK_FLAG = ABL:NIGHT_COUNT:30
+		;解放
+		SIF TALENT:NIGHT_COUNT:33
+			OK_FLAG += 1
+		;自制心
+		SIF TALENT:NIGHT_COUNT:20
+			OK_FLAG -= 2
+		;快感に素直
+		SIF TALENT:NIGHT_COUNT:70
+			OK_FLAG += 1
+		;快感の否定
+		SIF TALENT:NIGHT_COUNT:71
+			OK_FLAG -= 1
+		;セックス狂
+		SIF TALENT:NIGHT_COUNT:75 && TALENT:NIGHT_COUNT:0 == 0 && ABL:NIGHT_COUNT:2 >= ABL:NIGHT_COUNT:3
+			OK_FLAG += 1
+		;尻穴狂い
+		SIF TALENT:NIGHT_COUNT:77 && (TALENT:NIGHT_COUNT:0 || ABL:NIGHT_COUNT:3 > ABL:NIGHT_COUNT:2)
+			OK_FLAG += 1
+		;淫乱
+		SIF TALENT:NIGHT_COUNT:76 && TALENT:NIGHT_COUNT:0
+			OK_FLAG += 1
+
+		IF OK_FLAG > 0 && LOCAL:2 == 0
+			NIGHT_TARGET = NIGHT_COUNT
+			BREAK
+		ELSEIF OK_FLAG > 0
+			LOCAL:2 -= 1
+		ENDIF
+
+	ENDIF
+NEXT
+
+PRINTFORML 調教が終わって%CALLNAME:MASTER%が床に就こうとしたとき,突然%SAVESTR:NIGHT_TARGET%が部屋を訪ねてきた
+WAIT
+
+;夜這い口上
+TARGET = NIGHT_TARGET
+TFLAG:13 = 5
+CALL SELF_KOJO
+
+;V使用フラグ
+OK_FLAG:1 = 1
+;オトコだとダメ
+SIF TALENT:NIGHT_TARGET:122
+	OK_FLAG:1 = 0
+;処女だとダメ
+SIF TALENT:NIGHT_TARGET:0
+	OK_FLAG:1 = 0
+;貞操帯だとダメ
+SIF CFLAG:NIGHT_TARGET:42 == 79 && (CFLAG:NIGHT_TARGET:40 & 64)
+	OK_FLAG:1 = 0
+;貞操封印だとダメ
+SIF TALENT:NIGHT_TARGET:273
+	OK_FLAG:1 = 0
+;A感覚がVより高いとダメ
+SIF ABL:NIGHT_TARGET:2 < ABL:NIGHT_TARGET:3
+	OK_FLAG:1 = 0
+
+IF OK_FLAG:1 == 1
+	;セックス回数
+	PLAY = ABL:NIGHT_TARGET:30
+	;V感覚
+	IF ABL:NIGHT_TARGET:2 <= 4
+		PLAY += 1
+	ELSEIF ABL:NIGHT_TARGET:2 == 5
+		PLAY += 2
+	ELSEIF ABL:NIGHT_TARGET:2 >= 6
+		PLAY += 4
+	ENDIF
+	PRINTFORML %CALLNAME:MASTER%に抱かれたくて,子宮が疼いてどうしようもないらしい......
+	PRINTFORML {PLAY}回の交わりの後に,二人は繋がったまま抱き合い,深い眠りに落ちた
+	PRINTFORML %EXPNAME:0%+{PLAY}
+	PRINTFORML %EXPNAME:5%+{PLAY}
+	EXP:NIGHT_TARGET:0 += PLAY
+	EXP:NIGHT_TARGET:5 += PLAY
+	PRINTFORML %PALAMNAME:1%の珠+{PLAY*400}
+	PRINTFORML %PALAMNAME:4%の珠+{PLAY*250}
+	PRINTFORMW %PALAMNAME:5%の珠+{PLAY*250}
+	JUEL:NIGHT_TARGET:1 += PLAY*400
+	JUEL:NIGHT_TARGET:4 += PLAY*250
+	JUEL:NIGHT_TARGET:5 += PLAY*250
+ELSE
+	;アナルセックス回数
+	PLAY = ABL:NIGHT_TARGET:30
+	;A感覚
+	IF ABL:NIGHT_TARGET:3 <= 4
+		PLAY += 1
+	ELSEIF ABL:NIGHT_TARGET:3 == 5
+		PLAY += 2
+	ELSEIF ABL:NIGHT_TARGET:3 >= 6
+		PLAY += 4
+	ENDIF
+	PRINTFORML %CALLNAME:MASTER%に抱かれたくて,アナルが疼いてどうしようもないらしい......
+	PRINTFORML {PLAY}回の交わりの後に,二人は繋がったまま抱き合い,深い眠りに落ちた
+	PRINTFORML %EXPNAME:1%+{PLAY}
+	PRINTFORML %EXPNAME:5%+{PLAY}
+	EXP:NIGHT_TARGET:1 += PLAY
+	EXP:NIGHT_TARGET:5 += PLAY
+	PRINTFORML %PALAMNAME:2%の珠+{PLAY*400}
+	PRINTFORML %PALAMNAME:4%の珠+{PLAY*250}
+	PRINTFORMW %PALAMNAME:5%の珠+{PLAY*250}
+	JUEL:NIGHT_TARGET:2 += PLAY*400
+	JUEL:NIGHT_TARGET:4 += PLAY*250
+	JUEL:NIGHT_TARGET:5 += PLAY*250
+ENDIF
+
+DRAWLINE
+
+RETURN 1
+
+
+;--------------------------------------
+@DOG_WALK
+#DIM DOG_WALKING
+#DIM PLAY
+#DIM OPEN
+#DIM NO_SEX
+#DIM SAVE_TARGET
+;--------------------------------------
+;野良犬を散歩させる
+
+;いぬを持ってないとダメ
+SIF ITEM:22 == 0 && NOITEM == 0
+	RETURN 0
+
+SAVE_TARGET = TARGET
+
+;散歩するひと選択
+DOG_WALKING = CHARANUM -1
+;奴隷がいなければあなたが散歩
+IF DOG_WALKING == 0
+	PRINTL  
+	PRINTFORMW %SAVESTR:DOG_WALKING%は野良犬と散歩してきた
+	RETURN 0
+ENDIF
+DOG_WALKING = RAND:DOG_WALKING
+
+;あなた以外で陥落してない奴隷で調教可能でなければ,あなたが散歩
+IF DOG_WALKING != 0 && CFLAG:DOG_WALKING:0 == 0 && CFLAG:DOG_WALKING:1 != 0
+	DOG_WALKING = 0
+;あなた以外で陥落してる奴隷でも調教可能でなければ,あなたが散歩
+ELSEIF DOG_WALKING != 0 && CFLAG:DOG_WALKING:1 != 0
+	DOG_WALKING = 0
+;あなた以外で陥落してない奴隷なら,あなたが散歩
+ELSEIF DOG_WALKING != 0 && CFLAG:DOG_WALKING:0 == 0
+	DOG_WALKING = 0
+ENDIF
+PRINTL  
+
+TARGET = DOG_WALKING
+
+;興奮度
+PLAY = 0
+;露出要素(若干の抵抗あり)
+OPEN = -2
+;V禁止
+NO_SEX = 0
+
+;獣姦中毒
+PLAY += ABL:DOG_WALKING:39
+;牝犬
+SIF TALENT:DOG_WALKING:136
+	PLAY += 2
+
+;露出癖
+OPEN += ABL:DOG_WALKING:17
+;露出狂
+SIF TALENT:DOG_WALKING:89
+	OPEN += 1
+;目立ちたがり
+SIF TALENT:DOG_WALKING:28
+	OPEN += 1
+
+;ボーナス素質
+;動物耳
+SIF TALENT:DOG_WALKING:124 && PLAY > 0
+	PLAY += 1
+;かわいい動物が好き
+SIF TALENT:DOG_WALKING:317 == 12 && PLAY > 0
+	PLAY += 1
+
+IF TALENT:DOG_WALKING:0
+	;処女
+	NO_SEX = 1
+ELSEIF TALENT:DOG_WALKING:273
+	;処女封印
+	NO_SEX = 1
+ELSEIF CFLAG:DOG_WALKING:42 == 79 && (CFLAG:DOG_WALKING:40 & 64) && FLAG:37
+	;貞操帯
+	NO_SEX = 1
+ENDIF
+
+;服
+CALL PRINT_CLOTHTYPE
+PRINTFORM の%SAVESTR:DOG_WALKING%は
+SIF PLAY > 0
+	PRINT まるで自分が散歩されているように4つ脚で歩き首輪にリ-ドを繋いで,
+PRINTL 野良犬と散歩してきた
+
+
+IF PLAY > 0 && NO_SEX == 0
+	;交尾
+	PRINTFORML %SAVESTR:DOG_WALKING%は散歩中に発情してたまらなくなり
+	SIF OPEN > 0
+		PRINTFORM 通行人に痴態を見せつけながら
+	PRINTFORML 野良犬と交尾してきたようだ
+	PRINTFORML %EXPNAME:56%+1
+	PRINTFORML %PALAMNAME:0%の珠+{5*PLAY}
+	PRINTFORML %PALAMNAME:5%の珠+{5*PLAY}
+	EXP:DOG_WALKING:56 += 1
+	JUEL:DOG_WALKING:0 += 5*PLAY
+	JUEL:DOG_WALKING:5 += 5*PLAY
+	
+	PRINTFORML %EXPNAME:5%+1
+	PRINTFORML %EXPNAME:0%+1
+	PRINTFORML %PALAMNAME:1%の珠+{4*PLAY}
+	JUEL:DOG_WALKING:1 += 4*PLAY
+	EXP:DOG_WALKING:5 += 1
+	EXP:DOG_WALKING:0 += 1
+ELSEIF PLAY > 0 && NO_SEX == 1
+	;交尾無し
+	PRINTFORML %SAVESTR:DOG_WALKING%は散歩中に発情してたまらなくなり
+	SIF OPEN > 0
+		PRINTFORM 通行人に痴態を見せつけながら
+	PRINTFORML 野良犬をフェラしてきたようだ
+	PRINTFORML %EXPNAME:56%+1
+	PRINTFORML %PALAMNAME:5%の珠+{5*PLAY}
+	EXP:DOG_WALKING:56 += 1
+	JUEL:DOG_WALKING:5 += 5*PLAY
+	
+	;フェラ経験,精液経験
+	PRINTFORML %EXPNAME:22%+1
+	PRINTFORML %EXPNAME:20%+1
+	EXP:DOG_WALKING:22 += 1
+	EXP:DOG_WALKING:20 += 1
+	
+ENDIF
+
+IF PLAY > 0 && OPEN > 0
+	;露出した場合恥情の珠
+	PRINTFORMW %PALAMNAME:8%の珠+{5*PLAY}
+	JUEL:DOG_WALKING:8 += 5*PLAY
+ELSE
+	WAIT
+ENDIF
+
+TARGET = SAVE_TARGET
+
+RETURN 1
+
+;----------------------------------
+@PILLORY
+#DIM PILLORY_USER
+#DIM COUNT_F
+#DIM COUNT_A
+#DIM COUNT_B
+#DIM COUNT_V
+#DIM COUNT_S
+#DIM COUNT_Z
+;----------------------------------
+;プライド高い,保守的,貞操観念,高貴に特効
+;晒し台状態以外は除外
+SIF CFLAG:1 != 8
+	RETURN 0
+
+;各種回数 Fフェラ Aアナル B胸 V性器 S精液 Z獣姦
+COUNT_F = 0
+COUNT_A = 0
+COUNT_B = 0
+COUNT_V = 0
+COUNT_S = 0
+COUNT_Z = 0
+
+;使用者の代表
+PILLORY_USER = RAND:5
+
+DRAWLINE
+PRINTFORM 晒し刑:%SAVESTR:TARGET%
+IF CFLAG:110 == DAY
+	PRINT (出産)
+ELSEIF CFLAG:110 - 2 <= DAY && TALENT:153
+	PRINT (臨月)
+ELSEIF TALENT:153
+	PRINT (妊娠中)
+ELSEIF TALENT:0 
+	PRINT (処女)
+ELSEIF TALENT:273
+	PRINT (前穴封印)
+ENDIF
+PRINTL
+DRAWLINE
+PRINT 晒し台に固定された
+CALL PRINT_CLOTHTYPE
+PRINTFORML の%SAVESTR:TARGET%に大勢の男達が群がっている
+PRINTFORM %SAVESTR:TARGET%は
+IF CFLAG:COUNT:110 - 2 <= DAY && TALENT:COUNT:153
+	PRINT 膨らんだお腹を庇いながら,
+ELSEIF CFLAG:661 +CFLAG:662  == 0
+	PRINT 不安に震えながら,
+ELSEIF CFLAG:661+CFLAG:662 < 20
+	PRINT 何度も中にEjaculationされ不快感に苛まれながら,
+ELSEIF CFLAG:661+CFLAG:662 < 50
+	PRINT 眠ることも出来ず目の下を隈で染めながら,
+ELSEIF CFLAG:661+CFLAG:662 <100
+	PRINT 果てしない陵辱に息も絶え絶えになりながら,
+ELSE
+	PRINT 全身精液まみれの身体で,
+ENDIF
+;高貴
+IF TALENT:163
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTL 歯を食いしばってじっと耐えている......
+		CASE 1
+			PRINTL 声を出さずに耐えている......
+		CASE 2
+			PRINTL 泣き声を押し殺して耐えている......
+	ENDSELECT
+;プライド高い,保守的,貞操観念
+ELSEIF TALENT:15 || TALENT:24 || TALENT:30
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTL 身を捩ることも出来ずに犯されている......
+		CASE 1
+			PRINTL 陵辱者を睨みつけ耐えている......
+		CASE 2
+			PRINTL 怨嗟の声を漏らしている......
+	ENDSELECT
+ELSE
+	PRINTL 恥辱に耐えている......
+ENDIF
+
+PRINTL
+;落書きスタート
+;臨月
+IF CFLAG:110 - 2 <= DAY && TALENT:153
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORM 『淫乱ボテ腹便器の%SAVESTR:TARGET%ちゃん』
+		CASE 1
+			PRINTFORM 『臨月だけどチンポの味が忘れられないわ～』
+		CASE 2
+			PRINTFORM 『え～ん,こんなビッチなママ嫌だよ～』
+	ENDSELECT
+ELSEIF TALENT:153
+;妊娠
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORM 『祝!御懐妊!』
+		CASE 1
+			PRINTFORM 『勝手に妊娠する恥知らずの%SAVESTR:TARGET%ちゃん』
+		CASE 2
+			PRINTFORM 『父親不明の子を妊娠しました』
+	ENDSELECT
+ELSE
+	SELECTCASE RAND:6
+		CASE 0
+			PRINTFORM 『ザ-メン便器の%SAVESTR:TARGET%ちゃんです』
+		CASE 1
+			PRINTFORM 『%SAVESTR:TARGET%にお仕置きしてください』
+		CASE 2
+			PRINTFORM 『ご自由にお使いください』
+		CASE 3
+			PRINTFORM 『性処理用便器』
+		CASE 4
+			PRINTFORM 『男子トイレ』
+		CASE 5
+			PRINTFORM 『チンポ大好きなビッチ便女です』
+	ENDSELECT
+ENDIF
+
+REPEAT 10
+	;職業による分岐
+	LOCAL = COUNT + 200
+	SIF TALENT:LOCAL > 0
+		LOCALS = %TALENTNAME:LOCAL%
+	;これ以降%locals:0%で職業名が出せます
+	IF TALENT:LOCAL > 0 && (TALENT:0 || TALENT:273)
+		;性器使えない
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORM 『%SAVESTR:TARGET%は肛門で感じる変態%TALENTNAME:LOCAL%』
+			CASE 1
+				PRINTFORM 『%TALENTNAME:LOCAL%勇者%SAVESTR:TARGET%は皆様のアナル専用セックス妻です』
+			CASE 2
+				PRINTFORM 『前穴は魔王専用』
+		ENDSELECT
+	ELSEIF TALENT:LOCAL > 0
+		;性器使える
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORM 『おまんこでお詫びします』
+			CASE 1
+				PRINTFORM 『%TALENTNAME:LOCAL%勇者%SAVESTR:TARGET%は中出し以外認めません』
+			CASE 2
+				PRINTFORM 『無洗ちんぽ挿入口』
+		ENDSELECT
+	ENDIF
+REND
+
+IF TALENT:0
+	PRINTFORM 『処女』
+	COUNT_A += RAND:20 + 1
+	COUNT_F += RAND:10 + 1
+	COUNT_S += COUNT_A + COUNT_F + RAND:10
+ELSEIF TALENT:273
+	PRINTFORM 『糞穴専用』
+	COUNT_A += RAND:20 + 1
+	COUNT_F += RAND:10 + 1
+	COUNT_S += COUNT_A + COUNT_F + RAND:10
+ELSEIF ABL:39 >= 1 && RAND:2 == 0
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORM 『誰のちんちんでもOK!』
+		CASE 1
+			PRINTFORM 『動物大好き!』
+		CASE 2
+			PRINTFORM 『獣姦マニア』
+	ENDSELECT
+	COUNT_F += RAND:10 + 1
+	COUNT_V += RAND:10 + 1
+	;貞操帯
+	SIF CFLAG:42 == 79 && (CFLAG:40 & 64) && FLAG:37
+		COUNT_V = 0
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_F + COUNT_A + COUNT_V + RAND:10
+	COUNT_Z += COUNT_S
+ELSEIF CFLAG:42 == 79 && (CFLAG:40 & 64) && FLAG:37
+	;貞操帯
+	PRINTFORM 『おまんこ禁止中』
+	COUNT_A += RAND:20 + 1
+	COUNT_F += RAND:10 + 1
+	COUNT_S += COUNT_A + COUNT_F + RAND:10
+ELSE
+	SELECTCASE RAND:4
+		CASE 0
+			PRINTFORM 『何でも入れてね』
+		CASE 1
+			PRINTFORM 『精液のゴミ箱』
+		CASE 2
+			PRINTFORM 『淫乱』
+		CASE 3
+			PRINTFORM 『中出し記録更新中』
+	ENDSELECT
+	COUNT_F += RAND:10 + 1
+	COUNT_V += RAND:10 + 1
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_F + COUNT_A + COUNT_V + RAND:10
+ENDIF
+
+IF TALENT:15
+	;プライド高い
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『便器だけどプライドは高いのよ!』
+		CASE 1
+			PRINT 『
+			IF TALENT:314 == 0
+				PRINT 人間
+			ELSEIF TALENT:314 == 1
+				PRINT エルフ
+			ELSEIF TALENT:314 == 2
+				PRINT 人狼
+			ELSEIF TALENT:314 == 3
+				PRINT 吸血鬼
+			ELSEIF TALENT:314 == 4
+				PRINT デュラハン
+			ELSEIF TALENT:314 == 5
+				PRINT ドラゴン
+			ELSEIF TALENT:314 == 6
+				PRINT 天使
+			ELSEIF TALENT:314 == 7
+				PRINT ダ-クエルフ
+			ELSEIF TALENT:314 == 8
+				PRINT 堕天使
+			ELSEIF TALENT:314 == 9
+				PRINT 魔族
+			ELSEIF TALENT:314 == 10
+				PRINT ホビット
+			ELSEIF TALENT:314 == 11
+				PRINT ドワ-フ
+			ENDIF
+			PRINT の恥』
+		CASE 2
+			PRINT 『堅物ちゃん』
+	ENDSELECT
+ENDIF
+
+IF TALENT:22 || TALENT:21
+	;感情乏しい-無関心
+	PRINT 『マグロ』
+ENDIF
+
+
+IF TALENT:24 || TALENT:30 || TALENT:163
+	;保守的-貞操観念-高貴
+	SELECTCASE RAND:5
+		CASE 0
+			PRINT 『○○家のお嬢様なの』
+		CASE 1
+			IF TALENT:0 || TALENT:273
+				PRINT 『名家○○のアナルを召し上がれ』
+			ELSE
+				PRINT 『名家○○のまんこを召し上がれ』
+			ENDIF
+		CASE 2
+			PRINT 『わたくし世間知らずなので皆さんのおちんぽで教育してくださいね』
+		CASE 3
+			PRINT 『お嬢様んこ』 
+		CASE 3
+			PRINT 『お嬢様んこ』
+	ENDSELECT
+ENDIF
+IF TALENT:42
+	;濡れやすい
+	PRINT 『すぐ濡れる淫乱』
+ENDIF
+
+IF TALENT:61
+	;汚臭鈍感-汚臭敏感
+	SELECTCASE RAND:5
+		CASE 0
+			PRINT 『好物→チンカス』
+		CASE 1
+			PRINT 『皆さんのおしり舐めさせてください』
+		CASE 2
+			PRINT 『不潔なチンポ優先』
+		CASE 3
+			PRINT 『チンカスおちんぽ大歓迎』
+		CASE 4
+			PRINT 『せ-えきもおしっこもいっぱいかけてね』
+	ENDSELECT
+ENDIF
+
+IF TALENT:70 || TALENT:73
+	;快感に素直-即落ち
+	PRINT 『BITCH』
+ENDIF
+
+IF TALENT:82
+	;男嫌い
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORM 『変態レズビアン』
+		CASE 1
+			PRINT 『女の子とセックスしたいわ』
+		CASE 2
+			PRINT 『男のチンポお断り』
+	ENDSELECT
+ENDIF
+
+IF TALENT:100
+	;小柄体型
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORM 『%SAVESTR:TARGET%○○才』
+		CASE 1
+			PRINT 『←メスガキ』
+		CASE 2
+			PRINT 『子供マンコ』
+	ENDSELECT
+ENDIF
+
+IF TALENT:109 || TALENT:116
+	;貧乳-絶壁
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『まな板でごめんなさい』 
+		CASE 1
+			PRINT 『みんなで揉んで大きくしてあげてね』
+		CASE 2
+			PRINT 『背中かと思ったら胸だった』
+	ENDSELECT
+ENDIF
+
+IF TALENT:110 || TALENT:114 || TALENT:119
+	;巨乳-爆乳-超乳
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『デカパイ』 
+		CASE 1
+			PRINT 『バカ乳』
+		CASE 2
+			PRINT 『脳の栄養が全部おっぱいに行っちゃったの』
+	ENDSELECT
+ENDIF
+
+IF TALENT:121
+	;ふたなり
+	IF TALENT:ペニスの状態 == 1
+		PRINT 『チンポでかッ』
+	ELSEIF TALENT:ペニスの状態 == 2
+		PRINT 『短小包茎メスチンポから精液ダダ漏れ』
+	ELSEIF TALENT:ペニスの状態 == 3
+		PRINT 『メスチンポにチンカス溜まってます』
+	ELSEIF TALENT:ペニスの状態 == 4
+		PRINT 『改造馬チンポ』
+	ELSE
+		PRINT 『メスチンポ勃起中』
+	ENDIF
+ELSEIF TALENT:122
+	;オトコ
+	PRINT 『オカマ野郎』
+ENDIF
+
+IF TALENT:248
+	;筋肉質
+	PRINT 『ゴリラ』
+ENDIF
+
+IF TALENT:マザコン
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『お母さん見て～』 
+		CASE 1
+			PRINT 『お母さん助けて～』
+		CASE 2
+			PRINT 『ママよりも淫乱になりました』
+	ENDSELECT
+ENDIF
+
+IF TALENT:ファザコン
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『お父さん見て～』 
+		CASE 1
+			PRINT 『お父さんのチンポ欲しいよ～』
+		CASE 2
+			PRINT 『パパのペニスが一番!』
+	ENDSELECT
+ENDIF
+
+IF TALENT:ロリコン
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『ロリ豚』 
+		CASE 1
+			PRINT 『ロリマンコで興奮します』
+		CASE 2
+			PRINT 『淫乱ロリコン』
+	ENDSELECT
+ENDIF
+
+IF TALENT:ショタコン
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『ショタ専用便器』 
+		CASE 1
+			PRINT 『ショタチンポ愛好家』
+		CASE 2
+			PRINT 『ボク,痴女でごめんね』
+	ENDSELECT
+ENDIF
+
+IF TALENT:153
+	;妊娠
+	SELECTCASE RAND:3
+		CASE 0
+			PRINT 『妊娠おめでとう!』
+		CASE 1
+			PRINT 『孕ませて頂きありがとうございました』
+		CASE 2
+			PRINT 『ヤリマンすぎて赤ちゃんできちゃった』
+	ENDSELECT
+ENDIF
+
+SELECTCASE RAND:14
+	CASE 0
+		PRINT 『精液臭くてごめんね!』 
+	CASE 1
+		PRINT 『勇者の恥さらし』
+	CASE 2
+		PRINT 『無責任な中出し大歓迎』
+	CASE 3
+		PRINTFORM 『%SAVESTR:TARGET%の名前覚えてね』 
+	CASE 4
+		PRINT 『殴られながら犯されるのが好きなの』 
+	CASE 5
+		PRINT 『弱すぎ』 
+	CASE 6
+		PRINT 『ガバガバ目指してます』 
+	CASE 7
+		PRINT 『ザ-メンは中にお願いします』 
+	CASE 8
+		PRINT 『ＷＣ』
+	CASE 9
+		PRINT 『田舎からはるばる犯されにきました』
+	CASE 10
+		PRINT 『ズボズボしてスッキリしてください』 
+	CASE 11
+		PRINT 『おちんぽ欲しいの』
+	CASE 12
+		PRINTFORM 『ドスケベ%LOCALS%』
+	CASE 13
+		PRINTFORM 『おまんこ%LOCALS%』 
+ENDSELECT
+
+IF CFLAG:661 >=30
+	IF COUNT_V > 0
+		;臨月
+		IF (CFLAG:110 - 2 <= DAY && TALENT:153)
+			SELECTCASE RAND:10
+				CASE 0
+					PRINTFORM 『%SAVESTR:TARGET%ちゃんは妊娠中も性欲旺盛』 
+				CASE 1
+					PRINT 『妊娠中ミルク飲み放題』
+				CASE 2
+					PRINT 『父親のわからない子を妊娠しました』
+				CASE 3
+					PRINTFORM 『%SAVESTR:TARGET%の赤ちゃんもよろしくね』 
+				CASE 4
+					PRINT 『次世代のよわよわ勇者にご期待ください』 
+				CASE 5
+					PRINT 『腹ボテ』 
+				CASE 6
+					PRINT 『腹でけ-』 
+				CASE 7
+					PRINT 『赤ちゃんにもザ-メンあげてね』 
+				CASE 8
+					PRINT 『妊娠したらますますビラビラになりました』
+				CASE 9
+					PRINT 『あ～お腹邪魔だわ～』
+			ENDSELECT
+		;妊娠
+		ELSEIF TALENT:153
+			SELECTCASE RAND:10
+				CASE 0
+					PRINTFORM 『%SAVESTR:TARGET%ちゃんちょっと太った?』 
+				CASE 1
+					PRINT 『こいつ受精したんじゃないか』
+				CASE 2
+					PRINT 『受精しちゃった』
+				CASE 3
+					PRINTFORM 『%SAVESTR:TARGET%の赤ちゃんもよろしくね』 
+				CASE 4
+					PRINT 『よわよわ勇者の次の世代にご期待ください』 
+				CASE 5
+					PRINT 『敗北記念受精』
+				CASE 6
+					PRINT 『皆さんのお陰で胸が大きくなりました←妊娠しただけだろ』
+				CASE 7
+					PRINT 『生理停止中』 
+				CASE 8
+					PRINT 『乳首黒くなってきちゃった』
+				CASE 9
+					PRINT 『こいつお腹膨らんできてないか』
+			ENDSELECT
+		ELSE
+			;妊娠してない
+			SELECTCASE RAND:12
+				CASE 0
+					PRINT 『現在マンコ緩み中』 
+				CASE 1
+					PRINT 『ガバガバにしてくれてありがとうございます』
+				CASE 2
+					PRINT 『なんでもいいから妊娠したいわ～』
+				CASE 3
+					PRINTFORM 『%SAVESTR:TARGET%に赤ちゃん頂戴』 
+				CASE 4
+					PRINT 『ヤリマンすぎる』 
+				CASE 5
+					PRINT 『妊娠確実』 
+				CASE 6
+					PRINT 『精液ボテ感謝』 
+				CASE 7
+					PRINT 『受精希望!』 
+				CASE 8
+					PRINT 『こいつのマンコグロすぎ』
+				CASE 9
+					PRINT 『まんこビロビロになってきちゃった』
+				CASE 10
+					PRINT 『←ユルマン』
+				CASE 11
+					PRINT 『↓ガバマン』
+			ENDSELECT
+		ENDIF
+	ELSE
+		SELECTCASE RAND:10
+			CASE 0
+				PRINT 『使いすぎにつき尻穴緩み中』 
+			CASE 1
+				PRINT 『糞穴緩すぎ』
+			CASE 2
+				PRINT 『おしっこで綺麗にしてネ』
+			CASE 3
+				PRINT 『臭すぎ』
+			CASE 4
+				PRINT 『処女なのに尻ガバガバとかやばくね』 
+			CASE 5
+				PRINT 『私のケツ穴にせ-したくさん飲ませてね』
+			CASE 6
+				PRINT 『あちゃ-括約筋切れちゃったね』
+			CASE 7
+				PRINT 『こいつの糞穴マジ臭い』
+			CASE 8
+				PRINT 『アナル便器』
+			CASE 9
+				PRINT 『アナルでお詫びします』
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;正の字を書こう
+;CFLAG:661を晒し台での精液経験に使います
+;晒し台から解放されるとリセット
+;COUNT_Vの使用数
+CFLAG:661 += COUNT_V
+;COUNT_Aの使用数
+CFLAG:662 += COUNT_A
+;口の使用数
+CFLAG:663 += COUNT_F
+;胸の使用数
+CFLAG:664 += COUNT_B
+;その他の使用数
+CFLAG:665 += COUNT_S - COUNT_V - COUNT_A - COUNT_F - COUNT_B
+REPEAT 5
+;使用回数があるならば
+	IF CFLAG:(661+COUNT) > 0
+		SELECTCASE COUNT
+			CASE 0
+				SELECTCASE RAND:5
+					CASE 0
+						PRINT 『まんこ使用回数:
+					CASE 1
+						PRINT 『中出し回数:
+					CASE 2
+						PRINT 『男性経験急上昇中:
+					CASE 3
+						PRINT 『まんこ:
+					CASE 4
+						PRINT 『種付け:
+				ENDSELECT
+			CASE 1
+				SELECTCASE RAND:4
+					CASE 0
+						PRINT 『アナル使用回数:
+					CASE 1
+						PRINT 『ケツ穴利用回数:
+					CASE 2
+						PRINT 『ケツマンコ:
+					CASE 3
+						PRINT 『おしり:
+				ENDSELECT
+			CASE 2
+				SELECTCASE RAND:3
+					CASE 0
+						PRINT 『おくち:
+					CASE 1
+						PRINT 『チンカス掃除:
+					CASE 2
+						PRINT 『チンポしゃぶり穴:
+				ENDSELECT
+			CASE 3
+				SELECTCASE RAND:2
+					CASE 0
+						PRINT 『むね:
+					CASE 1
+						PRINT 『おっぱい:
+				ENDSELECT
+			CASE 4
+				PRINT 『
+		ENDSELECT
+		IF CFLAG:(661+COUNT) >= 5
+			FOR LOCAL, 0, CFLAG:(661+COUNT) /5
+				PRINT 正 
+			NEXT
+		ENDIF
+		;5で割ったあまりを出します
+		SELECTCASE CFLAG:(661+COUNT) % 5
+			CASE 1
+				PRINT 一
+			CASE 2
+				PRINT 二
+			CASE 3
+				PRINT 下
+			CASE 4
+				PRINT ,下
+		ENDSELECT
+		PRINT 』
+	ELSE
+	ENDIF
+REND
+
+SIF CFLAG:661 > 9
+	PRINT 『やったね1０人抜き』
+SIF CFLAG:661 > 29
+	PRINT 『3０回突破!』
+SIF CFLAG:661 > 49
+	PRINT 『祝!5０人抜き』
+SIF CFLAG:661 > 99
+	PRINT 『正の字が多すぎて気持ち悪い』
+PRINTL
+PRINTFORML %SAVESTR:TARGET%を辱める言葉が身体に書き加えられた......
+
+WAIT
+
+PRINTL
+
+IF COUNT_Z > 0
+	;獣姦
+	PRINTFORM 拘束された%SAVESTR:TARGET%は,尻を突きだす格好で
+	
+	IF PILLORY_USER == 1
+		PRINT 魔獣
+	ELSEIF PILLORY_USER == 2
+		PRINT 豚
+	ELSEIF PILLORY_USER == 3
+		PRINT ポニ-
+	ELSEIF PILLORY_USER == 4
+		PRINT 犬
+	ELSE
+		PRINT 犬
+	ENDIF
+	
+	PRINTL に犯されている
+	
+	IF RAND:3 == 0
+		PRINT 『この変態がっ!　
+		IF PILLORY_USER == 1
+			PRINT 魔獣
+		ELSEIF PILLORY_USER == 2
+			PRINT 豚
+		ELSEIF PILLORY_USER == 3
+			PRINT ポニ-
+		ELSEIF PILLORY_USER == 4
+			PRINT 犬
+		ELSE
+			PRINT 犬
+		ENDIF
+		PRINTL のチンポがそんなに気持ちいいかっ』
+	ELSEIF RAND:2 == 0
+		PRINTL 『やだ,野獣みたい......』
+	ELSE
+		PRINTL 『気分はどうだ!?　交尾気持ちいいですと言えっ!』
+	ENDIF
+ELSEIF COUNT_A > 0 && COUNT_V > 0
+	;A&V
+	PRINTFORM 拘束された%SAVESTR:TARGET%は,尻を突きだす格好で
+	
+	SIF TALENT:ショタコン
+		PILLORY_USER = 2
+	
+	IF PILLORY_USER == 1
+		PRINT 魔族の男
+	ELSEIF PILLORY_USER == 2
+		PRINT ダ-クエルフの少年
+	ELSEIF PILLORY_USER == 3
+		PRINT 下級悪魔
+	ELSEIF PILLORY_USER == 4
+		PRINT オ-ク
+	ELSE
+		PRINT オ-ク
+	ENDIF
+	
+	PRINTL に犯されている
+	
+	IF PILLORY_USER == 1
+		IF RAND:3 == 0
+			PRINTL 『やったぁ,本物の無料マ○コだ!』
+		ELSEIF RAND:2 == 0
+			PRINTL 魔族の男が勢いよくEjaculationする
+			PRINTL 『零すんじゃねぇぞ,零したらすくって口にねじ込むからな』
+		ELSE
+			PRINTL 『ウッ...出る!』『おい,早くしろ!　後がつかえてるんだからよ......』
+		ENDIF
+	ELSEIF PILLORY_USER == 2
+		IF RAND:3 == 0
+			PRINTL 『おね-さん......僕もう我慢できない!』
+		ELSEIF RAND:2 == 0
+			PRINTL 『あああ......ビュ-ビュ-でちゃうよぉ!』
+		ELSE
+			PRINTL 少年は必死に腰を打ちつけている
+			PRINTL 『おね-さん!　おね-さんっ!』
+		ENDIF
+	ELSEIF PILLORY_USER == 3
+		IF RAND:3 == 0
+			PRINTL 『この下等便器が!』
+		ELSEIF RAND:2 == 0
+			PRINTL 『無料マ○コだと聞いてみれば...臭くて汚いな』
+		ELSE
+			PRINTL 『しっかりと奉仕するが良い』
+		ENDIF
+	ELSE
+		IF RAND:3 == 0
+			PRINTL 『ブヒィッ!!　アナルも最高ブヒィ!　オラ,オ-クザ-メンで妊娠しろッ』
+		ELSEIF RAND:2 == 0
+			PRINTL 『ブヒブヒ,魔王様,ありがたいブヒィ......』
+		ELSE
+			PRINTL 『ブヒブヒィッ!!　謝罪が足りないブヒィ!』
+		ENDIF
+	ENDIF
+	
+ELSEIF COUNT_A > 0
+	;アナル
+	
+	PRINTFORM 拘束された%SAVESTR:TARGET%は,尻を突きだす格好で
+	
+	SIF TALENT:ショタコン
+		PILLORY_USER = 2
+	
+	IF PILLORY_USER == 1
+		PRINT 魔族の男
+	ELSEIF PILLORY_USER == 2
+		PRINT ダ-クエルフの少年
+	ELSEIF PILLORY_USER == 3
+		PRINT 下級悪魔
+	ELSEIF PILLORY_USER == 4
+		PRINT オ-ク
+	ELSE
+		PRINT オ-ク
+	ENDIF
+	
+	PRINTL に犯されている
+	
+	IF PILLORY_USER == 1
+		IF RAND:3 == 0
+			PRINTL 『前穴からすげぇ潮噴いてやがるぞ』
+		ELSEIF RAND:2 == 0
+			PRINTL 『淫乱なアナルしやがって......』
+		ELSE
+			PRINTL 『すっかり柔らかくなったじゃないか』
+		ENDIF
+	ELSEIF PILLORY_USER == 2
+		IF RAND:3 == 0
+			PRINTL 『おね-さん......アナルきもちいいよう』
+		ELSEIF RAND:2 == 0
+			PRINTL 『あああ......アナルにビュ-ビュ-でちゃう!』
+		ELSE
+			PRINTL 少年は必死に腰を打ちつけている
+			PRINTL 『童貞卒業だ......おね-さんのアナルで,童貞卒業だ......』
+		ENDIF
+	ELSEIF PILLORY_USER == 3
+		IF RAND:3 == 0
+			PRINTL 『この下等便器が!』
+		ELSEIF RAND:2 == 0
+			PRINTL 『無料アナルだと聞いてみれば...臭くて汚いな』
+		ELSE
+			PRINTL 『しっかりと奉仕するが良い』
+		ENDIF
+	ELSE
+		IF RAND:3 == 0
+			PRINTL 『ブヒィッ!!　アナル最高ブヒィ!　オラ,オ-クザ-メンで浣腸だッ』
+		ELSEIF RAND:2 == 0
+			PRINTL 『ブヒブヒ,魔王様,ありがたいブヒィ......』
+		ELSE
+			PRINTL 『ブヒブヒィッ!!　謝罪が足りないブヒィ!』
+		ENDIF
+	ENDIF
+	
+ELSE
+	IF RAND:3 == 0
+		PRINTL オ-クの巨漢が乱暴に精液処理をしている...
+		PRINTL 『ブヒィッ!!　マ○コくらいはヤクにたつなっ!』
+	ELSEIF RAND:2 == 0
+		PRINTL コボルトが列をなして彼女の尻を求めていた
+		PRINTL 『ヘヘヘっ,イイキモチだ...』
+	ELSE
+		PRINTL でっぷりと太ったオ-クが後ろから犯している...
+		PRINTL 『ブヒヒィッ!!種付けしてやるブヒィ!』
+	ENDIF
+ENDIF
+
+
+IF COUNT_A > 0
+	;A経験
+	PRINTFORML %EXPNAME:1%+{COUNT_A}
+	EXP:1 += COUNT_A
+ENDIF
+
+IF COUNT_V > 0
+	;V経験
+	PRINTFORML %EXPNAME:0%+{COUNT_V}
+	EXP:0 += COUNT_V
+ENDIF
+
+LOCAL:0 = COUNT_A + COUNT_V
+
+IF LOCAL:0 > 0
+	;性交経験
+	PRINTFORML %EXPNAME:5%+{LOCAL:0}
+	EXP:5 += LOCAL:0
+ENDIF
+
+IF COUNT_S > 0
+	;精液経験
+	PRINTFORML %EXPNAME:20%+{COUNT_S}
+	EXP:20 += COUNT_S
+ENDIF
+
+IF COUNT_F > 0
+	;フェラ経験
+	PRINTFORML %EXPNAME:22%+{COUNT_F}
+	EXP:22 += COUNT_F
+ENDIF
+
+IF COUNT_Z > 0
+	;獣姦経験
+	PRINTFORML %EXPNAME:56%+{COUNT_Z}
+	EXP:56 += COUNT_Z
+ENDIF
+
+IF COUNT_A > 0
+	;快A
+	PRINTFORML %PALAMNAME:2%の珠+{COUNT_A}
+	JUEL:2 += COUNT_A
+ENDIF
+
+IF COUNT_V > 0
+	;快V
+	PRINTFORML %PALAMNAME:1%の珠+{COUNT_V}
+	JUEL:1 += COUNT_V
+ENDIF
+
+
+LOCAL:0 = (COUNT_A + COUNT_V + COUNT_S + COUNT_Z) * (10 + TALENT:0 + TALENT:15 + TALENT:24 + TALENT:30 + TALENT:163 ) / 2
+;処女,プライド高い,保守的,貞操観念,高貴で取得率アップ
+;屈服-恥情は元々のものより少し多めになっています
+;V使用回数が50回を超えると屈服に使用回数に比例したボーナスが入ります
+IF LOCAL:0 > 0
+	;屈服-恥情
+	IF CFLAG:661 > 50
+		PRINTFORML %PALAMNAME:6%の珠+{LOCAL:0 * CFLAG:661 / 50}
+		JUEL:6 += LOCAL:0 * CFLAG:661 / 50
+	ELSE
+		PRINTFORML %PALAMNAME:6%の珠+{LOCAL:0}
+		JUEL:6 += LOCAL:0
+	ENDIF
+	PRINTFORML %PALAMNAME:8%の珠+{LOCAL:0}
+	JUEL:8 += LOCAL:0
+ENDIF
+
+LOCAL:0 = (COUNT_A + COUNT_V + COUNT_S + COUNT_Z)
+
+IF LOCAL:0 > 0
+	;否定
+	PRINTFORML %PALAMNAME:100%の珠+{LOCAL:0}
+	JUEL:100 += LOCAL:0
+ENDIF
+PRINTFORML %SAVESTR:TARGET%の身体に{CFLAG:661+CFLAG:662+CFLAG:663+CFLAG:664+CFLAG:665}回,精が吐きだされたようだ......
+
+CALL CAMPAIGN_EXP_PILLORY,TARGET
+
+WAIT
+
+;レベルが強ければもうちょっと耐えられる
+IF JUEL:100 > 120 + CFLAG:9 * 40
+	PRINTFORMW %SAVESTR:TARGET%の精神が限界に達した......
+	PRINTW *晒し台から解放します*
+	CFLAG:661 = 0
+	CFLAG:662 = 0
+	CFLAG:663 = 0
+	CFLAG:664 = 0
+	CFLAG:665 = 0
+	CFLAG:1 = 0
+ELSEIF JUEL:100 > 120 + 50 * 40
+	;50レベル以上は長すぎるので強制終了
+	PRINTFORMW %SAVESTR:TARGET%の精神が限界に達した......
+	PRINTW *晒し台から解放します*
+	CFLAG:661 = 0
+	CFLAG:662 = 0
+	CFLAG:663 = 0
+	CFLAG:664 = 0
+	CFLAG:665 = 0
+	CFLAG:1 = 0
+ENDIF
+
+;妊娠チェック
+IF COUNT_V > 0
+	CFLAG:107 += COUNT_V
+	CALL IN_VAGINA_SYOKU_TO_T
+	CALL CONCEPTION_CHECK_SYOKU_TO_T
+ENDIF
+
+
+RETURN 0
+
+
+
+
+
+
+

@@ -1,0 +1,2164 @@
+﻿;地の文関連,切り分けられるところだけここに
+
+;未記入箇所は[SKIPSTART]～[SKIPEND]でくくってコメントアウトしているので
+;記入したら外して下さい
+
+
+;売春直前の文章(まだヤってない,正否や回数は不明)
+@LOG_TRY_BITCH(ARG, PLACE)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+;描写分岐はF関数化して使い回しができるようにした(ついでにバリエーション追加)
+;しかし使い途無いかも
+PRINTFORM %FS_BITCH("LOOKS", ARG)%は
+
+IF PLACE == "DUNGEON"
+	;侵入中
+	IF CFLAG:ARG:1 == 2
+		;売春中毒か淫乱
+		IF ABL:ARG:37 >= 1 || TALENT:ARG:76
+			PRINTFORM 性欲を抑えきれず
+		ELSEIF (CFLAG:ARG:580 + CFLAG:ARG:581 + CFLAG:ARG:582) < -5000
+			PRINTFORM 少しでも借金を減らすため
+		ELSE
+			PRINTFORM 暇を持て余して
+		ENDIF
+	ELSEIF CFLAG:ARG:1 == 3 && CFLAG:(ARG:0):533 > 1
+		PRINTFORM 仲間の目を盗んで
+	ELSEIF CFLAG:ARG:500 == 1
+		SIF TALENT:ARG:85 && !(TALENT:ARG:180 || TALENT:ARG:181)
+			PRINTFORM 不本意ながらも
+		PRINTFORM 命令に従って
+	ELSE
+		PRINTFORM 性欲を抑えきれず
+	ENDIF
+ELSE
+	;売春中毒か淫乱
+	IF ABL:ARG:37 >= 1 || TALENT:ARG:76
+		PRINTFORM 性欲を抑えきれず
+	;借金金額を微改変
+	ELSEIF (CFLAG:ARG:580 + CFLAG:ARG:581 + CFLAG:ARG:582) < -5000
+		PRINTFORM 借金が膨らみ過ぎて
+	ELSE
+		PRINTFORM 冒険資金が底をついて
+	ENDIF
+ENDIF
+PRINTFORMW 売春を思い立ったようだ...
+
+
+;売春用各種文字列取得関数
+@FS_BITCH(TYPE, ARG)
+#FUNCTIONS
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS TYPE
+#DIM DICE
+SELECTCASE TYPE
+;数値→プレイ内容変換
+;関数の利用に
+CASE "PLAY"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = HAND
+	CASE 2
+		LOCALS = ORAL
+	CASE 3
+		LOCALS = LES
+	CASE 4
+		LOCALS = ANAL
+	CASE 5
+		LOCALS = SEX
+	;ダンジョン内では売春扱いではない
+	CASE 6
+		LOCALS = ANIMAL
+	;売春では使わない
+	CASE 7
+		LOCALS = SELF
+	CASEELSE
+		$ERROR_ARG
+		THROW 不明な引数{ARG}
+	ENDSELECT
+;表示用
+CASE "PLAYNAME"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = 手淫売春
+	CASE 2
+		LOCALS = 口淫売春
+	CASE 3
+		LOCALS = レズ売春
+	CASE 4
+		LOCALS = 肛交売春
+	CASE 5
+		LOCALS = 性交売春
+	CASE 6
+		LOCALS = 獣交売春
+	CASEELSE
+		GOTO ERROR_ARG
+	ENDSELECT
+CASE "TOWN_MAN"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = 村の男
+	CASE 2
+		LOCALS = 冒険者の男
+	CASE 3
+		LOCALS = 村の少年
+	CASE 4
+		LOCALS = 街の成金
+	CASE 5
+		LOCALS = 行商人の男
+	CASEELSE
+		GOTO ERROR_ARG
+	ENDSELECT
+CASE "TOWN_GIRL"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = 主婦
+	CASE 2
+		LOCALS = 女冒険者
+	CASE 3
+		LOCALS = 女乞食
+	CASE 4
+		LOCALS = お忍びの貴婦人
+	CASE 5
+		LOCALS = 旅芸人の娘
+	CASEELSE
+		GOTO ERROR_ARG
+	ENDSELECT
+CASE "DUNGEON_MAN"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = オーク
+	CASE 2
+		LOCALS = 魔族の男
+	CASE 3
+		LOCALS = 魔族の少年
+	CASE 4
+		LOCALS = 魔族の成金
+	CASE 5
+		LOCALS = コボルトの商人
+	CASEELSE
+		GOTO ERROR_ARG
+	ENDSELECT
+CASE "DUNGEON_GIRL"
+	SELECTCASE ARG
+	CASE 1
+		LOCALS = 淫魔
+	CASE 2
+		LOCALS = 魔族の女
+	CASE 3
+		LOCALS = エルフの女乞食
+	CASE 4
+		LOCALS = 魔族の貴婦人
+	CASE 5
+		LOCALS = 魔族の女司祭
+	CASEELSE
+		GOTO ERROR_ARG
+	ENDSELECT
+;本人の描写
+;ABLカンスト系に再現性が無いので注意
+CASE "LOOKS"
+	;ランダムで上書きさせることで
+	;重複した素質が入れ替わりで出現するように
+	
+	;本当はDICEの数を増やして確率を公平にしたいけど
+	;美しくないのでこの形に
+	
+	DICE = 2
+	;一回も上書きされない場合髪色が出る
+	LOCALS = %GET_LOOK_INFO(ARG, "髪の色")%の
+
+	SIF TALENT:ARG:253 && RAND:DICE == 0
+		LOCALS = 小麦の肌の
+	SIF TALENT:ARG:255 && RAND:DICE == 0
+		LOCALS = 白い肌の
+	SIF TALENT:ARG:244 && RAND:DICE == 0
+		LOCALS = 青い肌の
+
+	SIF TALENT:ARG:陰毛の状態 == 1 && RAND:DICE == 0
+		LOCALS = パイパンの
+	SIF TALENT:ARG:陰毛の状態 > 150 && RAND:DICE == 0
+		LOCALS = 陰毛の濃い
+
+	SIF TALENT:ARG:癖 == 7 && RAND:DICE == 0
+		LOCALS = 落ち着きのない
+	SIF TALENT:ARG:癖 == 9 && RAND:DICE == 0
+		LOCALS = 上目遣いの
+	SIF TALENT:ARG:癖 == 10 && RAND:DICE == 0
+		LOCALS = 小首を傾げた
+	SIF TALENT:ARG:癖 == 11 && RAND:DICE == 0
+		LOCALS = 憂鬱そうな
+	SIF TALENT:ARG:癖 == 14 && RAND:DICE == 0
+		LOCALS = ふくれっ面の
+	SIF TALENT:ARG:癖 == 18 && RAND:DICE == 0
+		LOCALS = かったるそうな
+	SIF TALENT:ARG:癖 == 19 && RAND:DICE == 0
+		LOCALS = どこか不満気な
+
+	SIF TALENT:ARG:目 == 7 && RAND:DICE == 0
+		LOCALS = キツイ目つきの
+	
+	SIF TALENT:ARG:チャームポイント == 10 && RAND:DICE == 0
+		LOCALS = 綺麗な指の
+	SIF TALENT:ARG:チャームポイント == 13 && RAND:DICE == 0
+		LOCALS = くびれが自慢の
+	SIF TALENT:ARG:チャームポイント == 14 && RAND:DICE == 0
+		LOCALS = 尻の形が美しい
+	SIF TALENT:ARG:チャームポイント == 15 && RAND:DICE == 0
+		LOCALS = すらりとした脚の
+	SIF TALENT:ARG:チャームポイント == 22 && RAND:DICE == 0
+		LOCALS = 艶やかな髪の
+	SIF TALENT:ARG:チャームポイント == 23 && RAND:DICE == 0
+		LOCALS = 大きな尻の
+	SIF TALENT:ARG:チャームポイント == 25 && RAND:DICE == 0
+		LOCALS = 八重歯がかわいい
+	
+	SIF TALENT:ARG:勇者になる前の生活 == 8 && RAND:DICE == 0
+		LOCALS = 元貴族で
+	SIF TALENT:ARG:勇者になる前の生活 == 12 && RAND:DICE == 0
+		LOCALS = 元聖女で
+	;SIF TALENT:ARG:204 && RAND:DICE == 0
+	;	LOCALS = 肉便器で
+	SIF TALENT:ARG:99 && RAND:DICE == 0
+		LOCALS = 背の高い
+	SIF TALENT:ARG:100 && RAND:DICE == 0
+		LOCALS = ちいさい
+	SIF TALENT:ARG:256 && RAND:DICE == 0
+		LOCALS = 顔色が悪い
+	SIF (TALENT:ARG:21 || TALENT:ARG:22) && RAND:DICE == 0
+		LOCALS = おすまし顔の
+	SIF TALENT:ARG:35 && RAND:DICE == 0
+		LOCALS = はにかみ顔の
+	SIF (TALENT:ARG:15 || TALENT:ARG:16) && RAND:DICE == 0
+		LOCALS = わがまま娘の
+	SIF TALENT:ARG:17 && RAND:DICE == 0
+		LOCALS = 卑屈な笑顔の
+	SIF TALENT:ARG:12 && RAND:DICE == 0
+		LOCALS = 不敵な笑顔の
+	SIF (TALENT:ARG:10 || TALENT:ARG:26) && RAND:DICE == 0
+		LOCALS = 泣きだしそうな
+	SIF (TALENT:ARG:23 || TALENT:ARG:25) && RAND:DICE == 0
+		LOCALS = 元気いっぱいな
+	SIF TALENT:ARG:73 && RAND:DICE == 0
+		LOCALS = 尻の軽い
+	
+	SIF CFLAG:ARG:509 == 1 && RAND:DICE == 0
+		LOCALS = 迷子の
+	SIF INRANGE(ABL:ARG:37, 1, 3) && RAND:DICE == 0
+		LOCALS = 身体を売る歓びを見出しつつある
+	;ABL系は共存しうるため変化を出すためにとりあえず確率で
+	SIF ABL:ARG:30 == 10 && RAND:DICE == 0
+		LOCALS = ペニス抜きでの生活は考えられなくなった
+	SIF ABL:ARG:31 == 10 && RAND:DICE == 0
+		LOCALS = 暇を見つけては自慰ばかりしている
+	SIF ABL:ARG:32 == 10 && RAND:DICE == 0
+		LOCALS = くさいザーメンが大好きになった
+	SIF ABL:ARG:33 == 10 && RAND:DICE == 0
+		LOCALS = 女性をみると脳内で犯さずにはいられない
+	SIF ABL:ARG:37 == 10 && RAND:DICE == 0
+		LOCALS = いつの頃からか売春の虜になった
+
+	;陥落済みである
+	IF TALENT:ARG:76
+		LOCALS += "エッチな"
+	ELSEIF TALENT:ARG:85
+		LOCALS += "裏切り者の"
+	ENDIF
+	LOCALS += @"%GET_LOOK_INFO(ARG, "種族")%の%SAVESTR:ARG%"
+CASEELSE
+	THROW 不明なTYPE%TYPE%
+ENDSELECT
+RETURNF LOCALS
+
+
+
+;売春ログ表示文字列関数
+;プレイ回数や客の合計を出力
+@FS_LOG_BITCH(TYPE, ARG:1, ARG:2, ARG:3, ARG:4, ARG:5)
+#FUNCTIONS
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS TYPE
+#DIM LCOUNT
+VARSET LOCALS
+SELECTCASE TYPE
+CASE "DUNGEON_MAN", "DUNGEON_GIRL", "TOWN_MAN", "TOWN_GIRL"
+	FOR LCOUNT, 1, 6
+		SIF !ARG:LCOUNT
+			CONTINUE
+		SIF STRLENS(LOCALS)
+			LOCALS += ","
+		LOCALS += @"{ARG:LCOUNT}人の%FS_BITCH(TYPE, LCOUNT)%"
+	NEXT
+CASE "PLAYNAME"
+	FOR LCOUNT, 1, 6
+		SIF !ARG:LCOUNT
+			CONTINUE
+		SIF STRLENS(LOCALS)
+			LOCALS += ","
+		LOCALS += @"{ARG:LCOUNT}回の%FS_BITCH("PLAYNAME", LCOUNT)%"
+	NEXT
+CASEELSE
+	THROW 不明なTYPE%TYPE%
+ENDSELECT
+RETURNF LOCALS
+
+
+
+;売春描写関数呼び出し関数
+;売春が全て終わって(成功して)から呼ぶ
+;BIT利用で売春の内容を記録した引数CHECKを元に描写分岐を行う
+;0 　　　=TOWN/DUNGEON
+;1～6　　プレイ内容(1=HAND, 2=ORAL, 3=LES, 4=ANAL, 5=SEX, 6=ANIMAL)
+;11～15　男性客の種類
+;21～25　女性客の種類
+;ARG＝キャラ登録番号はこの関数では使用しないが描写関数側で必要となるためそのまま渡す
+@LOG_AFTER_BITCH(ARG, CHECK)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIM CHECK
+#DIM KYAKU
+#DIM PLAY
+;けも
+IF GETBIT(CHECK, 6)
+	PLAY = 6
+;れず
+ELSEIF GETBIT(CHECK, 3) && RAND:10 < 5
+	DO
+		KYAKU = RAND(1, 6)
+		SIF GETBIT(CHECK, (KYAKU + 20))
+			BREAK
+	LOOP 1
+	PLAY = 3
+;ふつう
+ELSE
+	;デバッグ加筆
+	;恐らくレズ設定でRAND判定から外れてこっちに来た時に
+	;女性客を取りたいのに男性客から判定しているため
+	;無限ループが発生していると解釈して
+	;処置を行いました
+	IF GETBIT(CHECK, 3)
+		DO
+			KYAKU = RAND(1, 6)
+			SIF GETBIT(CHECK, (KYAKU + 20))
+				BREAK
+		LOOP 1
+		PLAY = 3
+	ELSE
+		DO
+			KYAKU = RAND(1, 6)
+			SIF GETBIT(CHECK, (KYAKU + 10))
+				BREAK
+		LOOP 1
+		DO
+			PLAY = RAND(1, 6)
+			SIF PLAY == 3
+				CONTINUE
+			SIF GETBIT(CHECK, PLAY)
+				BREAK
+		LOOP 1
+	ENDIF
+	
+ENDIF
+
+LOCALS = %FS_BITCH("PLAY", PLAY)%
+IF GETBIT(CHECK, 0)
+	CALLFORM LOG_BITCH_%LOCALS%(ARG, "DUNGEON", KYAKU)
+ELSE
+	CALLFORM LOG_BITCH_%LOCALS%(ARG, "TOWN", KYAKU)
+ENDIF
+WAIT
+
+
+;ここから売春描写関数群
+;ただし以下は例外なので注意
+;-DUNGEONでのANIMALは無報酬,自主的なプレイの一環
+;-SELFは売春ではない(DUNGEON, TOWN問わず)
+
+@LOG_BITCH_HAND(ARG, PLACE, KYAKU)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+
+PRINTFORM %SAVESTR:ARG%は
+SELECTCASE ABL:ARG:13
+CASE 0
+	PRINTFORM 嫌悪感をこらえて事務的に
+CASE 1
+	PRINTFORM ペニスが視界に入らないよう目を伏せて
+CASE 2
+	PRINTFORM 気色悪そうにペニスを見つめながら
+CASE 3, 4
+	PRINTFORM 客の反応をうかがいながら
+CASE 5, 6
+	PRINTFORM 客の反応を楽しみながら
+CASE 7, 8
+	PRINTFORM ときおり笑顔をみせながら
+CASE 9, 10
+	PRINTFORM 手馴れた様子で隠語をまじえて
+ENDSELECT
+PRINTFORMW 手淫売春を行っている...
+
+SELECTCASE PLACE
+CASE "DUNGEON"
+	LOCALS = %FS_BITCH("DUNGEON_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;オーク
+	CASE 1
+		PRINTDATAL
+			DATAFORM "ブヒヒ......キタナイ　チンポで　スマンナ"
+			DATAFORM 分厚い肉の腹を揺らして,オークは喜んでいる......
+			DATAFORM "3発ハ,ヌイテモラウゾ"
+		ENDDATA
+	;魔族の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "いい手つきだ......メスの才能あるよ"
+			DATAFORM "誰にでもこんなことやってるのか?"
+			DATAFORM 魔族の男は腕を組んで見下ろしている......
+		ENDDATA
+	;魔族の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "うぅ......エロすぎるよぉ......"
+			DATAFORM "おねーさんの手,ひんやり......"
+			DATAFORM 魔族の少年は早くも射精してしまったようだ......
+		ENDDATA
+	;魔族の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "フン......下賤な女め"
+			DATAFORM "このスケベが......"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "もっと上手に扱かんか"
+			DATAFORM "値段分は楽しませてもらうぞ"
+		ENDDATA
+	;コボルトの商人
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "優シイ手ダネ......"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "いい顔ダヨ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "モット強く握レヨ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "お嬢様慣レテルナ"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "怖い顔ダネ"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "匂い嗅いでヨ..."
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "玉の方モ頼むヨ"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+CASE "TOWN"
+	LOCALS = %FS_BITCH("TOWN_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;村の男
+	CASE 1
+		PRINTDATAL
+			DATAFORM "グフフ......ありがとう......"
+			DATAFORM 村の男はニヤニヤ笑って%SAVESTR:ARG%を罵っている
+		ENDDATA
+	;冒険者の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "すっかり売女になっちまったな"
+			DATAFORM 冒険者の男は金を%SAVESTR:ARG%の下着に挟み込んだ
+		ENDDATA
+	;村の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "いたんだ,本当に,えっちなおねーさん......"
+			DATAFORM 少年は腰をガクガク震わせて感じ入っていた
+		ENDDATA
+	;街の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "ビッチが!"
+			DATAFORM "メス豚が!"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "抜いた後は髪で拭いてもらおうか"
+			DATAFORM "まぁ,手つきはいい方だな"
+		ENDDATA
+	;行商人の男
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "へへ......やさしいな"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "強く握れよ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "なんだその目は"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "お嬢様ななりして......やるじゃねぇか"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "反抗的だな"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "しっかりチンポ見ろよ"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "上手い上手い"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+ENDSELECT
+
+
+
+@LOG_BITCH_ORAL(ARG, PLACE, KYAKU)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+PRINTFORM %SAVESTR:ARG%は
+SELECTCASE ABL:ARG:32
+CASE 0
+	PRINTFORM 鼻先につきつけられたペニスに青ざめながら
+CASE 1, 2
+	PRINTFORM においと味に戸惑いを感じながら
+CASE 3, 4
+	PRINTFORM じゅぽじゅぽと下品な音を立てながら
+CASE 5, 6
+	PRINTFORM においと味に歓びを感じながら
+CASE 7, 8
+	PRINTFORM すっかりくつろいだ様子で嬉しそうに
+CASE 9, 10
+	PRINTFORM 客の側が戸惑うほどに積極的に
+ENDSELECT
+PRINTFORMW 口淫売春を行っている...
+
+SELECTCASE PLACE
+CASE "DUNGEON"
+	LOCALS = %FS_BITCH("DUNGEON_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;オーク
+	CASE 1
+		PRINTDATAL
+			DATAFORM "グフフ......しっかりしゃぶるブヒ"
+			DATAFORM "ブフッ,舌が気持ちいいブヒ"
+		ENDDATA
+	;魔族の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "後でアナルも舐めてもらおうかな"
+			DATAFORM "そうだ,喉を使え"
+		ENDDATA
+	;魔族の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "でちゃう......何かが出ちゃうよぉ"
+			DATAFORM "おねーさんえっちだね"
+		ENDDATA
+	;魔族の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "どうだ,おいしいか?"
+			DATAFORM "味はどうだ?"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "おいしいと言ってみろ,売女が!"
+			DATAFORM "変態が......"
+		ENDDATA
+	;コボルトの商人
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "優しい舌使いだ......へへ"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "こっち見ろよ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "伏せてる目もかわいいぜ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "本当なら,一生咥えそうにない顔だな"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "いい目だねぇ"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "噛みつくなよ"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "おお......いい気持ちだ"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+CASE "TOWN"
+	LOCALS = %FS_BITCH("TOWN_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;村の男
+	CASE 1
+		PRINTDATAL
+			DATAFORM "はぁはぁ......上手だよ......"
+			DATAFORM "しょうがないから使ってやるよ"
+		ENDDATA
+	;冒険者の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "最近洗ってないからなぁ......綺麗にしてくれよ"
+			DATAFORM "そんなに金が無いのか?"
+		ENDDATA
+	;村の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "ああっ......いいっ......"
+			DATAFORM 少年はこの口淫で精液が水のようになるまで射精したようだ
+		ENDDATA
+	;街の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "下等な口マンコを使ってやる"
+			DATAFORM "メス豚にはお似合いの仕事だな"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "有難く思いなよ"
+			DATAFORM "頑張って奉仕するのだぞ"
+		ENDDATA
+	;行商人の男
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "優しい目だな"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "凄い吸いつきだ......"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "そんなに怯えるなよ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "いい女がこんな仕事だなんてな......"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "涼しい顔しやがって"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "おお,怖い怖い"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "上手じゃないか"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+ENDSELECT
+
+
+@LOG_BITCH_LES(ARG, PLACE, KYAKU)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+PRINTFORM %SAVESTR:ARG%は
+SELECTCASE ABL:ARG:33
+CASE 0
+	PRINTFORM 挿入がない分マシだと自分に言い聞かせながら
+CASE 1, 2
+	PRINTFORM かすかな興奮を覚えながら
+CASE 3, 4
+	PRINTFORM ねっとりと水音を響かせながら
+CASE 5, 6
+	PRINTFORM 興奮を隠そうともせずに
+CASE 7, 8
+	PRINTFORM あられもない言葉を口走りながら
+CASE 9, 10
+	PRINTFORM 時間を忘れ幾度も客をひきとめながら
+ENDSELECT
+PRINTFORMW レズ売春を行っている...
+
+SELECTCASE PLACE
+CASE "DUNGEON"
+	LOCALS = %FS_BITCH("DUNGEON_GIRL", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;淫魔
+	CASE 1
+		PRINTDATAL
+			DATAFORM "あなたの精気を頂きます♪"
+			DATAFORM "貴女,おいしそうね～"
+			DATAFORM "おっぱいから吸いあげちゃうよ"
+			DATAFORM "御馳走様♪"
+			DATAFORM "お嬢さんみたいなディナーで幸せよ"
+			DATAFORM "キスだけでイっちゃった?"
+			DATAFORM "いっぱい絞り取るからね"
+			DATAFORM "いただきまーす♪"
+		ENDDATA
+	;魔族の女
+	CASE 2
+		PRINTDATAL
+			DATAFORM "奴隷様のおしっこかけてぇ"
+			DATAFORM "かわいいね,お嬢さん"
+			DATAFORM "さ,はやく始めましょ.慣れてるんでしょ?"
+			DATAFORM "哀れな雌豚に鞭をください,奴隷様......"
+			DATAFORM "このままずっと抱いていたい......"
+			DATAFORM "どんどん蜜が溢れてくるよ"
+			DATAFORM "一晩だけ,恋人になって......"
+			DATAFORM "お嬢さん,いつもどんなオナニーするの?"
+		ENDDATA
+	;エルフの女乞食
+	CASE 3
+		PRINTDATAL
+			DATAFORM "お金,持ってきました......"
+			DATAFORM "柔らかい,柔らかいよぉ"
+			DATAFORM "私を壊してぇ,何も考えられないくらい......"
+			DATAFORM "女でも抱かないと,やってられないの"
+			DATAFORM "贅沢しちゃ,だめかな"
+			DATAFORM "尻穴売った金で,女を買って癒されるなんてね......"
+			DATAFORM "奴隷様を買うためなら,ザーメンだって飲むわ"
+			DATAFORM "汚れた私を......貴女の愛液で清めて......"
+		ENDDATA
+	;魔族の貴婦人
+	CASE 4
+		PRINTDATAL
+			DATAFORM "私の性欲を満たしてくれない?"
+			DATAFORM "ほら,お金が欲しいんでしょ?"
+			DATAFORM "ふふ,えっちな子猫ちゃん"
+			DATAFORM "お金なら出すわ,ほら......"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "ペニバンでガンガン突いてちょうだい"
+			DATAFORM "ほら,もっとねっとりと舐めるのよ"
+			DATAFORM "ねぇ,お尻まで舐めて......"
+			DATAFORM "もっとキスしましょう"
+			DATAFORM "私のこと鞭でぶって......雌豚って蔑んで......"
+			DATAFORM "ねぇ,オナニーしてよ"
+			DATAFORM "ペニバンで私のアナルほじってぇ"
+			DATAFORM "私のあそこ,愛撫してちょうだい"
+			DATAFORM "貝合わせしましょう?　あなたいい脚ね......"
+		ENDDATA
+	;魔族の女司祭
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "いっしょに愛し合いましょう"
+				DATAFORM "キスしましょう,ねっとりとね"
+				DATAFORM "このままずっと抱きあいたい......"
+				DATAFORM "快楽はわたしたちの教義です"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "もっとぶって!　暴力は素晴らしい行いです"
+				DATAFORM "ああん,乳首を......もっと千切っちゃうくらいに......"
+				DATAFORM "お尻をもっと叩いて......真っ赤になってもいいから"
+				DATAFORM "堕落はわたしたちの教義です"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "もっと真面目にクンニなさい......"
+				DATAFORM "お尻までちゃんと舐めるのよ"
+				DATAFORM "ああ,いい顔.もっといい声で鳴いて......"
+				DATAFORM "媚びはわたしたちの教義です"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "終わったら,一緒にお茶しましょう"
+				DATAFORM "ベッドでこのまま眠りにつきましょう"
+				DATAFORM "ああ,おしっこ飲ませてください......"
+				DATAFORM "淫蕩はわたしたちの教義です"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "すました顔......きれいよ"
+				DATAFORM "貴女売春の才能あるわよ,剣を振るうよりよっぽど"
+				DATAFORM "脇の下......弱いのね"
+				DATAFORM "暴力はわたしたちの教義です"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "こんど私たちの神殿に来ない?"
+				DATAFORM "肌がきれいね......"
+				DATAFORM "お尻,きれいよ"
+				DATAFORM "逸脱はわたしたちの教義です"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "いっしょにこうして絡み合いましょう"
+				DATAFORM "私たちの神殿でもやっていけそうね"
+				DATAFORM "うふふ,また指名しちゃうかも"
+				DATAFORM "快楽はわたしたちの教義です"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+CASE "TOWN"
+	LOCALS = %FS_BITCH("TOWN_GIRL", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;主婦
+	CASE 1
+		PRINTDATAL
+			DATAFORM "いいなー,肌や柔らかくて"
+			DATAFORM "若いのね......こんな仕事して"
+		ENDDATA
+	;女冒険者
+	CASE 2
+		PRINTDATAL
+			DATAFORM "抱いて眠ってくれ......"
+			DATAFORM "ふふ,そう怯えるな"
+		ENDDATA
+	;女乞食
+	CASE 3
+		PRINTDATAL
+			DATAFORM "これ,今日の稼ぎです......"
+			DATAFORM 女乞食は必死に腰を擦りつけて絶頂している
+		ENDDATA
+	;お忍びの貴婦人
+	CASE 4
+		PRINTDATAL
+			DATAFORM "いい子じゃない"
+			DATAFORM "綺麗な子ね"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "お酒,飲む?"
+			DATAFORM "お風呂,先に入る?"
+		ENDDATA
+	;旅芸人の娘
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "やさしい手つきね"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "かっこいいひと好きよ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "私がリードしてあげる"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "お嬢様って感じ～"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "ほねぶと～"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "ののしってください!"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "私の好きなようにしていい?"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+ENDSELECT
+
+@LOG_BITCH_ANAL(ARG, PLACE, KYAKU)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+PRINTFORM %SAVESTR:ARG%は
+SELECTCASE ABL:ARG:3
+CASE 0
+	PRINTFORM 痛みを必死でこらえながら
+CASE 1
+	PRINTFORM 経験の少ない
+CASE 2
+	PRINTFORM 快楽にほころびつつある
+CASE 3, 4
+	PRINTFORM すっかり開発されてしまった
+CASE 5, 6
+	PRINTFORM 何度も使い込んで性器と化した
+CASE 7, 8
+	PRINTFORM 自分から尻を振りながら
+CASE 9, 10
+	PRINTFORM 目的を忘れて快楽に溺れながら
+ENDSELECT
+PRINTFORMW 菊門で肛交売春を行っている...
+
+
+SELECTCASE PLACE
+CASE "DUNGEON"
+	LOCALS = %FS_BITCH("DUNGEON_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;オーク
+	CASE 1
+		PRINTDATAL
+			DATAFORM "ケツノ穴カ......マアイイ"
+			DATAFORM "コレハモウ性器ダナ"
+			DATAFORM "ドロドロニホグレテイルゼ"
+			DATAFORM "ケツヲ......売ッテイルノカ"
+			DATAFORM "ヨシ,ケツヲ向ケロ"
+			DATAFORM "イヤラシイ尻穴ダ"
+			DATAFORM "尻ヲ売ッテ楽シイカ?"
+			DATAFORM "ウゥ,スゲェ尻ダ"
+			DATAFORM "アナルガヒクツイテルゼ"
+			DATAFORM "綺麗ナアナルダナ"
+			DATAFORM "尻ノ感度ハドウダ?"
+			DATAFORM "オ尻ガ丸見エダゼ"
+			DATAFORM "ダイブ慣レテルジャナイカ"
+			DATAFORM "何人咥エコンダ?"
+			DATAFORM "スゲェ尻穴ダ......"
+		ENDDATA
+	;魔族の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "尻穴で感じる変態め!"
+			DATAFORM "尻穴で何回イった?　オラッ,もう一回イけ!"
+			DATAFORM "すげぇ締め付けてきやがる......"
+			DATAFORM "このアナル,かなり調教されてやがる......"
+			DATAFORM "ケツ穴広げて誘いやがって......"
+			DATAFORM "この変態尻穴奴隷が!"
+			DATAFORM "尻穴で金を稼いで気持ちいいか?"
+			DATAFORM "ケツ穴で感じられるなんて,才能あるぜ"
+		ENDDATA
+	;魔族の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "お姉さんのお尻,いいよぉ"
+			DATAFORM "えっ,お尻でするの......?"
+			DATAFORM "お尻って,気持ちいいんだね"
+			DATAFORM "お金ないから,お尻で......"
+			DATAFORM "すごい......お尻に飲み込まれていく......"
+			DATAFORM "お尻に......でちゃう!"
+			DATAFORM "こんなに気持ちよかったら,もうお尻でしかできないよぉ"
+			DATAFORM "お姉さんのお尻,すごい気持ちいい......"
+		ENDDATA
+	;魔族の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "金が欲しいんだろ......分かってるな?"
+			DATAFORM "金をちゃんと握ってろよ!　もっと欲しけりゃ......"
+			DATAFORM "もっと欲しいのか,この淫乱め!"
+			DATAFORM "金のためなら何でもするって言ったな?"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "ケツを舐めてみろ,アナルまでだぞ"
+			DATAFORM "腰振って踊ってみろ,ガニマタでな"
+			DATAFORM "土下座してお金を下さいと言え"
+			DATAFORM "雌豚にお金をお恵みくださいと言え"
+			DATAFORM "金のために何でもするビッチですと言え"
+			DATAFORM "恥垢を綺麗に掃除するんだな"
+			DATAFORM "土下座してケツにチ○ポくださいと言え"
+			DATAFORM "土下座して犬のように腰振ってみろ"
+			DATAFORM "ここで小便してみろ,犬のようにな"
+			DATAFORM "チ○ポと金,どっちでビンタされるのが好きだ?"
+			DATAFORM "チ○ポ大好き淫乱尻穴奴隷ですと言え"
+			DATAFORM "ここで尻穴オナニーしてみせろ"
+			DATAFORM "金のために尻穴を売る商売女ですと言え"
+			DATAFORM "土下座してアナルにチ○ポくださいと言え"
+			DATAFORM "もっと媚びてみせろ,だらしない笑顔でな"
+		ENDDATA
+	;コボルトの商人
+	CASE 5
+		;娼婦のドレス
+		SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+			PRINTFORML "エロい服だぜ"
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "ケツを愛されるのが好きなのかい"
+				DATAFORM "アナルバイブ飲み込んでるぜ"
+				DATAFORM "アナルに何でも入りそうだな"
+				DATAFORM "こんなところも愛してほしいのか?"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "アナルバイブが弱いようだな"
+				DATAFORM "ほら,もう一個入れるぞ!"
+				DATAFORM "気の強いやつはアナルが弱いって本当だな"
+				DATAFORM "指が吸いこまれそうだぜ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "アナルにバイブ入れるぞ......力を抜け"
+				DATAFORM "口では嫌々言ってもアナルは正直だな"
+				DATAFORM "アナルがゆるゆるだぜ......"
+				DATAFORM "尻をもっと高く上げろ......全部見えるようにな"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "お嬢様でも汚い所は汚いんだな"
+				DATAFORM "こんなケツ穴で悶えるなんて......恥を知れ!"
+				DATAFORM "アナルが広がってるぜ"
+				DATAFORM "バイブを飲みこんでいくぜ......大した尻穴だ"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "尻穴売って何とも思わないのか?"
+				DATAFORM "ケツ穴がそんなにいいか......?　ほらよ"
+				DATAFORM "アナルバイブが相当気にいったようだな"
+				DATAFORM "はは,アナルがドロドロだぜ"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "汚い女はアナルも汚いな!"
+				DATAFORM "勇者様,アナルは気持ちいいですか～?"
+				DATAFORM "ケツを突きだしてアナルを広げてみろ!"
+				DATAFORM "尻穴は正直みたいだな"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "この尻穴売女め!"
+				DATAFORM "アナル売春婦とは落ちたものだな"
+				DATAFORM "何してる,さっさと尻を出すんだよ"
+				DATAFORM "アナルでアンアン喘ぎやがって......!"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+CASE "TOWN"
+	LOCALS = %FS_BITCH("TOWN_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;村の男
+	CASE 1
+		PRINTDATAL
+			DATAFORM "柔らかいアナルだな"
+			DATAFORM "前はダメか?"
+		ENDDATA
+	;冒険者の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "浣腸はしてきたか?"
+			DATAFORM "うっ......中に出すぞっ"
+		ENDDATA
+	;村の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "アナルで我慢するよ......"
+			DATAFORM "おしりでもできるんだ......"
+		ENDDATA
+	;街の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "尻穴を売るとは......"
+			DATAFORM "尻穴奉仕か......"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "汚れた娘だ"
+			DATAFORM "情けなくないのか?"
+		ENDDATA
+	;行商人の男
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "施しを貰おうか"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "こういう子はアナルが弱い!"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "もっと尻を高く上げろ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "お嬢様にもアナルはあるんだな......"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "そういう目......アナルが弱い目だ"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "泣き叫んでもいいぜ"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "よろしくな"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+ENDSELECT
+
+@LOG_BITCH_SEX(ARG, PLACE, KYAKU)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+
+PRINTFORM %SAVESTR:ARG%は
+SELECTCASE ABL:ARG:2
+CASE 0
+	PRINTFORM 苦痛を必死でこらえながら
+CASE 1
+	PRINTFORM 経験の少ない
+CASE 2
+	PRINTFORM 快楽にほころびつつある
+CASE 3, 4
+	PRINTFORM すっかり開発されてしまった
+CASE 5, 6
+	PRINTFORM 何度も使い込んだ歴戦の
+CASE 7, 8
+	IF RAND:2 == 1 && ABL:ARG:14 >= 3
+		PRINTFORM なまめかしく腰を使いながら
+	ELSE
+		PRINTFORM 何度となく絶頂を迎えながら
+	ENDIF
+CASE 9, 10
+	IF RAND:2 == 1 && ABL:ARG:14 >= 5
+		PRINTFORM 絞りつくさんばかりの勢いで腰を振りたてて
+	ELSE
+		PRINTFORM 客のことなどそっちのけでイキ狂いながら
+	ENDIF
+ENDSELECT
+PRINTFORMW 膣穴で性交売春を行っている...
+
+SELECTCASE PLACE
+CASE "DUNGEON"
+	LOCALS = %FS_BITCH("DUNGEON_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;オーク
+	CASE 1
+		;娼婦のドレス
+		SIF (CFLAG:ARG:40 & 28) && CFLAG:ARG:41 == 203
+			PRINTFORML "スケベナ服デ誘イヤガッテ......"
+		PRINTDATAL
+			DATAFORM "魔王様ノ奴隷ヲ抱ケルナンテ......"
+			DATAFORM "オーッ,ウオオッ,ナンテ穴ダ!"
+			DATAFORM "ソンナニザーメンガ好キカ"
+			DATAFORM "簡単ニ股ヲ開キヤガッテ"
+			DATAFORM "手ヲツイテ尻ヲムケロ"
+			DATAFORM "ピースシロ,ピース"
+			DATAFORM "チンポ気持チイイカ?"
+			DATAFORM "チ,チンポガ溶ケル!"
+			DATAFORM "最低ノ雌豚ダナ!"
+			DATAFORM "ケツ振ッテ発情シヤガッテ"
+			DATAFORM "スケベナ格好シテルナ,グヘヘ"
+			DATAFORM "股開イテ魔王軍ニ寝返ッタノカ?"
+			DATAFORM "チンポ咥エルノハ慣レタカ?"
+			DATAFORM "ザーメン似合ッテルゼ"
+			DATAFORM "髪ニカケテヤル......ウッ!"
+		ENDDATA
+	;魔族の男
+	CASE 2
+		;娼婦のドレス
+		SIF (CFLAG:ARG:40 & 28) && CFLAG:ARG:41 == 203
+			PRINTFORML "その服......すっかりその気だな"
+		PRINTDATAL
+			DATAFORM "こんな所をそんな格好でうろつくなんてな......変態め"
+			DATAFORM "ザーメンの匂いが似合うじゃないか"
+			DATAFORM "誘ってるのか?　腰を振りやがって"
+			DATAFORM "丁度性欲が余ってた所だ"
+			DATAFORM "これもオシゴトってか?"
+			DATAFORM "クリ膨らましてよだれが垂れてるぞ......へへ"
+			DATAFORM "勇者も堕ちたものだな,淫乱が"
+			DATAFORM "壁に手をついてケツを向けろ"
+			DATAFORM "お前には散々痛めつけられたからな......"
+			DATAFORM "母乳は出ないのか?"
+			DATAFORM "すっかり従順になったじゃないか"
+			DATAFORM "とりあえず咥えてくれないか?"
+			DATAFORM "股を開いてあそこを広げてみろよ"
+			DATAFORM "勇者やめて可愛くなったぜ"
+			DATAFORM "もう俺たちの仲間だな"
+		ENDDATA
+	;魔族の少年
+	CASE 3
+		;娼婦のドレス
+		SIF (CFLAG:ARG:40 & 28) && CFLAG:ARG:41 == 203
+			PRINTFORML "おね-さんえっちな服......"
+		PRINTDATAL
+			DATAFORM "お,お姉さん......お金持ってきたよ"
+			DATAFORM "僕,童貞なんだ......"
+			DATAFORM "えっちだね,お姉さん"
+			DATAFORM "これが女......"
+			DATAFORM "これがお姉さんの仕事なの?"
+			DATAFORM "わぁ......凄い"
+			DATAFORM "うぅ......でちゃうよぉ!"
+			DATAFORM "お姉さん柔らかい......"
+			DATAFORM "ぷにぷにだね"
+			DATAFORM "おっぱい揉んでいい?"
+			DATAFORM "おっぱい吸ったらお乳でるかな"
+			DATAFORM "おしりすごい......ふわぁ"
+			DATAFORM "お姉さん教えてちょうだい......"
+			DATAFORM "ふふ,お姉さんかわいいね"
+			DATAFORM "おちんちん爆発しちゃうよぉ!"
+		ENDDATA
+	;魔族の成金
+	CASE 4
+		;娼婦のドレス
+		SIF (CFLAG:ARG:40 & 28) && CFLAG:ARG:41 == 203
+			PRINTFORML "売女にふさわしい格好だな"
+		PRINTDATAL
+			DATAFORM "金が欲しいんだろ......分かってるな?"
+			DATAFORM "金をちゃんと握ってろよ!　もっと欲しけりゃ......"
+			DATAFORM "もっと欲しいのか,この淫乱め!"
+			DATAFORM "金のためなら何でもするって言ったな?"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "ケツを舐めてみろ,アナルまでだぞ"
+			DATAFORM "腰振って踊ってみろ,ガニマタでな"
+			DATAFORM "土下座してお金を下さいと言え"
+			DATAFORM "雌豚にお金をお恵みくださいと言え"
+			DATAFORM "金のために何でもするビッチですと言え"
+			DATAFORM "恥垢を綺麗に掃除するんだな"
+			DATAFORM "土下座してチ○ポくださいと言え"
+			DATAFORM "土下座して犬のように腰振ってみろ"
+			DATAFORM "ここで小便してみろ,犬のようにな"
+			DATAFORM "チ○ポと金,どっちでビンタされるのが好きだ?"
+			DATAFORM "チ○ポ大好き淫乱奴隷ですと言え"
+			DATAFORM "ここでオナニーしてみせろ"
+			DATAFORM "金のために股を開く商売女ですと言え"
+			DATAFORM "土下座してチ○ポくださいと言え"
+			DATAFORM "もっと媚びてみせろ,だらしない笑顔でな"
+		ENDDATA
+	;コボルトの商人
+	CASE 5
+		;娼婦のドレス
+		SIF (CFLAG:ARG:40 & 28) && CFLAG:ARG:41 == 203
+			PRINTFORML "エロい服だぜ"
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "俺も愛してくれよ～"
+				DATAFORM "愛情たっぷりに,奉仕してくれよ"
+				DATAFORM "しっかりチ○ポに奉仕しな!"
+				DATAFORM "こんな俺でも......愛してくれるのか"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "あの勇者様がこんなに従順になるなんてな"
+				DATAFORM "性技には自信があるのか?"
+				DATAFORM "こういうのも得意なんだろ!"
+				DATAFORM "すっかり淫乱になったな"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "オラッ,しゃぶれよ!"
+				DATAFORM "股を開け!　オラッ"
+				DATAFORM "何してるんだ,咥えるんだよ"
+				DATAFORM "手際が悪いな......ケツ出せばいいんだよ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "チ○ポの味には慣れたか?"
+				DATAFORM "ちゃんと奉仕しろよ!"
+				DATAFORM "優しい手だ......チ○ポが爆発しそうだぜ"
+				DATAFORM "こんな淫らなお嬢様がいるかってんだ"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "いいねぇ,その冷たい目"
+				DATAFORM "これも仕事ってか?"
+				DATAFORM "もっと気持ちいい顔しろよ!"
+				DATAFORM "笑顔がたりねぇんじゃねぇのか?　ピースだ,ピース"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "粋がってた割にチ○ポを前にしてしおらしくなったじゃないか"
+				DATAFORM "あの性格悪い勇者様がもうチ○ポの虜か?"
+				DATAFORM "つべこべ言わず股を開け!"
+				DATAFORM "なんだその目は......クソッ"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "この商売女め!"
+				DATAFORM "売春婦とは落ちたものだな"
+				DATAFORM "何してる,さっさと股を開くんだよ"
+				DATAFORM "アンアン喘ぎやがって......!"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+CASE "TOWN"
+	LOCALS = %FS_BITCH("TOWN_MAN", KYAKU)%
+	PRINTFORML 客:%LOCALS%
+	SELECTCASE KYAKU
+	;村の男
+	CASE 1
+		PRINTDATAL
+			DATAFORM "このユルマンめ!"
+			DATAFORM "勇者様も営業か......"
+		ENDDATA
+	;冒険者の男
+	CASE 2
+		PRINTDATAL
+			DATAFORM "あの勇者様がなぁ......"
+			DATAFORM "おっ,お前......知ってるぞ"
+		ENDDATA
+	;村の少年
+	CASE 3
+		PRINTDATAL
+			DATAFORM "ぼくの,はじめて......っ"
+			DATAFORM "ぼく,童貞なんだ......"
+		ENDDATA
+	;街の成金
+	CASE 4
+		PRINTDATAL
+			DATAFORM "売女のマンコでも使ってやろうか"
+			DATAFORM "金ならくれてやる"
+		ENDDATA
+		PRINTDATAL
+			DATAFORM "感謝せいよ"
+			DATAFORM "しっかりその札を握っていろ"
+		ENDDATA
+	;行商人の男
+	CASE 5
+		;慈愛
+		IF TALENT:ARG:160
+			PRINTDATAL
+				DATAFORM "綺麗だよ......"
+			ENDDATA
+		;自信家
+		ELSEIF TALENT:ARG:161
+			PRINTDATAL
+				DATAFORM "尻を上げるんだよ"
+			ENDDATA
+		;気弱
+		ELSEIF TALENT:ARG:162
+			PRINTDATAL
+				DATAFORM "悲鳴みたいな喘ぎ声だぜ"
+			ENDDATA
+		;高貴
+		ELSEIF TALENT:ARG:163
+			PRINTDATAL
+				DATAFORM "下賤な種を受け取れッ"
+			ENDDATA
+		;冷徹
+		ELSEIF TALENT:ARG:164
+			PRINTDATAL
+				DATAFORM "よく締まる......"
+			ENDDATA
+		;悪女
+		ELSEIF TALENT:ARG:166
+			PRINTDATAL
+				DATAFORM "お前から誘ってきたんだぜ"
+			ENDDATA
+		ELSE
+			PRINTDATAL
+				DATAFORM "いくら稼いだ?　ん?"
+			ENDDATA
+		ENDIF
+	ENDSELECT
+ENDSELECT
+
+
+;いろいろ扱いが特殊なので注意
+;-DUNGEONでは金銭の授受は無く自主的に行うプレイ
+;-TOWNでのARG:1は無意味(公衆プレイで客に種別が無い)
+;自分の性癖からは外れるため地の文は書けません
+;どなたか拡充おねがいします
+@LOG_BITCH_ANIMAL(ARG, PLACE, ARG:1)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM KYAKU
+SELECTCASE PLACE
+CASE "DUNGEON"
+CASE "TOWN"
+	PRINTFORM %SAVESTR:ARG%は
+	[SKIPSTART]
+	SELECTCASE ABL:ARG:2
+	ENDSELECT
+	[SKIPEND]
+	PRINTFORMW 大勢の観衆の目の前で獣姦売春を行っている...
+	
+	[SKIPSTART]
+	;てきとーなアイデアだけ書いておく
+	;-普通に様子を描写
+	;-司会者や観衆からの野次
+	;-金を貸してる人が見ての一言
+	;-スタッフ(主催者やら出演者やら)との楽屋裏でのやりとり"ゴム使うなんてダメだよ!"って叱られたり
+	PRINTDATAL
+		DATAFORM 
+	ENDDATA
+	[SKIPEND]
+	
+ENDSELECT
+
+
+;一応は置いておくが口上向きな気もする
+;呼び出し側で分岐描写が入っているため優先度は低めでいい
+@LOG_BITCH_SELF(ARG, PLACE, PLAY)
+#LOCALSIZE 1
+#LOCALSSIZE 1
+#DIMS PLACE
+#DIM PLAY
+SELECTCASE PLACE
+CASE "DUNGEON"
+	SELECTCASE PLAY
+	;レズ妄想
+	CASE 1
+	;獣姦妄想
+	CASE 2
+	;あなたを妄想
+	CASE 3
+	;夢中で
+	CASE 4
+	;控えめに
+	CASE 5
+	ENDSELECT
+CASE "TOWN"
+	SELECTCASE PLAY
+	;レズ妄想
+	CASE 1
+	;獣姦妄想
+	CASE 2
+	;あなたを妄想
+	CASE 3
+	;夢中で
+	CASE 4
+	;控えめに
+	CASE 5
+	ENDSELECT
+ENDSELECT
+
+
+
+
+;とりあえず関数名変えたから競合は無いはず
+[SKIPSTART]
+;売春時に表示するメッセージ
+;基本的にARG:0=客の番号
+;売春奴隷はTARGET
+
+;とりあえずセリフだけ表示
+;そのうち地の文を強化したい
+
+;------------------------------
+@DUNGEON_SEX_LOG, ARG:0
+;------------------------------
+;ARG:0
+;0 = オーク
+;1 = 魔族の男
+;2 = 魔族の少年
+;3 = 魔族の成金
+;ELSE = コボルトの商人
+
+
+IF ARG:0 == 0
+	;オーク
+	;娼婦のドレス
+	SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+		PRINTFORML "スケベナ服デ誘イヤガッテ......"
+	IF RAND:15 == 0
+		PRINTFORML "魔王様ノ奴隷ヲ抱ケルナンテ......"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "オ-ッ,ウオオッ,ナンテ穴ダ!"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "ソンナニザ-メンガ好キカ"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "簡単ニ股ヲ開キヤガッテ"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "手ヲツイテ尻ヲムケロ"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "ピ-スシロ,ピ-ス"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "チンポ気持チイイカ?"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "チ,チンポガ溶ケル!"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "最低ノ雌豚ダナ!"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "ケツ振ッテ発情シヤガッテ"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "スケベナ格好シテルナ,グヘヘ"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "股開イテ魔王軍ニ寝返ッタノカ?"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "チンポ咥エルノハ慣レタカ?"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "ザ-メン似合ッテルゼ"
+	ELSE
+		PRINTFORML "髪ニカケテヤル......ウッ!"
+	ENDIF
+ELSEIF ARG:0 == 1
+	;魔族の男
+	;娼婦のドレス
+	SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+		PRINTFORML "その服......すっかりその気だな"
+	IF RAND:15 == 0
+		PRINTFORML "こんな所をそんな格好でうろつくなんてな......変態め"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "ザ-メンの匂いが似合うじゃないか"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "誘ってるのか?　腰を振りやがって"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "丁度性欲が余ってた所だ"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "これもオシゴトってか?"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "クリ膨らましてよだれが垂れてるぞ......へへ"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "勇者も堕ちたものだな,淫乱が"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "壁に手をついてケツを向けろ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "お前には散々痛めつけられたからな......"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "母乳は出ないのか?"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "すっかり従順になったじゃないか"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "とりあえず咥えてくれないか?"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "股を開いてあそこを広げてみろよ"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "勇者やめて可愛くなったぜ"
+	ELSE
+		PRINTFORML "もう俺たちの仲間だな"
+	ENDIF
+ELSEIF ARG:0 == 2
+	;魔族の少年
+	;娼婦のドレス
+	SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+		PRINTFORML "おね-さんえっちな服......"
+	IF RAND:15 == 0
+		PRINTFORML "お,お姉さん......お金持ってきたよ"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "僕,童貞なんだ......"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "えっちだね,お姉さん"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "これが女......"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "これがお姉さんの仕事なの?"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "わぁ......凄い"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "うぅ......でちゃうよぉ!"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "お姉さん柔らかい......"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "ぷにぷにだね"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "おっぱい揉んでいい?"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "おっぱい吸ったらお乳でるかな"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "おしりすごい......ふわぁ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "お姉さん教えてちょうだい......"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "ふふ,お姉さんかわいいね"
+	ELSE
+		PRINTFORML "おちんちん爆発しちゃうよぉ!"
+	ENDIF
+ELSEIF ARG:0 == 3
+	;魔族の成金
+	;娼婦のドレス
+	SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+		PRINTFORML "売女にふさわしい格好だな"
+	IF RAND:4 == 0
+		PRINTFORML "金が欲しいんだろ......分かってるな?"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "金をちゃんと握ってろよ!　もっと欲しけりゃ......"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "もっと欲しいのか,この淫乱め!"
+	ELSE
+		PRINTFORML "金のためなら何でもするって言ったな?"
+	ENDIF
+	
+	IF RAND:15 == 0
+		PRINTFORML "ケツを舐めてみろ,アナルまでだぞ"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "腰振って踊ってみろ,ガニマタでな"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "土下座してお金を下さいと言え"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "雌豚にお金をお恵みくださいと言え"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "金のために何でもするビッチですと言え"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "恥垢を綺麗に掃除するんだな"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "土下座してチ○ポくださいと言え"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "土下座して犬のように腰振ってみろ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "ここで小便してみろ,犬のようにな"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "チ○ポと金,どっちでビンタされるのが好きだ?"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "チ○ポ大好き淫乱奴隷ですと言え"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "ここでオナニ-してみせろ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "金のために股を開く商売女ですと言え"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "土下座してチ○ポくださいと言え"
+	ELSE
+		PRINTFORML "もっと媚びてみせろ,だらしない笑顔でな"
+	ENDIF
+	
+ELSE
+	;コボルトの商人
+	;娼婦のドレス
+	SIF (CFLAG:40 & 28) && CFLAG:41 == 203
+		PRINTFORML "エロい服だぜ"
+	IF TALENT:160
+		;慈愛
+		IF RAND:4 == 0
+			PRINTFORML "俺も愛してくれよ～"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "愛情たっぷりに,奉仕してくれよ"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "しっかりチ○ポに奉仕しな!"
+		ELSE
+			PRINTFORML "こんな俺でも......愛してくれるのか"
+		ENDIF
+	ELSEIF TALENT:161
+		;自信家
+		IF RAND:4 == 0
+			PRINTFORML "あの勇者様がこんなに従順になるなんてな"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "性技には自信があるのか?"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "こういうのも得意なんだろ!"
+		ELSE
+			PRINTFORML "すっかり淫乱になったな"
+		ENDIF
+	ELSEIF TALENT:162
+		;気弱
+		IF RAND:4 == 0
+			PRINTFORML "オラッ,しゃぶれよ!"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "股を開け!　オラッ"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "何してるんだ,咥えるんだよ"
+		ELSE
+			PRINTFORML "手際が悪いな......ケツ出せばいいんだよ"
+		ENDIF
+	ELSEIF TALENT:163
+		;高貴
+		IF RAND:4 == 0
+			PRINTFORML "チ○ポの味には慣れたか?"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "ちゃんと奉仕しろよ!"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "優しい手だ......チ○ポが爆発しそうだぜ"
+		ELSE
+			PRINTFORML "こんな淫らなお嬢様がいるかってんだ"
+		ENDIF
+	ELSEIF TALENT:164
+		;冷徹
+		IF RAND:4 == 0
+			PRINTFORML "いいねぇ,その冷たい目"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "これも仕事ってか?"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "もっと気持ちいい顔しろよ!"
+		ELSE
+			PRINTFORML "笑顔がたりねぇんじゃねぇのか?　ピ-スだ,ピ-ス"
+		ENDIF
+	ELSEIF TALENT:166
+		;悪女
+		IF RAND:4 == 0
+			PRINTFORML "粋がってた割にチ○ポを前にしてしおらしくなったじゃないか"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "あの性格悪い勇者様がもうチ○ポの虜か?"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "つべこべ言わず股を開け!"
+		ELSE
+			PRINTFORML "なんだその目は......クソッ"
+		ENDIF
+	ELSE
+		IF RAND:4 == 0
+			PRINTFORML "この商売女め!"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "売春婦とは落ちたものだな"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "何してる,さっさと股を開くんだよ"
+		ELSE
+			PRINTFORML "アンアン喘ぎやがって......!"
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 0
+
+;------------------------------
+@DUNGEON_ANAL_LOG, ARG:0
+;------------------------------
+;ARG:0
+;0 = オーク
+;1 = 魔族の男
+;2 = 魔族の少年
+;3 = 魔族の成金
+;ELSE = コボルトの商人
+
+
+IF ARG:0 == 0
+	;オーク
+	IF RAND:15 == 0
+		PRINTFORML "ケツノ穴カ......マアイイ"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "コレハモウ性器ダナ"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "ドロドロニホグレテイルゼ"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "ケツヲ......売ッテイルノカ"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "ヨシ,ケツヲ向ケロ"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "イヤラシイ尻穴ダ"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "尻ヲ売ッテ楽シイカ?"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "ウゥ,スゲェ尻ダ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "アナルガヒクツイテルゼ"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "綺麗ナアナルダナ"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "尻ノ感度ハドウダ?"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "オ尻ガ丸見エダゼ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "ダイブ慣レテルジャナイカ"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "何人咥エコンダ?"
+	ELSE
+		PRINTFORML "スゲェ尻穴ダ......"
+	ENDIF
+ELSEIF ARG:0 == 1
+	;魔族の男
+	IF RAND:8 == 0
+		PRINTFORML "尻穴で感じる変態め!"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "尻穴で何回イった?　オラッ,もう一回イけ!"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "すげぇ締め付けてきやがる......"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "このアナル,かなり調教されてやがる......"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "ケツ穴広げて誘いやがって......"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "この変態尻穴奴隷が!"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "尻穴で金を稼いで気持ちいいか?"
+	ELSE
+		PRINTFORML "ケツ穴で感じられるなんて,才能あるぜ"
+	ENDIF
+ELSEIF ARG:0 == 2
+	;魔族の少年
+	IF RAND:8 == 0
+		PRINTFORML "お姉さんのお尻,いいよぉ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "えっ,お尻でするの......?"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "お尻って,気持ちいいんだね"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "お金ないから,お尻で......"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "すごい......お尻に飲み込まれていく......"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "お尻に......でちゃう!"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "こんなに気持ちよかったら,もうお尻でしかできないよぉ"
+	ELSE
+		PRINTFORML "お姉さんのお尻,すごい気持ちいい......"
+	ENDIF
+ELSEIF ARG:0 == 3
+	;魔族の成金
+	IF RAND:4 == 0
+		PRINTFORML "金が欲しいんだろ......分かってるな?"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "金をちゃんと握ってろよ!　もっと欲しけりゃ......"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "もっと欲しいのか,この淫乱め!"
+	ELSE
+		PRINTFORML "金のためなら何でもするって言ったな?"
+	ENDIF
+	
+	IF RAND:15 == 0
+		PRINTFORML "ケツを舐めてみろ,アナルまでだぞ"
+	ELSEIF RAND:14 == 0
+		PRINTFORML "腰振って踊ってみろ,ガニマタでな"
+	ELSEIF RAND:13 == 0
+		PRINTFORML "土下座してお金を下さいと言え"
+	ELSEIF RAND:12 == 0
+		PRINTFORML "雌豚にお金をお恵みくださいと言え"
+	ELSEIF RAND:11 == 0
+		PRINTFORML "金のために何でもするビッチですと言え"
+	ELSEIF RAND:10 == 0
+		PRINTFORML "恥垢を綺麗に掃除するんだな"
+	ELSEIF RAND:9 == 0
+		PRINTFORML "土下座してケツにチ○ポくださいと言え"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "土下座して犬のように腰振ってみろ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "ここで小便してみろ,犬のようにな"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "チ○ポと金,どっちでビンタされるのが好きだ?"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "チ○ポ大好き淫乱尻穴奴隷ですと言え"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "ここで尻穴オナニ-してみせろ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "金のために尻穴を売る商売女ですと言え"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "土下座してアナルにチ○ポくださいと言え"
+	ELSE
+		PRINTFORML "もっと媚びてみせろ,だらしない笑顔でな"
+	ENDIF
+	
+ELSE
+	;コボルトの商人
+	IF TALENT:160
+		;慈愛
+		IF RAND:4 == 0
+			PRINTFORML "ケツを愛されるのが好きなのかい"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "アナルバイブ飲み込んでるぜ"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "アナルに何でも入りそうだな"
+		ELSE
+			PRINTFORML "こんなところも愛してほしいのか?"
+		ENDIF
+	ELSEIF TALENT:161
+		;自信家
+		IF RAND:4 == 0
+			PRINTFORML "アナルバイブが弱いようだな"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "ほら,もう一個入れるぞ!"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "気の強いやつはアナルが弱いって本当だな"
+		ELSE
+			PRINTFORML "指が吸いこまれそうだぜ"
+		ENDIF
+	ELSEIF TALENT:162
+		;気弱
+		IF RAND:4 == 0
+			PRINTFORML "アナルにバイブ入れるぞ......力を抜け"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "口では嫌々言ってもアナルは正直だな"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "アナルがゆるゆるだぜ......"
+		ELSE
+			PRINTFORML "尻をもっと高く上げろ......全部見えるようにな"
+		ENDIF
+	ELSEIF TALENT:163
+		;高貴
+		IF RAND:4 == 0
+			PRINTFORML "お嬢様でも汚い所は汚いんだな"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "こんなケツ穴で悶えるなんて......恥を知れ!"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "アナルが広がってるぜ"
+		ELSE
+			PRINTFORML "バイブを飲みこんでいくぜ......大した尻穴だ"
+		ENDIF
+	ELSEIF TALENT:164
+		;冷徹
+		IF RAND:4 == 0
+			PRINTFORML "尻穴売って何とも思わないのか?"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "ケツ穴がそんなにいいか......?　ほらよ"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "アナルバイブが相当気にいったようだな"
+		ELSE
+			PRINTFORML "はは,アナルがドロドロだぜ"
+		ENDIF
+	ELSEIF TALENT:166
+		;悪女
+		IF RAND:4 == 0
+			PRINTFORML "汚い女はアナルも汚いな!"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "勇者様,アナルは気持ちいいですか～?"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "ケツを突きだしてアナルを広げてみろ!"
+		ELSE
+			PRINTFORML "尻穴は正直みたいだな"
+		ENDIF
+	ELSE
+		IF RAND:4 == 0
+			PRINTFORML "この尻穴売女め!"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "アナル売春婦とは落ちたものだな"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "何してる,さっさと尻を出すんだよ"
+		ELSE
+			PRINTFORML "アナルでアンアン喘ぎやがって......!"
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 0
+
+;------------------------------
+@DUNGEON_LES_LOG, ARG:0
+;------------------------------
+;ARG:0
+;0 = 淫魔
+;1 = 魔族の女
+;2 = エルフの女乞食
+;3 = 魔族の貴婦人
+;ELSE = 魔族の女司祭
+
+
+IF ARG:0 == 0
+	;淫魔
+	IF RAND:8 == 0
+		PRINTFORML "あなたの精気を頂きます♪"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "貴女,おいしそうね～"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "おっぱいから吸いあげちゃうよ"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "御馳走様♪"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "お嬢さんみたいなディナ-で幸せよ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "Kissだけでイっちゃった?"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "いっぱい絞り取るからね"
+	ELSE
+		PRINTFORML "いただきま-す♪"
+	ENDIF
+ELSEIF ARG:0 == 1
+	;魔族の女
+	IF RAND:8 == 0
+		PRINTFORML "奴隷様のおしっこかけてぇ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "かわいいね,お嬢さん"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "さ,はやく始めましょ.慣れてるんでしょ?"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "哀れな雌豚に鞭をください,奴隷様......"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "このままずっと抱いていたい......"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "どんどん蜜が溢れてくるよ"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "一晩だけ,恋人になって......"
+	ELSE
+		PRINTFORML "お嬢さん,いつもどんなオナニ-するの?"
+	ENDIF
+ELSEIF ARG:0 == 2
+	;エルフの女乞食
+	IF RAND:8 == 0
+		PRINTFORML "お金,持ってきました......"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "柔らかい,柔らかいよぉ"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "私を壊してぇ,何も考えられないくらい......"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "女でも抱かないと,やってられないの"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "贅沢しちゃ,だめかな"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "尻穴売った金で,女を買って癒されるなんてね......"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "奴隷様を買うためなら,ザ-メンだって飲むわ"
+	ELSE
+		PRINTFORML "汚れた私を......貴女の愛液で清めて......"
+	ENDIF
+ELSEIF ARG:0 == 3
+	;魔族の貴婦人
+	IF RAND:4 == 0
+		PRINTFORML "私の性欲を満たしてくれない?"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "ほら,お金が欲しいんでしょ?"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "ふふ,えっちな子猫ちゃん"
+	ELSE
+		PRINTFORML "お金なら出すわ,ほら......"
+	ENDIF
+	
+	IF RAND:9 == 0
+		PRINTFORML "ペニバンでガンガン突いてちょうだい"
+	ELSEIF RAND:8 == 0
+		PRINTFORML "ほら,もっとねっとりと舐めるのよ"
+	ELSEIF RAND:7 == 0
+		PRINTFORML "ねぇ,お尻まで舐めて......"
+	ELSEIF RAND:6 == 0
+		PRINTFORML "もっとKissしましょう"
+	ELSEIF RAND:5 == 0
+		PRINTFORML "私のこと鞭でぶって......雌豚って蔑んで......"
+	ELSEIF RAND:4 == 0
+		PRINTFORML "ねぇ,オナニ-してよ"
+	ELSEIF RAND:3 == 0
+		PRINTFORML "ペニバンで私のアナルほじってぇ"
+	ELSEIF RAND:2 == 0
+		PRINTFORML "私のあそこ,愛撫してちょうだい"
+	ELSE
+		PRINTFORML "貝合わせしましょう?　あなたいい脚ね......"
+	ENDIF
+	
+ELSE
+	;魔族の女司祭
+	IF TALENT:160
+		;慈愛
+		IF RAND:4 == 0
+			PRINTFORML "いっしょに愛し合いましょう"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "Kissしましょう,ねっとりとね"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "このままずっと抱きあいたい......"
+		ELSE
+			PRINTFORML "快楽はわたしたちの教義です"
+		ENDIF
+	ELSEIF TALENT:161
+		;自信家
+		IF RAND:4 == 0
+			PRINTFORML "もっとぶって!　暴力は素晴らしい行いです"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "ああん,乳首を......もっと千切っちゃうくらいに......"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "お尻をもっと叩いて......真っ赤になってもいいから"
+		ELSE
+			PRINTFORML "堕落はわたしたちの教義です"
+		ENDIF
+	ELSEIF TALENT:162
+		;気弱
+		IF RAND:4 == 0
+			PRINTFORML "もっと真面目にクンニなさい......"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "お尻までちゃんと舐めるのよ"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "ああ,いい顔.もっといい声で鳴いて......"
+		ELSE
+			PRINTFORML "媚びはわたしたちの教義です"
+		ENDIF
+	ELSEIF TALENT:163
+		;高貴
+		IF RAND:4 == 0
+			PRINTFORML "終わったら,一緒にお茶しましょう"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "ベッドでこのまま眠りにつきましょう"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "ああ,おしっこ飲ませてください......"
+		ELSE
+			PRINTFORML "淫蕩はわたしたちの教義です"
+		ENDIF
+	ELSEIF TALENT:164
+		;冷徹
+		IF RAND:4 == 0
+			PRINTFORML "すました顔......きれいよ"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "貴女売春の才能あるわよ,剣を振るうよりよっぽど"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "脇の下......弱いのね"
+		ELSE
+			PRINTFORML "暴力はわたしたちの教義です"
+		ENDIF
+	ELSEIF TALENT:166
+		;悪女
+		IF RAND:4 == 0
+			PRINTFORML "こんど私たちの神殿に来ない?"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "肌がきれいね......"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "お尻,きれいよ"
+		ELSE
+			PRINTFORML "逸脱はわたしたちの教義です"
+		ENDIF
+	ELSE
+		IF RAND:4 == 0
+			PRINTFORML "いっしょにこうして絡み合いましょう"
+		ELSEIF RAND:3 == 0
+			PRINTFORML "私たちの神殿でもやっていけそうね"
+		ELSEIF RAND:2 == 0
+			PRINTFORML "うふふ,また指名しちゃうかも"
+		ELSE
+			PRINTFORML "快楽はわたしたちの教義です"
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 0
+[SKIPEND]
+
+
+
+
+
+
+
+

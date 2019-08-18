@@ -1,0 +1,485 @@
+﻿
+@DUNGEON_INFO2
+#DIM DISPLAY_FLAG = 0
+#DIM SELECT_FLAG = 0, 0, 0
+#DIM COMPARE_BIT
+#DIM LCOUNT, 2
+#DIM LINE_COUNT, 2
+#DIM DISPLAY_LINE
+#DIM DIALOGUE, 2
+
+
+REDRAW 0
+
+;コマンド入力の表示
+DRAWLINE
+
+WHILE RESULT != 999
+	DISPLAY_LINE = 17
+
+;ブランク表示のため罠類の総行数を計算
+	LINE_COUNT:0 = 4
+	LINE_COUNT:1 = 0
+	FOR LCOUNT:0, 60, 89
+		SIF ITEM:(LCOUNT:0) > 0
+			LINE_COUNT:1 += 1
+	NEXT
+	IF LINE_COUNT:1 % 3
+		LINE_COUNT:1 = LINE_COUNT:1 / 3 + 2
+	ELSE
+		LINE_COUNT:1 = LINE_COUNT:1 / 3 + 1
+	ENDIF
+	SIF LINE_COUNT:1 > 4
+		LINE_COUNT:0 = LINE_COUNT:1
+
+	LINE_COUNT:1 = 0
+	FOR LCOUNT:0, 300, 321
+		SIF ITEM:(LCOUNT:0) > 0
+			LINE_COUNT:1 += 1
+	NEXT
+	IF LINE_COUNT:1 % 3
+		LINE_COUNT:1 = LINE_COUNT:1 / 3 + 2
+	ELSE
+		LINE_COUNT:1 = LINE_COUNT:1 / 3 + 1
+	ENDIF
+	SIF LINE_COUNT:1 > LINE_COUNT:0
+		LINE_COUNT:0 = LINE_COUNT:1
+
+	FONTBOLD
+	CALL MENU_BUTTON, (DISPLAY_FLAG != 0), @"%UNICODE(0x258c)% Traps    ", 900
+	CALL MENU_BUTTON, (DISPLAY_FLAG != 1), @"%UNICODE(0x258c)% Facilities    ", 901
+	CALL MENU_BUTTON, (DISPLAY_FLAG != 2), @"%UNICODE(0x258c)% Treasure", 902
+	FONTREGULAR
+	PRINTL 
+	COMPARE_BIT = 1
+	FOR LCOUNT:0, 0, 9
+		PRINTFORM [{(LCOUNT:0 + 1) * 10 + 100}] Floor: {LCOUNT:0 + 1} 
+;罠の表示
+		IF DISPLAY_FLAG == 0
+			FOR LCOUNT:1, 0, 3
+				SIF LCOUNT:1 != 0
+					PRINT  / 
+				X = LCOUNT:0 + (LCOUNT:1 * 10) + 300
+				Y = FLAG:X
+				IF SELECT_FLAG:(LCOUNT:1) & COMPARE_BIT
+					SETCOLOR 128, 255, 0
+				ELSE
+					SETCOLORBYNAME RoyalBlue
+				ENDIF
+				PRINTFORM [{(LCOUNT:0 + 1) * 10 + LCOUNT:1 + 101}]
+				IF Y <= 0
+					PRINT  Trap: None　　　　　　　　
+				ELSEIF ITEM:Y > 0
+					PRINTFORM Trap: %ITEMNAME:Y, 16, LEFT%({ITEM:Y, 2})
+				ELSE
+					PRINT  Trap: None　　　　　　　　
+					FLAG:X = -1
+				ENDIF
+				RESETCOLOR
+			NEXT
+;施設の表示
+		ELSEIF DISPLAY_FLAG == 1
+			X = LCOUNT:0 + 350
+			Y = FLAG:X
+			LOCAL:0 = 1
+			LOCAL:0 = LOCAL:0 << LCOUNT:0
+			IF SELECT_FLAG:0 & LOCAL:0
+				SETCOLOR 128, 255, 0
+			ELSE
+				SETCOLORBYNAME RoyalBlue
+			ENDIF
+			IF Y <= 0
+				PRINTFORM Facility: Passage
+			ELSEIF Y >= 500 && Y <= 507
+				PRINTFORM Facility: %ITEMNAME:Y%
+			ELSE
+				PRINTFORM Facility: Passage
+				FLAG:X = 0
+			ENDIF
+			RESETCOLOR
+;指輪の表示
+		ELSE
+			X = LCOUNT:0 + 340
+			Y = FLAG:X
+			LOCAL:0 = 1
+			LOCAL:0 = LOCAL:0 << LCOUNT:0
+			IF SELECT_FLAG:0 & LOCAL:0
+				SETCOLOR 128, 255, 0
+			ELSE
+				SETCOLORBYNAME RoyalBlue
+			ENDIF
+			IF Y <= 0
+				PRINTFORM Treasure Chest: None
+			ELSEIF ITEM:Y > 0
+				PRINTFORM Treasure Chest: %ITEMNAME:Y%({ITEM:Y})
+			ELSE
+				PRINTFORM Treasure Chest: None
+				FLAG:X = -1
+			ENDIF
+			RESETCOLOR
+		ENDIF
+		PRINTL 
+		COMPARE_BIT *= 2
+	NEXT
+	IF DISPLAY_FLAG == 0
+		PRINTL [200] All Traps [201] Trap A　　　　　　　　　　 [202] Trap B　　　　　　　　　　 [203] Trap C　　　　　　　　
+	ELSE
+		PRINTL [200] All Floors
+	ENDIF
+	PRINTL 
+
+	SIF SELECT_FLAG:0 == 0 && SELECT_FLAG:1 == 0 && SELECT_FLAG:2 == 0
+		SETCOLOR 128, 128, 128
+
+;罠の表示
+	IF DISPLAY_FLAG == 0
+		Y = 0
+		LINE_COUNT:1 = 0
+		IF DIALOGUE:1 == 0
+			PRINTL [  0] Remove Trap
+			DISPLAY_LINE += 1
+			FOR LCOUNT:0, 60, 89
+				IF ITEM:(LCOUNT:0) > 0
+					IF Y > 2
+						Y = 0
+						DISPLAY_LINE += 1
+						LINE_COUNT:1 += 1
+						PRINTL 
+					ENDIF
+					PRINTFORM [{LCOUNT:0, 3}] %ITEMNAME:(LCOUNT:0), 16, LEFT%({ITEM:(LCOUNT:0), 2})
+					Y += 1
+				ENDIF
+			NEXT
+		ELSEIF DIALOGUE:1 == -1
+			RESETCOLOR
+			PRINTL 
+			PRINTL 　　* No Target Selected! *
+			PRINTL 
+			DISPLAY_LINE += 2
+			LINE_COUNT:1 += 2
+		ENDIF
+		IF LINE_COUNT:0 > LINE_COUNT:1
+			FOR LCOUNT:0, LINE_COUNT:1, LINE_COUNT:0
+				PRINTFORML 
+				DISPLAY_LINE += 1
+			NEXT
+		ENDIF
+;施設
+	ELSEIF DISPLAY_FLAG == 1
+		DISPLAY_LINE += 5
+		LINE_COUNT:1 = 4
+		IF DIALOGUE:1 > 0
+			IF DIALOGUE:0
+				PRINTFORML 　%ITEMNAME:(DIALOGUE:0)% * {DIALOGUE:1} 階層分
+				PRINTFORML 　　合計　{10000 * DIALOGUE:1}p かかります.よろしいですか?
+			ELSE
+				PRINTFORML 　通路 * {DIALOGUE:1} 階層分
+				PRINTFORML 　　合計　    0p かかります.よろしいですか?
+			ENDIF
+			PRINTL 
+			PRINT 　　　　[0] - はい　　[1] - いいえ
+		ELSEIF DIALOGUE:1 == -1
+			RESETCOLOR
+			PRINTL 
+			PRINTL 　　* 対象が選択されていません!! *
+			PRINTL 
+			DISPLAY_LINE -= 1
+		ELSEIF DIALOGUE:1 == -2
+			DISPLAY_LINE -= 1
+			RESETCOLOR
+			PRINTL 
+			PRINTL 　　* お金が足りません!! *
+			PRINTL 
+		ELSE
+			Y = 0
+			PRINTL [  0] Passage
+			FOR LCOUNT:0, 500, 508
+				IF Y >= 3
+					Y = 0
+					PRINTL 
+				ENDIF
+				PRINTFORM [{LCOUNT:0}] %ITEMNAME:(LCOUNT:0), 8, LEFT%  
+				Y += 1
+			NEXT
+		ENDIF
+		PRINTL 
+		PRINTL 
+		IF LINE_COUNT:0 > LINE_COUNT:1
+			FOR LCOUNT:0, LINE_COUNT:1, LINE_COUNT:0
+				PRINTFORML 
+				DISPLAY_LINE += 1
+			NEXT
+		ENDIF
+;指輪
+	ELSE
+		Y = 0
+		LINE_COUNT:1 = 0
+		IF DIALOGUE:1 == 0
+			PRINTL [  0] Remove Treasure
+			DISPLAY_LINE += 1
+			FOR LCOUNT:0, 300, 321
+				IF ITEM:(LCOUNT:0) > 0
+					IF Y > 2
+						Y = 0
+						DISPLAY_LINE += 1
+						LINE_COUNT:1 += 1
+						PRINTL 
+					ENDIF
+					PRINTFORM [{LCOUNT:0, 3}] %ITEMNAME:(LCOUNT:0), 16, LEFT%({ITEM:(LCOUNT:0), 2})
+					Y += 1
+				ENDIF
+			NEXT
+		ELSEIF DIALOGUE:1 == -1
+			RESETCOLOR
+			PRINTL 
+			PRINTL 　　* No Target Selected! *
+			PRINTL 
+			DISPLAY_LINE += 2
+			LINE_COUNT:1 += 2
+		ENDIF
+		IF LINE_COUNT:0 > LINE_COUNT:1
+			FOR LCOUNT:0, LINE_COUNT:1, LINE_COUNT:0
+				PRINTFORML 
+				DISPLAY_LINE += 1
+			NEXT
+		ENDIF
+	ENDIF
+	RESETCOLOR
+
+	PRINTFORML [10] Display All Subordinates
+	PRINTFORM Display Subordinates On Floors: [11] 1～3   [12] 4～6   [13] 7～9    
+	PRINTFORML [100] Forbid Monsters From Intercepting　Currently: \@(FLAG:5 & 16) ?ON#OFF\@
+	DRAWLINE
+	PRINTL [999] - Return
+	;注意書き表示時は入力を無視
+	IF DIALOGUE:1 < 0
+		WAITANYKEY
+		DIALOGUE:1 = 0
+		CLEARLINE DISPLAY_LINE
+		CONTINUE
+	ELSE
+	ENDIF
+	INPUT
+	;罠設定時の入力判定
+	IF DISPLAY_FLAG == 0
+		;罠の選択範囲
+		IF RESULT > 100 && RESULT < 204
+			COMPARE_BIT = 1 << RESULT / 10 - 11
+			;全指定
+			IF RESULT == 200
+				IF SELECT_FLAG:0 == 511 && SELECT_FLAG:1 == 511 && SELECT_FLAG:2 == 511
+					SELECT_FLAG:0 = 0
+					SELECT_FLAG:1 = 0
+					SELECT_FLAG:2 = 0
+				ELSE
+					SELECT_FLAG:0 = 511
+					SELECT_FLAG:1 = 511
+					SELECT_FLAG:2 = 511
+				ENDIF
+			;行指定
+			ELSEIF RESULT % 10 == 0
+				COMPARE_BIT = 1 << RESULT / 10 - 11
+				IF SELECT_FLAG:0 & COMPARE_BIT && SELECT_FLAG:1 & COMPARE_BIT && SELECT_FLAG:2 & COMPARE_BIT
+					SELECT_FLAG:0 ^= COMPARE_BIT
+					SELECT_FLAG:1 ^= COMPARE_BIT
+					SELECT_FLAG:2 ^= COMPARE_BIT
+				ELSE
+					SELECT_FLAG:0 |= COMPARE_BIT
+					SELECT_FLAG:1 |= COMPARE_BIT
+					SELECT_FLAG:2 |= COMPARE_BIT
+				ENDIF
+			;列指定
+			ELSEIF RESULT > 200
+				IF SELECT_FLAG:(RESULT - 201) == 511
+					SELECT_FLAG:(RESULT - 201) = 0
+				ELSE
+					SELECT_FLAG:(RESULT - 201) = 511
+				ENDIF
+			;単独指定
+			ELSEIF RESULT % 10 < 4
+				SELECT_FLAG:(RESULT % 10 - 1) ^= COMPARE_BIT
+			ENDIF
+		;罠の指定
+		ELSEIF (RESULT == 0) || (RESULT >= 60 && RESULT < 89 && ITEM:RESULT)
+			SIF SELECT_FLAG:0 == 0 && SELECT_FLAG:2 == 0 && SELECT_FLAG:2 == 0
+				DIALOGUE:1 = -1
+			COMPARE_BIT = 1
+			FOR LCOUNT:0, 0, 9
+				FOR LCOUNT:1, 0, 3
+					IF SELECT_FLAG:(LCOUNT:1) & COMPARE_BIT
+						IF RESULT == 0
+							FLAG:(LCOUNT:0 + LCOUNT:1 * 10 + 300) = -1
+						ELSE
+							FLAG:(LCOUNT:0 + LCOUNT:1 * 10 + 300) = RESULT
+						ENDIF
+					ENDIF
+				NEXT
+				COMPARE_BIT *= 2
+			NEXT
+		ENDIF
+	;施設設定時の入力判定
+	ELSEIF DISPLAY_FLAG == 1
+		IF DIALOGUE:1 > 0
+			IF RESULT == 0
+				IF (MONEY >= 10000 * DIALOGUE:1 && DIALOGUE:0 != 0) || (DIALOGUE:0 == 0)
+					COMPARE_BIT = 1
+					FOR LCOUNT:0, 350, 359
+						IF SELECT_FLAG:0 & COMPARE_BIT
+							FLAG:(LCOUNT:0) = DIALOGUE:0
+						ENDIF
+						COMPARE_BIT *= 2
+					NEXT
+					SIF DIALOGUE:0 != 0
+						MONEY -= 10000 * DIALOGUE:1
+					SELECT_FLAG:0 = 0
+					DIALOGUE:0 = 0
+					DIALOGUE:1 = 0
+				ELSE
+					DIALOGUE:1 = -2
+				ENDIF
+			ELSEIF RESULT == 1
+				DIALOGUE:0 = 0
+				DIALOGUE:1 = 0
+			ENDIF
+			CLEARLINE DISPLAY_LINE
+			CONTINUE
+		ENDIF
+		;施設の選択範囲
+		;単独指定
+		IF RESULT > 100 && RESULT < 200
+			SELECT_FLAG:0 ^= 1 << RESULT / 10 - 11
+		;全指定
+		ELSEIF RESULT == 200
+			IF SELECT_FLAG:0 == 511
+				SELECT_FLAG:0 = 0
+			ELSE
+				SELECT_FLAG:0 = 511
+			ENDIF
+		;施設の指定
+		ELSEIF (RESULT == 0) || (RESULT >= 500 && RESULT < 508)
+			IF SELECT_FLAG:0 == 0
+				DIALOGUE:1 = -1
+			ELSE
+				DIALOGUE:0 = RESULT
+				DIALOGUE:1 = 0
+				COMPARE_BIT = 1
+				FOR LCOUNT:0, 0, 9
+					IF SELECT_FLAG & COMPARE_BIT
+						DIALOGUE:1 += 1
+					ENDIF
+					COMPARE_BIT *= 2
+				NEXT
+			ENDIF
+		ENDIF
+	;宝物設定時の入力判定
+	ELSE
+		;宝物の選択範囲
+		;単独指定
+		IF RESULT > 100 && RESULT < 200
+			SELECT_FLAG:0 ^= 1 << RESULT / 10 - 11
+		;全指定
+		ELSEIF RESULT == 200
+			IF SELECT_FLAG:0 == 511
+				SELECT_FLAG:0 = 0
+			ELSE
+				SELECT_FLAG:0 = 511
+			ENDIF
+		;宝物の指定
+		ELSEIF (RESULT == 0) || (RESULT >= 300 && RESULT < 340 && ITEM:RESULT)
+			IF SELECT_FLAG:0 == 0
+				DIALOGUE:1 = -1
+			ELSE
+				COMPARE_BIT = 1
+				FOR LCOUNT:0, 0, 9
+					IF SELECT_FLAG & COMPARE_BIT
+						FLAG:(LCOUNT:0 + 340) = RESULT
+					ENDIF
+					COMPARE_BIT *= 2
+				NEXT
+			ENDIF
+		ENDIF
+	ENDIF
+
+	;全設定時の入力判定
+	IF RESULT >= 900 && RESULT <= 902
+		DISPLAY_FLAG = RESULT % 10
+		SELECT_FLAG:0 = 0
+		SELECT_FLAG:1 = 0
+		SELECT_FLAG:2 = 0
+	ENDIF
+
+	;コンフィグ"モンスター迎撃禁止"
+	IF RESULT == 100
+		FLAG:5 ^= 16
+	ENDIF
+
+	;部下の表示
+	IF RESULT >= 10 && RESULT <= 13
+
+		PRINTL *********************
+		PRINTL Dungeon Subordinates
+		PRINTL *********************
+
+		Z = 0
+		R = 100
+		IF RESULT >= 11
+				R = 30
+			IF RESULT == 12
+				Z = 30
+			ELSEIF RESULT == 13
+				Z = 60
+			ENDIF
+		ENDIF
+			REPEAT 100
+			SIF Z >= 100 || R <= 0
+				BREAK
+			Y = Z % 10
+			IF Y == 0
+				X = Z / 10
+				X += 1
+				DRAWLINE
+				IF X != 10
+					PRINTFORML Floor {X}
+				ELSEIF X == 10
+					PRINTFORML Personal Guard
+				ENDIF
+				CALL ENEMY_EXIST
+			ENDIF
+			A = Z + 100
+			B = ITEM:A
+			IF B > 0
+				PRINTFORM [{A}] 
+				PRINTV B
+				PRINT x 
+				CALL MONSTER_NAME,A,0
+				PRINTL  
+			ENDIF
+			Z += 1
+			R -= 1
+
+		REND
+		
+		DRAWLINE
+		PRINTL [999] Return
+		INPUT
+		
+		IF RESULT < 200 && RESULT >= 100
+			CALL MONSTER_SETUP,RESULT
+		ENDIF
+		
+	CONTINUE
+	ENDIF
+
+	SIF RESULT != 999
+		CLEARLINE DISPLAY_LINE
+WEND
+
+DISPLAY_FLAG = 0
+SELECT_FLAG:0 = 0
+SELECT_FLAG:1 = 0
+SELECT_FLAG:2 = 0
+DIALOGUE:0 = 0
+DIALOGUE:1 = 0
+
+
+REDRAW 1

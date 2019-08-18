@@ -1,0 +1,1027 @@
+﻿;結婚生活の日常
+
+;-----------------------------------
+@MARRIAGE_DAY,ARG
+#DIM MARRY_TYPE
+#DIM MARRY_CHARA
+#DIM NG_FLAG
+;-----------------------------------
+;ARGがキャラ
+
+NG_FLAG = 0
+
+;調教可以外はなし
+SIF CFLAG:(ARG):1 != 0
+	NG_FLAG = 1
+
+MARRY_TYPE = CFLAG:(ARG):601
+
+SIF MARRY_TYPE == 0
+	NG_FLAG = 1
+
+IF NG_FLAG > 0
+	;恋人はここで
+	SIF CFLAG:(ARG):606 == 0
+		CALL DUNGEON_TOWN_LOVER_CHARA_ENTER,ARG
+	SIF CFLAG:(ARG):606 == 200
+		CALL DUNGEON_TOWN_LOVER,ARG
+	RETURN 0
+ENDIF
+
+CFLAG:(ARG):602 += 1
+
+;旦那がいない場合スキップ
+IF MARRY_TYPE < 900 && CFLAG:(ARG):609 == 0
+	X = MARRY_TYPE
+	SIF ITEM:X <= 0
+		RETURN 0
+ENDIF
+
+PRINTL
+DRAWLINE
+PRINTFORM *%SAVESTR:ARG%と
+
+IF MARRY_TYPE == 902
+	;恋人
+	LOCAL:2 = CFLAG:(ARG):606
+	CALL NAME_LOVER,LOCAL:2,1
+ELSEIF CFLAG:(ARG):609 > 0
+	CALL SEARCH_FAMILY,ARG,"MARRIAGE"
+	MARRY_CHARA = RESULT
+	IF RESULT < 0
+		PRINT 奴隷
+	ELSE
+		PRINTFORM %SAVESTR:MARRY_CHARA%
+	ENDIF
+ELSEIF MARRY_TYPE < 900
+	CALL MONSTER_DATA, MARRY_TYPE, 5
+	LOCAL:1 = E:507
+	PRINTFORM %ITEMNAME:X%
+ELSEIF MARRY_TYPE == 900
+	PRINT 野良犬
+ELSEIF MARRY_TYPE == 901
+	PRINT あなた
+ELSE
+	LOCAL:1 = 0
+	CALL SEARCH_FAMILY,ARG,"MARRIAGE"
+	MARRY_CHARA = RESULT
+	IF RESULT < 0
+		PRINT 奴隷
+	ELSE
+		PRINTFORM %SAVESTR:MARRY_CHARA%
+	ENDIF
+ENDIF
+
+PRINTFORMW との結婚生活*
+
+;妊娠-育児の場合
+IF TALENT:(ARG):153
+	PRINTW 夫婦は子供が生まれるのを楽しみにしている
+	RETURN 0
+ELSEIF TALENT:(ARG):154
+	PRINTW 夫婦は子供を大切に育てている
+	RETURN 0
+ENDIF
+
+Y = RAND:5 + 1
+CFLAG:(ARG):601 = MARRY_TYPE
+CFLAG:(ARG):107 = 0
+CFLAG:(ARG):112 = 0
+
+IF MARRY_TYPE == 900
+	CALL MARRIAGE_DAY_DOG,ARG
+ELSEIF MARRY_TYPE == 901
+	CALL MARRIAGE_DAY_YOU,ARG
+ELSEIF MARRY_TYPE == 902
+	CALL MARRIAGE_DAY_LOVERS,LOCAL:2,ARG
+ELSEIF CFLAG:(ARG):609 > 0 && MARRY_CHARA > 0
+	CALL MARRIAGE_DAY_SLAVE,ARG,MARRY_CHARA
+ELSEIF LOCAL:1 == 1
+	CALL ORC_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 2
+	CALL SLIME_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 3
+	CALL INSECT_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 4
+	CALL IVY_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 5
+	CALL SYOKUSYU_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 6
+	CALL FAILY_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 7
+	CALL GIANT_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 8
+	CALL MAN_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 9
+	CALL GIRL_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 10
+	CALL BEAST_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 11
+	CALL BRAIN_MARRIAGE_DAY,ARG
+ELSEIF LOCAL:1 == 12
+	CALL HORSE_MARRIAGE_DAY,ARG
+ELSE
+	CALL MARRIAGE_DAY_SLAVE,ARG,MARRY_CHARA
+ENDIF
+
+IF TALENT:(ARG):0 == 1 && EXP:(ARG):0 > 0 && TALENT:(ARG):273 == 0
+	IF CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37
+		;貞操帯
+	ELSE
+		PRINTW [処女喪失]
+		TALENT:(ARG):0 = 0
+	ENDIF
+ENDIF
+
+;異種妊娠フラグ
+IF CFLAG:(ARG):107 != 0 && MARRY_TYPE != 900 && MARRY_TYPE != 901 && MARRY_TYPE != 902
+	CFLAG:(ARG):112 = X
+ENDIF
+
+
+
+BEGIN TURNEND
+RETURN 1
+
+;結婚生活
+
+;-----------------------------------------
+@MARRIAGE_DAY_DOG,ARG
+;-----------------------------------------
+
+
+PRINTFORMW %SAVESTR:ARG%は野良犬と犬小屋で暮らしている
+
+IF A == 0
+	;あなたの場合
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は野良犬を抱きかかえ,アナルで野良犬のペニスを受け入れている
+		PRINTFORML A経験+{Y}
+		EXP:(ARG):1 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は野良犬を抱きかかえ,彼のペニスを受け入れている
+		PRINTFORML V exp+{Y}
+		EXP:(ARG):0 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+		CFLAG:(ARG):106 += Y
+	ENDIF
+ELSEIF TALENT:(ARG):136 == 1
+	;牝犬の場合
+	PRINTFORM %SAVESTR:ARG%は
+	;夫への親密
+	SIF CFLAG:(ARG):602 > 40
+		PRINT 喜んで
+	;人狼
+	IF TALENT:(ARG):314 == 2
+		PRINT 尻尾を振って,
+	ELSE
+		PRINT 尻を振り,
+	ENDIF
+	;露出癖3以上
+	SIF ABL:(ARG):17 >= 3
+		PRINT 気づけば通路や広間でもかまわず
+	
+	SIF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINT アナルで
+	
+	PRINT 野良犬と
+	
+	IF RAND:3 == 0
+		PRINTW 盛っている
+	ELSEIF RAND:2 == 0
+		PRINTW 交尾している
+	ELSE
+		PRINTW 愛し合っている
+	ENDIF
+	
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		;アナル
+		PRINTFORML A経験+{Y}
+		EXP:(ARG):1 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ELSE
+		PRINTFORML V exp+{Y}
+		EXP:(ARG):0 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+		CFLAG:(ARG):106 += Y
+	ENDIF
+ELSEIF ABL:(ARG):39 >= 1 || CFLAG:(ARG):602 > 40
+	;獣姦中毒Lv1以上,または結婚愛情40超
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は犬との肛門交尾に愛を感じているようだ
+		PRINTFORML A経験+{Y}
+		EXP:(ARG):1 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は犬との交尾に愛を感じているようだ
+		PRINTFORML V exp+{Y}
+		EXP:(ARG):0 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+		CFLAG:(ARG):106 += Y
+	ENDIF
+ELSEIF CFLAG:(ARG):602 > 20
+	;結婚愛情20超
+	IF TALENT:(ARG):11 == 1
+		;反抗的
+		PRINTFORMW %SAVESTR:ARG%はようやく自分の状況を理解してきたようだ......
+		
+	ELSEIF TALENT:(ARG):12 == 1
+		;気丈
+		PRINTFORMW %SAVESTR:ARG%は野良犬と遊んで,仲を深めている......
+		
+	ELSEIF TALENT:(ARG):13 == 1 || TALENT:(ARG):317 == 12
+		;素直-かわいい動物が好き
+		PRINTFORMW %SAVESTR:ARG%は野良犬とKissをしている姿がよく見られた......
+		
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は野良犬にブラシをかけている......
+	ENDIF
+ELSE
+	IF TALENT:(ARG):11 == 1
+		;反抗的
+		PRINTFORMW %SAVESTR:ARG%は寄ってきた野良犬を手で払いのけている
+		
+	ELSEIF TALENT:(ARG):12 == 1
+		;気丈
+		PRINTFORMW %SAVESTR:ARG%は暇だからと野良犬の世話をしている
+		
+	ELSEIF TALENT:(ARG):13 == 1 || TALENT:(ARG):317 == 12
+		;素直-かわいい動物が好き
+		PRINTFORMW %SAVESTR:ARG%は暇だからと野良犬とじゃれあっている
+		
+	ELSE
+		PRINTFORMW 犬に目を向けず%SAVESTR:ARG%は絶望している......
+	ENDIF
+ENDIF
+
+
+RETURN 0
+
+
+;--------------------------------------------
+@MARRIAGE_DAY_YOU,ARG
+;--------------------------------------------
+
+PRINTFORML %SAVESTR:ARG%はあなたと暮らしている.
+
+IF TALENT:(ARG):85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は誇らしい様子であなたの隣に侍っている
+	
+ELSEIF TALENT:(ARG):76 == 1
+	;淫乱
+	PRINTFORM %SAVESTR:ARG%はあなたの隣で淫蕩な笑みを浮かべながら,あなたの
+	IF TALENT:(ARG):121 || TALENT:(ARG):122
+		;ふたなり-オトコ
+		PRINT ペニス
+	ELSE
+		PRINT 身体
+	ENDIF
+	PRINTFORMW をさすっている
+	
+ELSEIF ABL:(ARG):10 >= 3
+	;従順3以上
+	PRINTFORMW %SAVESTR:ARG%は勇者陥落の象徴としてあなたの隣に侍らされることに耐えている
+	
+ELSEIF MARK:(ARG):3 >= 1
+	;反発刻印
+	PRINTFORMW %SAVESTR:ARG%は鎖で繋がれ,あなたに殺意のこもった目を向けている
+	
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は鎖で繋がれ,諦めたようにうなだれている
+ENDIF
+
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MARRIAGE_DAY_LOVERS,ARG:0,ARG:1
+;--------------------------------------------
+
+PRINTFORM %SAVESTR:(ARG:1)%は
+CALL NAME_LOVER,ARG:0,1
+PRINTL と暮らしている.
+
+CALL DUNGEON_TOWN_LOVER,ARG:1
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MARRIAGE_DAY_SLAVE,ARG:0,ARG:1
+;--------------------------------------------
+
+PRINTFORM %SAVESTR:(ARG:0)%は
+IF ARG:1 < 0
+	PRINT 奴隷
+ELSE
+	PRINTFORM %SAVESTR:(ARG:1)%
+ENDIF
+PRINTL と暮らしている.
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MARRIAGE_DAY_YOU,ARG,CHARA
+#DIM CHARA
+;--------------------------------------------
+
+;同じ場所にいないとダメ
+SIF CFLAG:ARG:1 != 0 || CFLAG:CHARA:1 != 0
+	RETURN 0
+
+PRINTFORML %SAVESTR:ARG%は%SAVESTR:CHARA%と暮らしている.
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@ORC_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は亜人と洞窟で暮らしている
+
+IF A == 0
+	;あなたの場合
+	IF RAND:2 == 0
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINTFORMW %SAVESTR:ARG%は亜人たちの精液処理に喜びを感じているようだ......
+			PRINTFORML A経験+{Y}
+			PRINTFORML フェラ経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):22 += Y
+			EXP:(ARG):20 += Y
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は亜人たちの精液処理に喜びを感じているようだ......
+			PRINTFORML V exp+{Y}
+			PRINTFORML A経験+{Y}
+			PRINTFORML フェラ経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):1 += Y
+			EXP:(ARG):22 += Y
+			EXP:(ARG):20 += Y
+			CFLAG:(ARG):107 += Y
+		ENDIF
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は亜人たちに情愛を感じている......
+		PRINTFORML フェラ経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):22 += Y
+		EXP:(ARG):20 += Y
+	ENDIF
+ELSEIF CFLAG:(ARG):602 > 40
+	;40日後
+	IF RAND:2 == 0
+		;性交系
+		PRINTFORM %SAVESTR:ARG%は,
+		;露出癖3以上
+		SIF ABL:(ARG):17 >= 3
+			PRINT 夫の仲間に見られながら
+		;60日後
+		SIF CFLAG:(ARG):602 > 60
+			PRINT 慣れた様子で
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINT アナル
+		ELSE
+			PRINT 股
+		ENDIF
+		PRINT を開き,亜人の夫の
+		IF RAND:2 == 0
+			PRINT 性欲処理
+		ELSE
+			PRINT 精液処理
+		ENDIF
+		PRINTW に喜びを感じていた......
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINTFORML A経験+{Y}
+			PRINTFORML フェラ経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):22 += Y
+			EXP:(ARG):20 += Y
+		ELSE
+			PRINTFORML V exp+{Y}
+			PRINTFORML A経験+{Y}
+			PRINTFORML フェラ経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):1 += Y
+			EXP:(ARG):22 += Y
+			EXP:(ARG):20 += Y
+			CFLAG:(ARG):107 += Y
+		ENDIF
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は亜人たちに情愛を感じている......
+		PRINTFORML フェラ経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):22 += Y
+		EXP:(ARG):20 += Y
+	ENDIF
+ELSEIF ABL:(ARG):30 >= 1
+	;性交中毒
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は亜人との肛門性交に喜びを感じている......
+		PRINTFORML A経験+{Y}
+		PRINTFORML フェラ経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):1 += Y
+		EXP:(ARG):22 += Y
+		EXP:(ARG):20 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は亜人との性交に喜びを感じている......
+		PRINTFORML V exp+{Y}
+		PRINTFORML フェラ経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):0 += Y
+		EXP:(ARG):22 += Y
+		EXP:(ARG):20 += Y
+		CFLAG:(ARG):107 += Y
+	ENDIF
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は無理矢理亜人たちの妻として精液処理に駆り出されている......
+	PRINTFORML フェラ経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:(ARG):22 += Y
+	EXP:(ARG):20 += Y
+ENDIF
+
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SLIME_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は粘液と暮らしている
+PRINTFORML 恥情の珠+{Y * 10}
+PRINTFORML 欲情の珠+{Y * 10}
+JUEL:(ARG):5 += Y * 10
+JUEL:(ARG):8 += Y * 10
+RETURN 0
+
+;--------------------------------------------
+@INSECT_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は蟲と暮らしている
+PRINTFORML A経験+{Y}
+PRINTFORML 苦痛の珠+{Y * 10}
+PRINTFORML 恐怖の珠+{Y * 10}
+JUEL:(ARG):9 += Y * 10
+JUEL:(ARG):10 += Y * 10
+EXP:(ARG):1 += Y
+RETURN 0
+
+;--------------------------------------------
+@IVY_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は植物と暮らしている
+PRINTFORML A経験+{Y}
+PRINTFORML 苦痛の珠+{Y * 10}
+PRINTFORML 恐怖の珠+{Y * 10}
+JUEL:(ARG):9 += Y * 10
+JUEL:(ARG):10 += Y * 10
+EXP:(ARG):1 += Y
+RETURN 0
+
+;--------------------------------------------
+@SYOKUSYU_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+	PRINTFORMW %SAVESTR:ARG%は触手と暮らしている
+	PRINTFORML A経験+{Y}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:(ARG):5 += Y * 10
+	EXP:(ARG):1 += Y
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は触手と暮らしている
+	PRINTFORML A経験+{Y}
+	PRINTFORML V exp+{Y}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:(ARG):5 += Y * 10
+	EXP:(ARG):0 += Y
+	EXP:(ARG):1 += Y
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@FAILY_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は妖精と暮らしている
+PRINTFORML 快Cの珠+{Y * 10}
+PRINTFORML 欲情の珠+{Y * 10}
+JUEL:(ARG):0 += Y * 10
+JUEL:(ARG):5 += Y * 10
+RETURN 0
+
+;--------------------------------------------
+@GIANT_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は巨人と暮らしている
+
+IF A == 0
+	;あなたの場合
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は巨人との肛門性交に喜びを感じている......
+		PRINTFORML A経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		PRINTFORML A拡張経験+1
+		EXP:(ARG):1 += Y
+		EXP:(ARG):20 += Y
+		EXP:(ARG):53 += 1
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は巨人との性交に喜びを感じている......
+		PRINTFORML V exp+{Y}
+		PRINTFORML Semen exp+{Y}
+		PRINTFORML V拡張経験+1
+		EXP:(ARG):0 += Y
+		EXP:(ARG):20 += Y
+		EXP:(ARG):52 += 1
+		CFLAG:(ARG):107 += Y
+	ENDIF
+ELSEIF TALENT:(ARG):76 == 1 || CFLAG:(ARG):602 > 50
+	;淫乱-または結婚50日以降
+	IF RAND:2 == 0
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			;尻穴狂い
+			IF TALENT:(ARG):77
+				PRINTFORML  %SAVESTR:ARG%は限界まで広がった尻穴で巨人のモノを飲みこんでいた
+				Y += 1
+			ENDIF
+			PRINTFORMW %SAVESTR:ARG%は巨人のペニスケ-スとして幸せな日々を送っている......
+			PRINTFORML A経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			PRINTFORML A拡張経験+1
+			EXP:(ARG):1 += Y
+			EXP:(ARG):20 += Y
+			EXP:(ARG):53 += 1
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は巨人のペニスケ-スとして幸せな日々を送っている......
+			PRINTFORML V exp+{Y}
+			PRINTFORML Semen exp+{Y}
+			PRINTFORML V拡張経験+1
+			EXP:(ARG):0 += Y
+			EXP:(ARG):20 += Y
+			EXP:(ARG):52 += Y
+			CFLAG:(ARG):107 += 1
+		ENDIF
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は巨人の溢れんばかりの精液を飲み干している......
+		PRINTFORML フェラ経験+{Y*10}
+		PRINTFORML Semen exp+{Y*10}
+		EXP:(ARG):22 += Y * 10
+		EXP:(ARG):20 += Y * 10
+	ENDIF
+ELSEIF ABL:(ARG):10 >= 2 || CFLAG:(ARG):602 > 30
+	;従順2以上または結婚30日以降
+	IF RAND:2 == 0
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINTFORMW %SAVESTR:ARG%は巨人との肛門性交に慣れるため,巨大なディルドでアナルを広げられている......
+			PRINTFORML A経験+{Y}
+			PRINTFORML A拡張経験+{Y}
+			EXP:(ARG):1 += Y
+			EXP:(ARG):53 += Y
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は巨人との肛門性交に慣れるため,巨大なディルドでヴァギナを広げられている......
+			PRINTFORML V exp+{Y}
+			PRINTFORML V拡張経験+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):52 += Y
+		ENDIF
+	ELSE
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINTFORMW %SAVESTR:ARG%は巨人との肛門性交に喜びを感じている......
+			PRINTFORML A経験+{Y}
+			PRINTFORML Semen exp+{Y}
+			PRINTFORML A拡張経験+1
+			EXP:(ARG):1 += Y
+			EXP:(ARG):20 += Y
+			EXP:(ARG):53 += 1
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は巨人との性交に喜びを感じている......
+			PRINTFORML V exp+{Y}
+			PRINTFORML Semen exp+{Y}
+			PRINTFORML V拡張経験+1
+			EXP:(ARG):0 += Y
+			EXP:(ARG):20 += Y
+			EXP:(ARG):52 += 1
+			CFLAG:(ARG):107 += Y
+		ENDIF
+	ENDIF
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は無理矢理巨人の妻として精液処理に駆り出されている......
+	PRINTFORML フェラ経験+{Y*5}
+	PRINTFORML Semen exp+{Y*5}
+	EXP:(ARG):22 += Y * 5
+	EXP:(ARG):20 += Y * 5
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@MAN_MARRIAGE_DAY,ARG
+#DIM BONUS,10
+;--------------------------------------------
+
+FOR LOCAL,0,10
+	BONUS:LOCAL = 0
+NEXT
+
+;BONUS:0 = 恥情
+;BONUS:1 = 苦痛
+
+;旦那の種類
+IF TALENT:(ARG):ファザコン
+	LOCALS = 中年魔族
+ELSEIF TALENT:(ARG):ショタコン
+	LOCALS = 少年魔族
+ELSE
+	LOCALS = 魔族
+ENDIF
+
+
+PRINTFORMW %SAVESTR:ARG%は%LOCALS%と暮らしている
+
+IF A == 0
+	;あなたの場合
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%はアナルで%LOCALS%のペニスを受け入れた
+		PRINTFORML 快Aの珠+{Y}
+		PRINTFORML 恭順の珠+{Y}
+		PRINTFORML A経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):2 += Y
+		JUEL:(ARG):4 += Y
+		EXP:(ARG):1 += Y
+		EXP:(ARG):20 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は膣で%LOCALS%のペニスを受け入れた
+		PRINTFORML 快Vの珠+{Y}
+		PRINTFORML 恭順の珠+{Y}
+		PRINTFORML V exp+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):1 += Y
+		JUEL:(ARG):4 += Y
+		EXP:(ARG):0 += Y
+		EXP:(ARG):20 += Y
+		CFLAG:(ARG):107 += Y
+	ENDIF
+ELSEIF TALENT:(ARG):76 == 1 || CFLAG:(ARG):602 > 50
+	;淫乱-または結婚50日以降
+	
+	;マゾっ気3以上
+	IF ABL:(ARG):21 >= 3
+		PRINT 全身を縄で拘束した
+		BONUS:1 += Y
+	ENDIF
+	
+	PRINTFORM %SAVESTR:ARG%は
+	
+	;露出癖3以上
+	IF ABL:(ARG):17 >= 3
+		PRINT 友人たちに見られながら
+		BONUS:0 += Y
+	ENDIF
+	
+	;サドっ気3以上
+	SIF ABL:(ARG):20 >= 3
+		PRINT 拘束具をつけた
+	
+	PRINTFORM %LOCALS%と
+	
+	IF CFLAG:(ARG):602 > 80
+		PRINT 時には体位を変えながら交わりあい
+	ELSEIF CFLAG:(ARG):602 > 65
+		PRINT 情熱的に抱き合って
+	ELSE
+		PRINT 仲睦まじく抱き合って
+	ENDIF
+	
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW 肛門性交を楽しんでいる
+		PRINTFORML 快Aの珠+{Y}
+		PRINTFORML 恭順の珠+{Y}
+		PRINTFORML A経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):2 += Y
+		JUEL:(ARG):4 += Y
+		EXP:(ARG):1 += Y
+		EXP:(ARG):20 += Y
+	ELSE
+		PRINTFORMW 子作りに励んでいる
+		PRINTFORML 快Vの珠+{Y}
+		PRINTFORML 恭順の珠+{Y}
+		PRINTFORML V exp+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):1 += Y
+		JUEL:(ARG):4 += Y
+		EXP:(ARG):0 += Y
+		EXP:(ARG):20 += Y
+		CFLAG:(ARG):107 += Y
+	ENDIF
+	
+	IF BONUS:0 > 0
+		PRINTFORML 恥情の珠+{BONUS:0}
+		JUEL:(ARG):8 += BONUS:0
+	ENDIF
+	
+	IF BONUS:1 > 0
+		PRINTFORML 苦痛の珠+{BONUS:1}
+		JUEL:(ARG):9 += BONUS:1
+	ENDIF
+	
+ELSEIF ABL:(ARG):10 >= 2 || CFLAG:(ARG):602 > 30
+	;従順2以上または結婚30日以降
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%と%LOCALS%はアナルでの夫婦の営みに慣れてきたようだ
+		PRINTFORML 快Aの珠+{Y}
+		PRINTFORML A経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):2 += Y
+		EXP:(ARG):1 += Y
+		EXP:(ARG):20 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%と%LOCALS%は夫婦の営みに慣れてきたようだ
+		PRINTFORML 快Vの珠+{Y}
+		PRINTFORML V exp+{Y}
+		PRINTFORML Semen exp+{Y}
+		JUEL:(ARG):1 += Y
+		EXP:(ARG):0 += Y
+		EXP:(ARG):20 += Y
+		CFLAG:(ARG):107 += Y
+	ENDIF
+ELSE
+	;新婚
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は無理矢理アナルを犯されている
+		PRINTFORML A経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):1 += Y
+		EXP:(ARG):20 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は無理矢理組み敷かれて子種を注がれている
+		PRINTFORML V exp+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):0 += Y
+		EXP:(ARG):20 += Y
+		CFLAG:(ARG):107 += Y
+	ENDIF
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@GIRL_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+;嫁の種類
+IF TALENT:(ARG):マザコン
+	LOCALS = 熟女魔族
+ELSEIF TALENT:(ARG):ロリコン
+	LOCALS = 幼女魔族
+ELSE
+	LOCALS = 女魔族
+ENDIF
+
+PRINTFORMW %SAVESTR:ARG%は%LOCALS%と暮らしている
+
+IF TALENT:(ARG):122 || TALENT:(ARG):121
+	;オトコ-ふたなり
+	IF TALENT:(ARG):318 == 2
+		;短小包茎
+		
+		;不倫判定(NTRフラグあり)
+		IF CFLAG:(ARG):603 == 0 && RAND:10 == 0 && (FLAG:5 & 128)
+			;浮気になる
+			CFLAG:(ARG):603 = 1
+		ELSEIF CFLAG:(ARG):603 == 1 && RAND:10 == 0
+			;不倫になる
+			CFLAG:(ARG):603 = 2
+		ELSEIF CFLAG:(ARG):603 == 1 && RAND:9 == 0
+			;浮気をやめてくれる
+			CFLAG:(ARG):603 = 0
+		ELSEIF CFLAG:(ARG):603 == 2 && RAND:10 == 0
+			;不倫相手の子供ができちゃった
+			CFLAG:(ARG):603 = 3
+		ELSEIF CFLAG:(ARG):603 == 2 && RAND:9 == 0
+			;不倫をやめてくれる
+			CFLAG:(ARG):603 = 0
+		ENDIF
+		
+		IF CFLAG:(ARG):603 == 2 || CFLAG:(ARG):603 == 3
+			;不倫中-不倫妊娠中
+			PRINTFORMW %LOCALS%は短小包茎の%SAVESTR:ARG%とのセックスに飽きてしまったようだ
+		ELSEIF RAND:2 == 0
+			PRINTFORMW 短小包茎の%SAVESTR:ARG%は%LOCALS%を満足させられず,数回腰を振っただけで果ててしまった
+		ELSE
+			PRINTFORMW 短小包茎の%SAVESTR:ARG%は%LOCALS%に手でイカされただけで終わってしまった
+		ENDIF
+		
+	ELSEIF TALENT:(ARG):318 == 1
+		;巨根
+		IF RAND:2 == 0
+			PRINTFORMW 巨根の%SAVESTR:ARG%は%LOCALS%を一晩中愛し続けた
+		ELSE
+			PRINTFORMW 巨根の%SAVESTR:ARG%は%LOCALS%に何度も中出しをせがまれた
+		ENDIF
+	ELSEIF TALENT:(ARG):318 == 4
+		;馬
+		PRINTFORMW 馬のペニスを持った%SAVESTR:ARG%は%LOCALS%を壊れるほど愛し続けた
+	ELSE
+		;その他
+		IF RAND:2 == 0
+			PRINTFORMW %SAVESTR:ARG%は肉壺のとりこになっているようだ
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は%LOCALS%に何度も腰を打ちつけていた
+		ENDIF
+	ENDIF
+ELSEIF ABL:(ARG):33 >= 1 || A == 0
+	IF RAND:2 == 0
+		PRINTFORMW %SAVESTR:ARG%は%LOCALS%との生活に喜びを感じている
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は%LOCALS%との情愛に喜びを感じている......
+	ENDIF
+ELSEIF ABL:(ARG):22 >= 1
+	PRINTFORMW %SAVESTR:ARG%は%LOCALS%に抱かれるのもまんざらではないようだ......
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は心を閉ざしている......
+ENDIF
+
+IF CFLAG:(ARG):603 == 1
+	;浮気
+	PRINTFORMW %SAVESTR:ARG%の妻は浮気をしているようだ......
+ELSEIF CFLAG:(ARG):603 == 2
+	;不倫
+	PRINTFORMW ドアの隙間から覗くと%SAVESTR:ARG%のベッドで魔族の妻が見知らぬ男とセックスしているのが見えた
+	PRINTFORMW %SAVESTR:ARG%はそっとその場を後にした......
+ELSEIF CFLAG:(ARG):603 == 3
+	;不倫妊娠
+	PRINTFORMW ドアの隙間から覗くと%SAVESTR:ARG%のベッドで腹の膨らんだ魔族の妻が見知らぬ男とセックスしているのが見えた
+	PRINTFORMW %SAVESTR:ARG%はそっとその場を後にした......
+ENDIF
+
+
+IF CFLAG:(ARG):603 == 2 || CFLAG:(ARG):603 == 3
+	;不倫中-不倫妊娠中
+	PRINTFORMW %SAVESTR:ARG%は自慰をして過ごした......
+	PRINTFORML 快Cの珠+10
+	PRINTFORML 欲情の珠+10
+	PRINTFORML Ejaculation経験+1
+	JUEL:(ARG):0 += 10
+	JUEL:(ARG):5 += 10
+	EXP:(ARG):3 += 1
+ELSEIF TALENT:(ARG):122
+	;オトコ
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	PRINTFORML Ejaculation経験+1
+	JUEL:(ARG):0 += Y * 10
+	JUEL:(ARG):5 += Y * 10
+	EXP:(ARG):3 += 1
+ELSEIF TALENT:(ARG):121
+	;ふたなり
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	PRINTFORML レズ経験+{Y}
+	PRINTFORML Ejaculation経験+1
+	JUEL:(ARG):0 += Y * 10
+	JUEL:(ARG):5 += Y * 10
+	EXP:(ARG):40 += Y
+	EXP:(ARG):3 += 1
+ELSE
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	PRINTFORML レズ経験+{Y}
+	JUEL:(ARG):0 += Y * 10
+	JUEL:(ARG):5 += Y * 10
+	EXP:(ARG):40 += Y
+ENDIF
+
+IF CFLAG:(ARG):603 == 3 && RAND:10
+	;不倫妊娠出産
+	PRINTFORMW %SAVESTR:ARG%の魔族の妻は無事出産したようだ
+	;不倫状態に戻る
+	CFLAG:(ARG):603 = 2
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@BEAST_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は魔獣と暮らしている
+
+IF TALENT:(ARG):136 == 1 || A == 0
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は喜んで尻を振り魔獣と盛っている
+		PRINTFORML A経験+{Y}
+		EXP:(ARG):1 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は喜んで尻を振り魔獣と盛っている
+		PRINTFORML V exp+{Y}
+		EXP:(ARG):0 += Y
+		CFLAG:(ARG):107 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ENDIF
+ELSEIF ABL:(ARG):39 >= 1 || CFLAG:(ARG):602 > 40
+	IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+		PRINTFORMW %SAVESTR:ARG%は魔獣との肛門交尾に愛を感じているようだ
+		PRINTFORML A経験+{Y}
+		EXP:(ARG):1 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は魔獣との交尾に愛を感じているようだ
+		PRINTFORML V exp+{Y}
+		EXP:(ARG):0 += Y
+		CFLAG:(ARG):107 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ENDIF
+ELSE
+	PRINTFORMW 魔獣に目を向けず%SAVESTR:ARG%は絶望している......
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@BRAIN_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は恐ろしい妖魔と暮らしている
+
+RETURN 0
+
+;--------------------------------------------
+@HORSE_MARRIAGE_DAY,ARG
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は馬と厩舎で暮らしている
+
+IF TALENT:(ARG):136 == 1 || A == 0
+	IF RAND:2 == 0
+		IF TALENT:(ARG):273 == 1 || (CFLAG:(ARG):42 == 79 && (CFLAG:(ARG):40 & 64) && FLAG:37) || TALENT:(ARG):122 == 1
+			PRINTFORMW %SAVESTR:ARG%は嬉々として台に跨り馬と肛門交尾にふけっている
+			PRINTFORML 苦痛の珠+{Y * 10}
+			PRINTFORML A経験+{Y}
+			PRINTFORML A拡張経験+{Y}
+			EXP:(ARG):1 += Y
+			EXP:(ARG):53 += Y
+			JUEL:(ARG):9 += Y * 10
+			PRINTFORMW 獣姦経験+{Y}
+			EXP:(ARG):56 += Y
+		ELSE
+			PRINTFORMW %SAVESTR:ARG%は嬉々として台に跨り馬と交尾にふけっている
+			PRINTFORML 苦痛の珠+{Y * 10}
+			PRINTFORML V exp+{Y}
+			PRINTFORML V拡張経験+{Y}
+			EXP:(ARG):0 += Y
+			EXP:(ARG):52 += Y
+			JUEL:(ARG):9 += Y * 10
+			CFLAG:(ARG):107 += Y
+			PRINTFORMW 獣姦経験+{Y}
+			EXP:(ARG):56 += Y
+		ENDIF
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は馬のペニスからあふれ出た精液を飲み干している......
+		PRINTFORML フェラ経験+{Y}
+		PRINTFORML Semen exp+{Y}
+		EXP:(ARG):22 += Y
+		EXP:(ARG):20 += Y
+		PRINTFORMW 獣姦経験+{Y}
+		EXP:(ARG):56 += Y
+	ENDIF
+ELSEIF ABL:(ARG):39 >= 1 || CFLAG:(ARG):602 > 40
+	PRINTFORMW %SAVESTR:ARG%は馬のペニスを丁寧に舐めている......
+	PRINTFORML フェラ経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:(ARG):22 += Y
+	EXP:(ARG):20 += Y
+	PRINTFORMW 獣姦経験+{Y}
+	EXP:(ARG):56 += Y
+ELSE
+	PRINTFORMW %SAVESTR:ARG%は厩舎の片隅で絶望している......
+ENDIF
+
+RETURN 0

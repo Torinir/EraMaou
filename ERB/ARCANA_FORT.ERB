@@ -1,0 +1,430 @@
+﻿;--------------------------------------
+@ARCANA_FORT
+#DIM TMP_ARCANA
+#DIM TMP2_ARCANA
+#DIM Y_ARCANA
+#DIM A_ARCANA
+;1文字変数AとBは戦闘で使うので勘弁してくだち.........
+;Y_ARCANAが元勇者 A_ARCANAがアルカナナイト
+;名前を元に戻した時のランダムネーム決定
+;-------------------------------------- 
+;東西南北の砦に親衛隊アルカナナイト
+;四人倒した以降は未実装
+;
+;FLAG:92 = 狂王の砦侵攻度 (&1:東 &2:南 &4:西 &8:北)
+;東＝ブラックダイヤ 西＝ホワイトクラブ 南＝シルバースペード 北＝ゴールドハート
+IF FLAG:92
+	IF FLAG:92 == 15
+		PRINTW アルカナナイトは全て打倒され,４つの拠点はついに全て攻略された.
+		PRINTW そしてあなたの手元にある４枚のカ-ドは一体なんなのか.........
+		PRINTW (以下未実装です)
+		RETURN 0
+	;捕獲３人
+	ELSEIF FLAG:92 == 14 || FLAG:92 == 13 ||FLAG:92 == 11 || FLAG:92 == 7
+		PRINT 残るアルカナナイトは
+		SIF (FLAG:92 & 1) == 0
+			PRINT ブラックダイヤの
+		SIF (FLAG:92 & 2) == 0
+			PRINT シルバ-スペ-ドの
+		SIF (FLAG:92 & 4) == 0
+			PRINT ホワイトクラブの
+		SIF (FLAG:92 & 8) == 0
+			PRINT ゴ-ルドハ-トの
+		PRINTW 1人のみだ,決戦の時は近い.........
+	;捕獲2人
+	ELSEIF FLAG:92 == 3 ||FLAG:92 == 5 ||FLAG:92 == 9 ||FLAG:92 == 6  ||FLAG:92 == 10 || FLAG:92 == 12
+		PRINTW アルカナナイトを2人まで打ち破り,残る砦は2つとなった.........
+	;捕獲1人
+	ELSEIF FLAG:92 == 1 ||FLAG:92 == 2 ||FLAG:92 == 4 ||FLAG:92 == 8
+		PRINT あなたの勇者はアルカナナイトの
+		SIF FLAG:92 == 1 
+			PRINT ブラックダイヤを
+		SIF FLAG:92 == 2
+			PRINT シルバ-スペ-ドを
+		SIF FLAG:92 == 4
+			PRINT ホワイトクラブを
+		SIF FLAG:92 == 8
+			PRINT ゴ-ルドハ-トを
+		PRINTW 打倒した.残るアルカナナイトは3人だ.........
+	ENDIF
+ELSE
+	PRINTW 捕虜の話によると,狂王の親衛隊である"アルカナナイト"があなたの洞窟に侵攻するために東西南北にある狂王軍の砦で特訓をしているらしい.
+	PRINTW また他の捕虜の話によると"アルカナナイト"はあなたの洞窟を封印するための儀式を行っているそうだ.
+	PRINTW 他にもいくつもの種類の話が出て来たが共通するのは"砦にアルカナナイトがいる"ということ.
+	PRINTW かなり意図的に流された噂だと思われる.
+	TMP2_ARCANA = -1
+	REPEAT CHARANUM
+		SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0
+			TMP2_ARCANA = COUNT
+	REND
+	IF TMP2_ARCANA > 0
+		PRINTW しかし,これを逆にチャンスと見て取ったあなたは部下である元勇者に命令し,アルカナナイトの捕獲へと向かわせた.........
+	ELSE
+		PRINTW アルカナナイトは一騎当千の強力な戦士達だ,手持ちのモンスタ-を戦わせても触れることすら出来ないだろう.
+		PRINTW こうなれば捕らえた勇者達を調教して陥落し,刺客として差し向けなければならない.........
+		RETURN 0
+	ENDIF
+ENDIF
+
+;東西南北の門
+;FLAG:92 = 砦侵攻度 (&1:東 &2:南 &4:西 &8:北)
+DRAWLINE
+PRINTW あなたはいずれかの砦に勇者を差し向け,アルカナナイトを打倒しなければならない.
+
+IF FLAG:92 & 1 
+	PRINTL [*] - 東の砦(攻略されています)
+ELSE
+	PRINTL [0] - 東の砦
+ENDIF
+
+IF FLAG:92 & 4
+	PRINTL [*] - 西の砦(攻略されています)
+ELSE
+	PRINTL [1] - 西の砦
+ENDIF
+
+IF FLAG:92 & 2
+	PRINTL [*] - 南の砦(攻略されています)
+ELSE
+	PRINTL [2] - 南の砦
+ENDIF
+
+IF FLAG:92 & 8
+	PRINTL [*] - 北の砦(攻略されています)
+ELSE
+	PRINTL [3] - 北の砦
+ENDIF
+PRINTL [4] - 撤退する
+
+$INPUT_LOOP
+INPUT
+IF RESULT == 4
+	RETURN 0
+ELSEIF RESULT >= 5
+	GOTO INPUT_LOOP
+ELSEIF RESULT < 0
+	GOTO INPUT_LOOP
+ENDIF
+
+SIF (FLAG:92 & 1) && RESULT == 0
+	GOTO INPUT_LOOP
+SIF (FLAG:92 & 4) && RESULT == 1
+	GOTO INPUT_LOOP
+SIF (FLAG:92 & 2) && RESULT == 2
+	GOTO INPUT_LOOP
+SIF (FLAG:92 & 8) && RESULT == 3
+	GOTO INPUT_LOOP
+
+;TMP_ARCANAに保存,最後まで使う
+TMP_ARCANA = RESULT
+
+;勇者選択
+TMP2_ARCANA = 0
+
+;妊娠出撃可
+IF GETBIT(FLAG:5,10)
+	REPEAT CHARANUM
+		;助手でなおかつ愛か淫乱がついてないと攻撃不可.
+		IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0
+			PRINTFORM [{TMP2_ARCANA}] %SAVESTR:COUNT% {CFLAG:COUNT:9}LV
+			TMP2_ARCANA += 1
+			SIF CFLAG:COUNT:0 > 1 && COUNT != 0
+			PRINT [攻撃可能]
+			PRINTL  
+		ENDIF
+	REND
+
+	IF TMP2_ARCANA == 0
+		PRINTW *侵攻可能な勇者がいません*
+		RETURN 0
+	ENDIF
+
+	PRINTL  
+	PRINTL [100] 戻る
+	DRAWLINE
+
+	$INPUT_LOOP1
+	INPUT
+		IF RESULT < 0
+			GOTO INPUT_LOOP1
+		ELSEIF RESULT >= TMP2_ARCANA && RESULT != 100
+			GOTO INPUT_LOOP1
+		ENDIF
+	SIF RESULT == 100
+		RETURN 0
+
+	TMP2_ARCANA = RESULT
+	Y_ARCANA = 0
+	REPEAT CHARANUM
+		IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && TMP2_ARCANA == Y_ARCANA
+			Y_ARCANA = COUNT
+			BREAK
+		ENDIF
+		SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && COUNT != 0 && CFLAG:COUNT:0 == 2
+			Y_ARCANA += 1
+	REND
+ELSE
+	REPEAT CHARANUM
+		;助手でなおかつ愛か淫乱がついてないと攻撃不可,妊婦は出撃不可.
+		IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && TALENT:COUNT:153 == 0
+			PRINTFORM [{TMP2_ARCANA}] %SAVESTR:COUNT% {CFLAG:COUNT:9}LV
+			TMP2_ARCANA += 1
+			SIF CFLAG:COUNT:0 > 1 && COUNT != 0
+			PRINT [攻撃可能]
+			PRINTL  
+		ENDIF
+	REND
+
+	IF TMP2_ARCANA == 0
+		PRINTW *侵攻可能な勇者がいません*
+		RETURN 0
+	ENDIF
+
+	PRINTL  
+	PRINTL [100] 戻る
+	DRAWLINE
+
+	$INPUT_LOOP2
+	INPUT
+		IF RESULT < 0
+			GOTO INPUT_LOOP2
+		ELSEIF RESULT >= TMP2_ARCANA && RESULT != 100
+			GOTO INPUT_LOOP2
+		ENDIF
+	SIF RESULT == 100
+		RETURN 0
+
+	TMP2_ARCANA = RESULT
+	Y_ARCANA = 0
+	REPEAT CHARANUM
+		IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && TMP2_ARCANA == Y_ARCANA  && TALENT:COUNT:153 == 0
+			Y_ARCANA = COUNT
+			BREAK
+		ENDIF
+		SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && COUNT != 0 && CFLAG:COUNT:0 == 2 && TALENT:COUNT:153 == 0
+			Y_ARCANA += 1
+	REND
+ENDIF
+
+;東の砦　ブラックダイヤ &1
+IF TMP_ARCANA == 0
+	IF TALENT:Y_ARCANA:167 || TALENT:Y_ARCANA:168 || TALENT:Y_ARCANA:169 || TALENT:Y_ARCANA:170
+		PRINTFORMW 東の砦にはブラックダイヤがいる.剣を地面に突き刺し腕を組んで待っていたようだ.
+		PRINTFORMW ブラックダイヤは相手がかつての仲間である%SAVESTR:B%だと気がつくと眉をひそめた.
+		PRINTFORMW "そんな,まさか貴女が魔王の手下になってしまうなんて...仕方ないわね多少の怪我は覚悟しなさい!"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "全裸で戦わされるなんて...魔王め,絶対に許さないわ"
+		PRINTFORMW ブラックダイヤは一瞬躊躇したが,黒光りする剣を振りかざし襲いかかった!
+	ELSE
+		PRINTFORMW 東の砦にはブラックダイヤがいる.剣を地面に突き刺し腕を組んで待っていたようだ.
+		PRINTFORMW "待っていたわよ.ああ,哀れな人ね,勇者として輝かしい未来が待っていたのに魔王の手下として働かなければいけないなんて!"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "全裸で戦わされるなんて本当に同情するわ!"
+		PRINTFORMW ブラックダイヤは黒光りする剣を振りかざし襲いかかった!
+	ENDIF
+;西の砦　ホワイトクラブ &4
+ELSEIF TMP_ARCANA == 1
+	IF TALENT:Y_ARCANA:167 || TALENT:Y_ARCANA:168 || TALENT:Y_ARCANA:169 || TALENT:Y_ARCANA:170
+		PRINTFORMW 西の砦にはホワイトクラブがいる.挑戦者がやってきたことに気がつくと持っていた本をロ-ブの内側にしまい込んだ.
+		PRINTFORMW ホワイトクラブは相手がかつての仲間である%SAVESTR:B%だと気がつくと少し目を見開いた.
+		PRINTFORMW "あら...あなたが魔王の奴隷になるなんて意外ね,とっくに舌を噛んで死んでるかと思っていたわ"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "その上全裸で戦わされるなんてね,ひょっとしてちょっと後悔してない?"
+		PRINTFORMW ホワイトクラブは少し目つきを鋭くすると,白い杖をかかげ呪文を唱え始めた!
+	ELSE
+		PRINTFORMW 西の砦にはホワイトクラブがいる.挑戦者がやってきたことに気がつくと持っていた本をロ-ブの内側にしまい込んだ.
+		PRINTFORMW "はぁ...こっちに来るなんて...早く本の続きを読みたいから帰ってくれないかしら?...無理?しょうがないわね"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "うわ...全裸で戦うなんて引くわ...そっちの魔王のサンの趣味?"
+		PRINTFORMW ホワイトクラブは気怠そうに白い杖をかかげ呪文を唱え始めた!
+	ENDIF
+;南の砦　シルバースペード &2
+ELSEIF TMP_ARCANA == 2
+	IF TALENT:Y_ARCANA:167 || TALENT:Y_ARCANA:168 || TALENT:Y_ARCANA:169 || TALENT:Y_ARCANA:170
+		PRINTFORMW 南の砦にはシルバ-スペ-ドがいる.黒装束を着込んだ忍者らしいが忍ぶ気は全くないようだ.
+		PRINTFORMW シルバ-スペ-ドは相手がかつての仲間である%SAVESTR:B%だと気がつくと少し呆れたような声をだした.
+		PRINTFORMW "そうかそうか,キミが敵に回るなんて思ってもいなかったよ.ではボクも少しは本気を出すこととしようか!"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "キ,キミが全裸になったぐらいではボクの心は揺るがない!"
+		PRINTFORMW シルバ-スペ-ドは軽くステップを踏み,分身しながら襲いかかった!
+	ELSE
+		PRINTFORMW 南の砦にはシルバ-スペ-ドがいる.黒装束を着込んだ忍者らしいが忍ぶ気は全くないようだ.
+		PRINTFORMW "やれやれ...こんな風に君たちをおびき出して捕獲するなんてボクの性に合わないんだけどな...ま,これも狂王様の命令だ,宮仕えは辛いよ"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "ああそうそう,キミが全裸になってもア-マ-クラスは下がらないよ?"
+		PRINTFORMW シルバ-スペ-ドは分身しながら襲いかかった!
+	ENDIF
+;北の砦　ゴールドハート &8
+ELSEIF TMP_ARCANA == 3
+	IF TALENT:Y_ARCANA:167 || TALENT:Y_ARCANA:168 || TALENT:Y_ARCANA:169 || TALENT:Y_ARCANA:170
+		PRINTFORMW 北の砦には親衛隊隊長のゴ-ルドハ-トがいる.その金色に輝く鎧は太陽の光で煌めき,うっすらとル-ン文字の煌めきが見える.	
+		PRINTFORMW ゴ-ルドハ-トは相手がかつての仲間である%SAVESTR:B%だと気がつくと一瞬悲しそうな顔をしたが気を取り直したようだ.
+		PRINTFORMW "あらあら困りましたわね～,わたくしもかつての仲間とは戦いたくないのですけれど...これも狂王様の命令ですから～"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "うふふ,わざわざ素っ裸で戦いを挑むなんて犯されに来たのかしらぁ?"
+		PRINTFORMW ゴ-ルドハ-トはニヤリと笑いながらレイピアを掲げると容赦の無い突きを繰り出してきた!
+	ELSE
+		PRINTFORMW 北の砦には親衛隊隊長のゴ-ルドハ-トがいる.その金色に輝く鎧は太陽の光で煌めき,うっすらとル-ン文字の煌めきが見える.	
+		PRINTFORMW "ようこそいらっしゃいましたわ～,哀れな魔王の奴隷さん♪ せいぜいわたくしを愉しませて下さいね?"
+		SIF CFLAG:Y_ARCANA:40 == 0
+			PRINTFORMW "わざわざ全裸で来るなんて変態なのかしら?　その柔肌を切り刻んでさしあげますわ"
+		PRINTFORMW ゴ-ルドハ-トはレイピアを掲げると容赦の無い突きを繰り出してきた!
+	ENDIF
+ENDIF
+
+;キャラ追加
+;東の砦　ブラックダイヤ &1
+IF TMP_ARCANA == 0
+	ADDCHARA 22
+	A_ARCANA = CHARANUM - 1
+	SAVESTR:A_ARCANA = %NAME:A_ARCANA%
+	CSTR:A_ARCANA:1 = %NAME:A_ARCANA%
+	;初期装備:ソード
+	CFLAG:A_ARCANA:550 = 40
+	;初期装備:強度
+	CFLAG:A_ARCANA:550 += 9000
+	;初期装備接頭語:ダーク
+	CFLAG:A_ARCANA:550 += 900000
+	;名前決定
+	CFLAG:A_ARCANA:6 = RAND:80
+;西の砦　ホワイトクラブ &4
+ELSEIF TMP_ARCANA == 1
+	ADDCHARA 23
+	A_ARCANA = CHARANUM - 1
+	SAVESTR:(A_ARCANA) = %NAME:A_ARCANA%
+	CSTR:A_ARCANA:1 = %NAME:A_ARCANA%
+	ABL:A_ARCANA:31 = 1
+	EXP:A_ARCANA:10 = 30
+	;初期装備:スタッフ
+	CFLAG:A_ARCANA:550 = 41
+	;初期装備:強度
+	CFLAG:A_ARCANA:550 += 9000
+	;初期装備接頭語:アイス
+	CFLAG:A_ARCANA:550 += 600000
+	;名前決定
+	CFLAG:A_ARCANA:6 = RAND:80
+;南の砦　シルバースペード &2
+ELSEIF TMP_ARCANA == 2
+	ADDCHARA 21
+	A_ARCANA = CHARANUM - 1
+	SAVESTR:A_ARCANA = %NAME:A_ARCANA%
+	CSTR:A_ARCANA:1 = %NAME:A_ARCANA%
+	EXP:A_ARCANA:10 = 10
+	;初期装備:シュリケン
+	CFLAG:A_ARCANA:550 = 44
+	;初期装備:強度
+	CFLAG:A_ARCANA:550 += 9000
+	;初期装備接頭語:デス
+	CFLAG:A_ARCANA:550 += 300000
+	;名前決定
+	CFLAG:A_ARCANA:6 = RAND:80
+;北の砦　ゴールドハート &8
+ELSEIF TMP_ARCANA == 3
+	ADDCHARA 20
+	A_ARCANA = CHARANUM - 1
+	SAVESTR:A_ARCANA = %NAME:A_ARCANA%
+	CSTR:A_ARCANA:1 = %NAME:A_ARCANA%
+	EXP:A_ARCANA:0 = 20
+	;狂王が男かふたなりならば精液経験
+	SIF FLAG:500 == 0 || FLAG:500 == 2
+		EXP:A_ARCANA:5 = EXP:A_ARCANA:0
+	;初体験の相手は狂王
+	CFLAG:A_ARCANA:15 = 105
+	;初期装備:レイピア
+	CFLAG:A_ARCANA:550 = 50
+	;初期装備:強度
+	CFLAG:A_ARCANA:550 += 10000
+	;初期装備接頭語:スラッシュ
+	CFLAG:A_ARCANA:550 += 400000
+	;名前決定
+	CFLAG:A_ARCANA:6 = RAND:80
+ENDIF
+
+;衣装全装備
+TARGET = A_ARCANA
+CALL WEARING_CLOTH_ABLE
+
+;レベルアップ処理
+IF FLAG:60 > 0
+	REPEAT FLAG:60
+		CALL ST_UP, A_ARCANA
+	REND
+ENDIF
+
+BASE:A_ARCANA:0 = MAXBASE:A_ARCANA:0
+BASE:A_ARCANA:1 = MAXBASE:A_ARCANA:1
+
+;戦闘
+;Aが元勇者 Bがアルカナナイト
+A = Y_ARCANA
+B = A_ARCANA
+CALL ARCANA_BATTLE
+
+;勝ち
+IF RESULT == 2
+	DRAWLINE
+	PRINTFORML アルカナナイト%SAVESTR:A_ARCANA%は敗北した...
+	MONEY += 1000 * CFLAG:A_ARCANA:9
+	PRINTFORMW {1000 * CFLAG:A_ARCANA:9}Gを入手!
+	PRINT さらに
+	;東の砦　ブラックダイヤ &1
+	IF TMP_ARCANA == 0
+		PRINTW ダイヤのエ-スのカ-ドを奪った.
+		PRINTW そして,ブラックダイヤは捕虜としてあなたのいるダンジョンへと連行された.........
+		PRINTW "この私が負けるなんて........."
+		FLAG:92 |= 1
+		CALL CHAR_SIZE_GENERATE, A_ARCANA, 21
+	;西の砦　ホワイトクラブ &4
+	ELSEIF TMP_ARCANA == 1
+		PRINTW クラブのエ-スのカ-ドを奪った.
+		PRINTW そして,ホワイトクラブは捕虜としてあなたのいるダンジョンへと連行された.........
+		PRINTW "敗北した私の運命は...魔王とご対面出来れば分かるかしら........."
+		FLAG:92 |= 4
+		CALL CHAR_SIZE_GENERATE, A_ARCANA, 27
+	;南の砦　シルバースペード &2
+	ELSEIF TMP_ARCANA == 2
+		PRINTW スペ-ドのエ-スのカ-ドを奪った.
+		PRINTW そして,シルバ-スペ-ドは捕虜としてあなたのいるダンジョンへと連行された.........
+		PRINTW "くっ...は,離せっ!"
+		FLAG:92 |= 2
+		CALL CHAR_SIZE_GENERATE, A_ARCANA, 24
+	;北の砦　ゴールドハート &8
+	ELSEIF TMP_ARCANA == 3
+		PRINTW ハ-トのエ-スのカ-ドを奪った.
+		PRINTW そして,ゴ-ルドハ-トは捕虜としてあなたのいるダンジョンへと連行された.........
+		PRINTW "そんな,わたくしが...助けて狂王さまっ!"
+		FLAG:92 |= 8
+		CALL CHAR_SIZE_GENERATE, A_ARCANA, 18
+	ENDIF
+	IF GETBIT(FLAG:5,12) || GETBIT(FLAG:5,15)
+		CFLAG:(A_ARCANA):451 = RESULT:0
+		CFLAG:(A_ARCANA):452 = RESULT:1
+		CFLAG:(A_ARCANA):453 = RESULT:2
+		CFLAG:(A_ARCANA):454 = RESULT:3
+		CFLAG:(A_ARCANA):455 = RESULT:4
+		CFLAG:(A_ARCANA):456 = RESULT:5
+		CFLAG:(A_ARCANA):457 = RESULT:6
+	ENDIF
+;負け
+ELSEIF RESULT == 0
+	IF (FLAG:5 & 128)
+		;前回の助手-調教対象だった場合はフラグを空に
+		SIF FLAG:1 == Y_ARCANA
+			FLAG:1 = -1
+		SIF FLAG:2 == Y_ARCANA
+			FLAG:2 = -1
+	ENDIF
+	A_ARCANA = CHARANUM - 1
+	CALL PARTY_CHAR_DEL, A_ARCANA
+	DELCHARA A_ARCANA
+	CALL NAME_RESET
+ENDIF
+
+A = 0
+B = 0
+
+DRAWLINE
+RETURN 1
+
+
+

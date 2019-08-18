@@ -1,0 +1,755 @@
+﻿;----------------------------------
+@INVASION_RYOUZYOKU, ARG:0, ARG:1
+;----------------------------------
+#DIM ID
+#DIM NUM
+#DIM RYOUZYOKU
+
+;侵攻ポイントを調整
+;基本的に0～10の範囲に抑える
+ARG:1 /= 5000
+
+;戦争で陵辱
+REPEAT 3
+	X = (RAND:9 + 1) * 10 + 100 + RAND:5
+	CALL MONSTER_DATA, X, COUNT, 0, -1
+
+	RYOUZYOKU = COUNT * 100 + 7
+	NUM = COUNT * 100 + 99
+	IF E:NUM <= 0
+		E:RYOUZYOKU = 0
+	ENDIF
+	IF E:RYOUZYOKU > 0
+		ID = E:(COUNT*100)
+		PRINTFORMW %ITEMNAME:ID%の陵辱が始まった.
+	ENDIF
+	IF E:RYOUZYOKU == 1
+		;カタコト
+		CALL ORC_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 2
+		;スライム
+		CALL SLIME_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 3
+		;昆虫
+		CALL INSECT_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 4
+		;蔦触手
+		CALL IVY_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 5
+		;触手
+		CALL SYOKUSYU_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 6
+		;妖精
+		CALL FAILY_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 7
+		;巨人
+		CALL GIANT_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 8
+		;男
+		CALL MAN_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 9
+		;女
+		CALL GIRL_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 10
+		;獣
+		CALL BEAST_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 11
+		;脳姦
+		CALL BRAIN_INV, ARG:0, ARG:1
+	ELSEIF E:RYOUZYOKU == 12
+		;馬
+		CALL HORSE_INV, ARG:0, ARG:1
+	ENDIF
+	PRINTL  
+REND
+
+RETURN 0
+
+
+
+;--------------------------------------------
+@ORC_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 看板娘
+	LOCALS:1 = 女騎士
+	LOCALS:2 = 少女
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの娘
+	LOCALS:1 = エルフの女騎士
+	LOCALS:2 = エルフ少女
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 看板娘
+	LOCALS:1 = 女竜騎士
+	LOCALS:2 = 竜人の少女
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = エンジェルナイト
+	LOCALS:2 = 天使の少女
+ELSE
+	LOCALS:0 = 看板娘
+	LOCALS:1 = 女騎士
+	LOCALS:2 = 少女
+ENDIF
+
+IF RAND:5 == 0 && ARG:1 > 1
+	PRINTFORMW 亜人の群れに包囲された%LOCALS:1%の部隊は,決断を迫られていた
+	PRINTFORMW 『もはや救援は待てない......ならば純潔のまま死ぬしか......』
+	PRINTFORMW そのとき,陣地内に聞こえるはずのない亜人の声
+	PRINTFORMW 本営には白旗が掲げられ,仲間は次々と武装解除されていく
+	PRINTFORMW %LOCALS:1%が見たのは,信じていた団長が亜人のペニスに媚びる姿だった......
+ELSEIF RAND:4 == 0
+	PRINTFORMW %LOCALS:1%の抵抗も虚しく,次々と拠点は攻略され抵抗した部隊は捕虜となった
+	IF ARG:1 > 6
+		PRINTFORML 亜人の軍勢は勢いがとどまることを知らず,まるで波に飲まれるかのようであった
+	ELSEIF ARG:1 > 2
+		PRINTFORML %LOCALS:1%の部隊は多勢に無勢,碌な抵抗すらできなかった
+	ENDIF
+	PRINTFORMW "クニニカエッテ,ヨメサンニスルンダ～♪"
+	PRINTFORMW すでに瞳から希望の光が消え,無抵抗となった%LOCALS:1%たち
+	PRINTFORMW その母体はすでに妊娠促進剤によって受胎し,すでに臨月のように膨らんでいた
+	PRINTFORMW 『ああ......赤ちゃん動いてる......亜人の仔が......』
+	IF ARG:1 > 7
+		PRINTFORML %LOCALS:1%の妊娠はすでに3桁を数え,同族との妊娠が不可能になるまで改造されていた
+	ELSEIF ARG:1 > 3
+		PRINTFORML %LOCALS:1%の妊娠はすでに2桁を数えていた
+	ENDIF
+ELSEIF RAND:3 == 0
+	PRINTW "パンクレヨ.ダイキンハ...コレダ"
+	PRINTFORMW 亜人たちはパン屋に押し入ると%LOCALS:0%を捕まえ組み伏せて犯した
+	PRINTFORMW 『い,いやぁぁぁ!　や,やぁ,やめて,ああああああ!』
+	PRINTFORMW %LOCALS:0%の膣内に亜人の濃い精液が放たれる
+	IF ARG:1 > 6
+		PRINTFORML %LOCALS:0%の住む街は亜人たちの公衆便所となった
+		PRINTFORML 街中で便器たちが喘ぐ嬌声が響く......
+	ELSEIF ARG:1 > 2
+		PRINTFORML %LOCALS:0%の住む街は完全に破壊され,街の女は全て亜人の便器となった
+	ENDIF
+	PRINTFORMW "マイニチ,パン,ツクッテ,セックスシヨウゼ"
+	IF ARG:1 > 7
+		PRINTFORML 便器の%LOCALS:0%はパンを焼く
+		PRINTFORML ヤリ部屋となったパン屋は,パンの香りを塗りつぶすほどの性臭に満ちていた......
+	ELSEIF ARG:1 > 3
+		PRINTFORML %LOCALS:0%はパンを焼き,便器としての務めも果たさなくてはいけない......
+	ENDIF
+ELSEIF RAND:2 == 0
+	PRINTW 『このような下級の亜人に...増援さえくれば...こんなことには』
+	PRINTFORMW %LOCALS:1%は広場で公開処刑をされていた
+	PRINTFORMW 首と手首を固定する枷で拘束され,無様に丸裸の尻を突き出して代わる代わる犯されている
+	PRINTFORMW "オマエ,コロサナイ.オマエ,ミンナノモノニナル.ズットココデ,オカサレル"
+	PRINTFORMW %LOCALS:1%はすでに数日にわたって広場で慰みものになっていた.まるで飾られた祝勝記念のように
+	PRINTFORMW 『やめろ...もう犯さないでくれ...やめてくれえええええ!』
+	PRINTFORMW 慟哭する%LOCALS:1%の眼前に,亜人のペニスが差し出された
+	PRINTFORMW "メシダ.ノメ"
+ELSE
+	PRINTW "シンジンダ.ナカヨクシロヨ"
+	PRINTFORMW 新たに奴隷となった%LOCALS:2%は,奴隷テントの中で異様な光景を見た
+	PRINTFORMW 鎖でつながれ,精気の無い目をした女たちが全裸で奉仕していたのだ.半数は明らかに妊娠していた
+	PRINTFORMW 使いこまれどす黒く変色した性器,伸び放題の髪と陰毛,精液を垂れ流す肛門...
+	PRINTFORMW 『これが...わたしの...ミライ...』
+	PRINTFORMW %LOCALS:2%は力なく崩れ落ちた
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@SLIME_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 若い娘
+	LOCALS:2 = 若いシスター
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの娘
+	LOCALS:1 = エルフの女
+	LOCALS:2 = エルフの巫女
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の娘
+	LOCALS:1 = 竜人の女
+	LOCALS:2 = 竜人の神官
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = 天使の少女
+	LOCALS:2 = 天使の神官
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 若い娘
+	LOCALS:2 = 若いシスター
+ENDIF
+
+IF RAND:4 == 0 && ARG:1 > 1
+	PRINTFORMW 捕虜となった%LOCALS:2%は肛門に限界までスライムを注がれていた
+	PRINTFORMW 他の%LOCALS:2%が見守る中,神託書物の上に全裸で跨る
+	PRINTFORMW "ブチマケタラ,仲間ハ,奴隷ダゾ"
+	PRINTFORMW 魔物使いのオ-クが,%LOCALS:2%の大きな尻を叩く
+	PRINTFORMW 数時間続いたアナルセックスの後では,耐えられるはずもなかった......
+ELSEIF RAND:3 == 0
+	PRINTFORMW %LOCALS:2%たちは戦火の中祈りを捧げていた
+	PRINTFORMW 聖堂に逃げ込んだ%LOCALS:2%たちは死を覚悟していた
+	PRINTFORMW 『......どうしたのでしょう,身体が......うごかな......い......』
+	PRINTFORMW 排水管から忍び寄ったのは麻痺毒のスライムだ.スライムから揮発する毒ガスが%LOCALS:2%たちの体の自由を奪う
+	PRINTFORMW 扉の外では大勢の足音と忌まわしい訛りの下品な叫び.死すら,許されることは無かった
+ELSEIF RAND:2 == 0
+	PRINTFORMW %LOCALS:0%たちは辛くもシェルタ-に逃げ込めた.外では戦闘が続いている
+	IF ARG:1 > 6
+		PRINTFORML %LOCALS:0%たちの住む街はすでに半分以上がオ-クの魔物使いに占領されていた
+		PRINTFORML 捕まれば繁殖奴隷として使い捨てられるまで犯されるだろう......
+	ELSEIF ARG:1 > 2
+		PRINTFORML %LOCALS:0%の住む街はオ-クの魔物使いの襲撃を受け,すでに防衛部隊は半壊していた
+	ENDIF
+	PRINTFORMW 一人の%LOCALS:0%が,異臭に気付いた
+	PRINTFORMW 『ス,スライム!』
+	PRINTFORMW 空気穴からスライムが侵入したのだ!
+	PRINTFORMW オ-クの戦士がシェルタ-の扉を破ったとき,すでに中の%LOCALS:0%たちは犯され切っていた
+	IF ARG:1 > 7
+		PRINTFORML %LOCALS:0%たちはその後,破壊された街でスライム培養奴隷になった
+		PRINTFORML イキながらアナルからスライムを噴出する姿を,憐れむものは誰もいない......
+	ELSEIF ARG:1 > 3
+		PRINTFORML %LOCALS:0%たちはその後,スライムをアナルで培養させ続けられたという......
+	ENDIF
+ELSE
+	PRINTFORMW 『やめて!　許して!　いやぁ!』
+	PRINTFORMW 駐屯地での余興として,%LOCALS:1%がスライム風呂に入れられたのだ
+	PRINTFORMW 浴槽の半分まで満たされたスライムは,下半身を剥かれた女が浸かるとすぐさま侵入を開始した
+	PRINTFORMW 膣と肛門に大量の粘液が侵入して,%LOCALS:1%は絶叫をあげる
+	PRINTFORMW "イイロ-ションダナ.コノアトオカソウゼ"
+	PRINTFORMW 一人のオ-クの提案に,部隊は沸き立つ
+	PRINTFORMW %LOCALS:1%だけが,ひとり絶望した顔で青ざめていた
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@INSECT_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 女学生
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女
+	LOCALS:1 = エルフの学生
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女
+	LOCALS:1 = 竜人の学生
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = 天使の見習い
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 女学生
+ENDIF
+
+IF RAND:3 == 0 && ARG:1 > 1
+	PRINTFORMW 捕まった%LOCALS:1%たちは,口から紫の芋虫を飲まされた.すぐさま症状が現れる
+	PRINTFORMW 芋虫は腸の中で媚薬を分泌し,理性を破壊された%LOCALS:1%たちは互いに絡み合う
+	PRINTFORMW %LOCALS:1%たちはセックスしか頭にない性奴隷として生まれ変わった
+	PRINTFORMW 男子学生と女子学生はつがいにされ,奴隷を生む装置になる
+	PRINTFORMW 首を鎖で繋がれた二人の顔は,とても幸せそうだった
+ELSEIF RAND:2 == 0
+	PRINTFORMW %LOCALS:1%たちは戦場から避難する途中で魔蟲の群れに襲われた
+	PRINTFORMW 魔蟲を笛で操るのは臭い布で身を包んだオ-クの蟲使いだ
+	IF ARG:1 > 6
+		PRINTFORML 奴隷の%LOCALS:0%がオ-クの蟲使いのペニスに頬ずりする
+		PRINTFORML オ-クのペニスに屈した彼女が,学生たちの避難先を漏らしたのだ
+	ELSEIF ARG:1 > 2
+		PRINTFORML オ-クの蟲使いには,ペニスケ-スとなった%LOCALS:0%が括り付けられている
+	ENDIF
+	PRINTFORMW その場で裸に剥かれた%LOCALS:1%は,魔蟲の粘つく糸で絡め取られる
+	PRINTFORMW 哀れな%LOCALS:1%たちは魔蟲の巣に持ち帰られるのだ
+	PRINTFORMW 新しい魔蟲の卵を植え付けるために,新しい魔蟲のために.オ-クの蟲使いが笑った
+ELSE
+	PRINTFORMW 戦場で捕まえられた%LOCALS:0%たちは,魔界の昆虫のふ卵器になっていた
+	PRINTFORMW 首枷で拘束された%LOCALS:0%たちの膣と肛門に,昆虫は卵を産みつけていく
+	PRINTFORMW 『ああ...あああああ...あああ...』
+	PRINTFORMW %LOCALS:0%たちは絶望し,精神が崩壊していく.
+	PRINTFORMW やがてこの%LOCALS:0%たちは,粘膜から養分を吸収した昆虫の幼生を膣と肛門からひりだし,また卵を植えつけられるのだ
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@IVY_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 女兵士
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女
+	LOCALS:1 = エルフのレンジャー
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女
+	LOCALS:1 = 竜人の女兵士
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = 天使の兵士
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 女兵士
+ENDIF
+
+IF RAND:3 == 0 && ARG:1 > 1
+	PRINTFORMW 植物型モンスタ-が一夜にして砦を飲み込み,%LOCALS:1%たちは皆太い蔦に絡めとられる
+	PRINTFORMW そして,紫の花が咲き誇る花園に%LOCALS:1%たちは集められた
+	PRINTFORMW その花粉には幻覚作用があり,%LOCALS:1%たちと砦の男たちは一心不乱にセックスを続ける
+	PRINTFORMW 『すきぃ......もっと......きて......子供つくろ......妊娠させてぇ』
+	PRINTFORMW 生まれた子供は奴隷として取引される.彼女たちは花に惑わされ交尾を続ける.......
+ELSEIF RAND:2 == 0
+	PRINTFORMW %LOCALS:1%たちは戦場を覆い尽くす植物の塊に飲み込まれた
+	PRINTFORMW 手足は蔦に絡め取られ,無防備なアナルに根を下ろされる
+	PRINTFORMW 根から分泌する物質によってすぐに%LOCALS:1%たちはアヘ顔を晒し,
+	PRINTFORMW そのまま植物と共生状態になった
+	IF ARG:1 > 5
+		PRINTFORML 耳から脳にまで根は達し,もはや快楽しか感じられないように精神が改造される
+		PRINTFORML 植物の養分で%LOCALS:1%の筋肉で引き締まった体はだらしない肉塊となってしまった
+	ELSEIF ARG:1 > 3
+		PRINTFORML %LOCALS:1%の筋肉で引き締まった体はだらしない肉塊となってしまった
+	ENDIF
+	PRINTFORMW 『はあぁ,ぎもぢいいい!　おしり,ばかになっちゃう!　おしりになっちゃうううう!』
+ELSE
+	PRINTFORMW 制圧した拠点には魔界の植物が植えられ,その養分に%LOCALS:0%たちはかなり役に立った
+	PRINTFORMW 生きたまま根を下ろされた女たちは,植物と共生状態になり,良質の肥料を産みだしていた
+	PRINTFORMW "エサダ,クエ.クッテ,クソスルノガ,オマエタチノシゴトダ"
+	PRINTFORMW 時折男や亜人たちが動けない%LOCALS:0%たちを犯していった
+	PRINTFORMW 『犯して!　もっと!　ああ!　いい!　いいわぁ!』
+	PRINTFORMW 糞を産みだす以外の娯楽は性交しかなく,%LOCALS:0%たちはすぐ娼婦さながらとなった
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@SYOKUSYU_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 侍女
+	LOCALS:2 = 貴族の女
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女
+	LOCALS:1 = エルフの侍女
+	LOCALS:2 = エルフの貴族
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女
+	LOCALS:1 = 竜人の侍女
+	LOCALS:2 = 竜人の貴族
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = 天使の召使
+	LOCALS:2 = 上位天使
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 侍女
+	LOCALS:2 = 貴族の女
+ENDIF
+
+IF RAND:3 == 0 && ARG:1 > 1
+	PRINTFORMW %LOCALS:2%は捕らえられた後,触手によって念入りに催眠を施された
+	PRINTFORMW 数日後,ウェディングドレス姿の%LOCALS:2%がスラム街へと歩いて行った
+	PRINTFORMW 頭には触手が食らいつき,その目は場違いなほど慈愛に満ちている
+	PRINTFORMW 浮浪者が集まってくる.今日は%LOCALS:2%の結婚式だ.下賤のものに,高貴な血を分け与えるのだ
+	PRINTFORMW 『幸せになりますぅ......みんなのお嫁さんになりますぅ......いっぱい子供産みますぅ......』
+ELSEIF RAND:2 == 0
+	PRINTFORMW 高貴な者に仕えていた%LOCALS:1%は主人の娘を隠し部屋に逃がし,一人抵抗した
+	PRINTFORMW 捕えられた%LOCALS:1%は触手による快楽拷問を受ける
+	PRINTFORMW 触手によってクリトリスを改造され,ふたなりとなり男根の快楽を刻まれ呆気なく陥落した
+	PRINTFORMW 口を割った報酬は......主人の貞操である.二人はつがいの奴隷となったのだ
+	PRINTFORMW 『お嬢様......ずっと,ずっとお慕い申し上げていました!　あはぁ!　お嬢様を......犯してる!　最高に気持ちいいです!』
+ELSE
+	PRINTFORMW 制圧した拠点に,モンスタ-生産工場が仮設された
+	PRINTFORMW 肉壁にはめ込まれ,%LOCALS:0%たちは妊娠した腹を晒している
+	PRINTFORMW 『いやだ...産みたくない...いやだ...』
+	PRINTFORMW 危険日安全日の区別なく,触手が%LOCALS:0%たちの膣に精液を流しこんでいく
+	PRINTFORMW 『いく!　いっちゃう!　いきたくないいいいいい!』
+	PRINTFORMW 触手の精液に含まれる大量の媚薬成分で,%LOCALS:0%は強制的に何度も絶頂した
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@FAILY_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 少女
+	LOCALS:2 = 人間
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女
+	LOCALS:1 = エルフの少女
+	LOCALS:2 = エルフ
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女
+	LOCALS:1 = 竜人の少女
+	LOCALS:2 = 竜人
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = 天使の少女
+	LOCALS:2 = 天使
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 少女
+	LOCALS:2 = 人間
+ENDIF
+
+IF RAND:3 == 0 && ARG:1 > 1
+	PRINTFORMW 都会の学校が妖精たちによって占拠され,生徒はみな拘束された
+	PRINTFORMW "きみたちには,よ-せ-の奴隷をいっぱい産んでもらうよ～"
+	PRINTFORMW %LOCALS:2%の生徒たちは妖精の媚薬を投与され,全員が盛りのついた性獣となる
+	PRINTFORMW 繁殖場となった校舎では,男子生徒が女子生徒をところかまわず犯していた
+	PRINTFORMW %LOCALS:2%の優等生の一人は,5人もの子供を産み奴隷としても優秀と褒めたたえられていた
+ELSEIF RAND:2 == 0
+	PRINTFORMW %LOCALS:0%は拘束され,妖精の凌辱を受けていた
+	PRINTFORMW 魔法ではち切れそうなほど勃起したクリトリスは,妖精たちの膣に丁度いいペニスだ
+	PRINTFORMW 快楽も増幅され,妖精の小さな腰に合わせてヘコヘコと腰を振る%LOCALS:0%
+	PRINTFORMW 『いやぁ......元にもどしてぇ......腰変になっちゃったよぉ』
+	PRINTFORMW "何言ってるの?　おね-さんはこれから一生クリちんぽ奴隷だよ♪"
+	SIF ARG:1 > 3
+		PRINTFORMW その後,%LOCALS:0%の乳首も妖精と性交できるように改造されたらしい
+	SIF ARG:1 > 6
+		PRINTFORMW 勃起したクリトリスは%LOCALS:0%が死ぬまで萎えることなく妖精たちを満足させたという
+ELSE
+	PRINTFORMW 妖精たちは,子供さながらの無邪気さで%LOCALS:0%たちを破壊していった
+	PRINTFORMW "ねね,尿道も責めようよ!"
+	PRINTFORMW 『ぎゃぁぁぁ!　もう,やめてぇ!』
+	PRINTFORMW 並んで繋がれた%LOCALS:0%たちは,順番に妖精たちの思いつきで破壊されていく
+	PRINTFORMW "尿道せっくす-!　わわ,おねえさんきもちいいよ!"
+	PRINTFORMW その様子を次の犠牲者の%LOCALS:1%が絶望した顔で見ていた
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@GIANT_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女奴隷
+	LOCALS:1 = 魔導師
+	LOCALS:2 = 人間
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女奴隷
+	LOCALS:1 = 精霊使い
+	LOCALS:2 = エルフ
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女奴隷
+	LOCALS:1 = 竜術士
+	LOCALS:2 = ドラゴン
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使の奴隷
+	LOCALS:1 = エンジェルナイト
+	LOCALS:2 = 天使
+ELSE
+	LOCALS:0 = 女奴隷
+	LOCALS:1 = 魔導師
+	LOCALS:2 = 人間
+ENDIF
+
+IF RAND:4 == 0 && ARG:1 > 1
+	PRINTFORMW 巨人たちの余興として捕らえられた%LOCALS:0%たちによる見世物がはじまった
+	PRINTFORMW 全裸で並べられた奴隷たちが,男女ペアになって様々な競技をする
+	PRINTFORMW 負けたら殺されるかもしれないので,奴隷たちは必死になって無様を晒す
+	PRINTFORMW それを見て巨人たちは大いに笑うのだ
+	PRINTFORMW 負けて殺される前に,二人で猥雑で下品なセックスを見せれば,生き延びることもできるという
+ELSEIF RAND:3 == 0
+	PRINTFORMW 捕えられ奴隷の身分になった%LOCALS:0%たちは魔法をかけられてしまう
+	PRINTFORMW 自らの意思で%LOCALS:2%をやめてオナホになると宣言すると,
+	PRINTFORMW 巨人のペニスに丁度おさまるオナホへと身体が変化してしまうのだ
+	PRINTFORMW 最初は抵抗していた%LOCALS:0%たちだったが,何重にも快楽魔法をかけられ連続絶頂し,
+	PRINTFORMW 次々と%LOCALS:2%をやめて涙と涎と愛液を撒き散らしながらオナホへなり下がっていった
+	PRINTFORMW 『なりますぅ!　%LOCALS:2%やめますぅ!　オナホにしてください!　オナホにしてもっとイかせてぇ!』
+ELSEIF RAND:2 == 0
+	PRINTFORMW 戦場で捕まった%LOCALS:0%たちは,まず最初の洗礼を受ける
+	PRINTFORMW 巨人の大量の精液をつかった精液風呂だ
+	PRINTFORMW 『なにこれ...いや...いやぁぁぁ!』
+	PRINTFORMW 嫌がる%LOCALS:0%を強制的に風呂に入れる
+	PRINTFORMW 反抗的なものは,頭を掴まれ顔面を精液にぶちこまされた
+	PRINTFORMW %LOCALS:0%たちはまだ,その精液よりも多くの精液を浴びていく末路が待っていることを知らない
+ELSE
+	PRINTFORMW 巨人を圧倒していた%LOCALS:1%達も,連戦による魔力切れで倒れた
+	PRINTFORMW 『こんな...下等な奴らに...隊長!?』
+	PRINTFORMW すでに隊長は残った魔力で自らの心を壊していた
+	PRINTFORMW 『いたいよう...ここどこぉ...』
+	PRINTFORMW 『やめてやめやめてやめて...ぎゃああああ!』
+	PRINTFORMW 勇者ではない彼女達の身体は,巨人の陵辱により,三日と保たず使い潰されるだろう
+	SIF ARG:1 > 3
+		PRINTFORMW そんなときは彼女たちに魔法を使わせ,壊れた身体を再生させるのだ
+	SIF ARG:1 > 6
+		PRINTFORMW 心の壊れた%LOCALS:1%のペニスケ-スを一突きすれば,うわごとのように再生魔法を唱えるという
+ENDIF
+RETURN 0
+
+
+;--------------------------------------------
+@MAN_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女神官
+	LOCALS:1 = 女戦士
+	LOCALS:2 = 人間界の法
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフの女神官
+	LOCALS:1 = 女エルフ戦士
+	LOCALS:2 = 投降
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 竜人の女神官
+	LOCALS:1 = 女竜騎士
+	LOCALS:2 = 投降
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使
+	LOCALS:1 = エンジェルナイト
+	LOCALS:2 = 投降
+ELSE
+	LOCALS:0 = 女神官
+	LOCALS:1 = 女戦士
+	LOCALS:2 = 人間界の法
+ENDIF
+
+IF RAND:4 == 0 && ARG:1 > 1
+	PRINTFORMW %LOCALS:1%は鋭い目つきで魔王軍の兵士を睨む.だが,その目は涙で潤んでいる.
+	PRINTFORMW %LOCALS:1%の股からは,何とも可愛らしいペニスが小指サイズに勃起しており,先走りで濡れていた.
+	PRINTFORMW "なんとも可愛いふたなり戦士さん.仲間のレイプ見てビンビンに勃起ですか"
+	PRINTFORMW 目の前には犯されている仲間たち.半ば軽蔑の目で%LOCALS:1%を見ている.
+	PRINTFORMW "その粗チンで仲間を犯せば,命だけは助けてやると言っているんです"
+	PRINTFORMW 両脇を抱えられて仲間の股の前に引きずり出される%LOCALS:1%.
+	PRINTFORMW その腰は,セックスを期待してヘコヘコと振られていた.
+ELSEIF RAND:3 == 0
+	PRINTFORMW 捕えられた%LOCALS:0%は,命と引き換えに魔王軍へ忠誠を誓う証として
+	PRINTFORMW 自らの信じる神の像に向かって小便をかけることを強いられていた
+	PRINTFORMW 『で......できません!　そんなこと......できません......』
+	PRINTFORMW "お前のお仲間はもう俺達の仲間になるって言ってるぜ?"
+	PRINTFORMW 横では共に同じ神を信じた仲間の%LOCALS:0%が,神の像に跨って男と腰を振っていた
+	PRINTFORMW その知性の感じられない浅ましいアヘ顔を見て,絶望した%LOCALS:0%はとうとう小便を放った......
+ELSEIF RAND:2 == 0
+	PRINTFORMW "これからはチ○ポに祈りを捧げることだな,神官さんよ"
+	PRINTFORMW 街の寺院でも陵辱は行われていた
+	PRINTFORMW 『神々よ,なぜこんな試練を...』
+	PRINTFORMW "うるせぇ!　ケツ穴の神の思し召しだよ!"
+	PRINTFORMW 男は%LOCALS:0%のアナルに剛直をぶちこんだ
+ELSE
+	PRINTFORMW 『やぁっ,いや,あああ!』
+	PRINTFORMW 若い%LOCALS:1%が投降したが,もちろん魔王軍に%LOCALS:2%は通用しなかった
+	PRINTFORMW すぐさま魔王軍の若いものに輪姦される
+	PRINTFORMW "もっと薬打て,薬"
+	PRINTFORMW 肉便器となった%LOCALS:1%は,もう何も考えられなくなっていた
+ENDIF
+RETURN 0
+
+;--------------------------------------------
+@GIRL_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女司令官
+	LOCALS:1 = 秘書
+	LOCALS:2 = 女
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = エルフ戦士長
+	LOCALS:1 = 従者
+	LOCALS:2 = 女エルフ
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 女竜騎士
+	LOCALS:1 = 従者
+	LOCALS:2 = 竜人の少女
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = エンジェルナイト
+	LOCALS:1 = 従者
+	LOCALS:2 = 天使
+ELSE
+	LOCALS:0 = 女司令官
+	LOCALS:1 = 秘書
+	LOCALS:2 = 女
+ENDIF
+
+IF RAND:3 == 0
+	PRINTFORMW 拠点が陥落し,%LOCALS:0%は命からがら逃げることに成功したものの
+	PRINTFORMW %LOCALS:0%の%LOCALS:1%が女魔族に捕えられてしまう
+	PRINTFORMW "%LOCALS:0%がどこに逃げたか教えてほしいな-"
+	PRINTFORMW 『言うもんですか!　何をされても......』
+	PRINTFORMW "私たちの仲間になっても,同じことが言えるかしら?"
+	PRINTFORMW %LOCALS:1%は女魔族の快楽拷問に耐えきれないだろう.そして魔族になることを自ら志願するだろう
+	PRINTFORMW 女魔族には,%LOCALS:1%の瞳の奥にある%LOCALS:0%への恋慕の感情が微かに見えていた
+ELSEIF RAND:2 == 0
+	PRINTFORMW 前線の%LOCALS:0%が%LOCALS:1%と共に捕まった
+	PRINTFORMW "%LOCALS:1%さん,そこの%LOCALS:0%様を犯したら,命は助けてあげる"
+	PRINTFORMW 魔王軍の女が,極太のペニスバンドを差し出して言う
+	PRINTFORMW 『そんな...そんなの...』
+	PRINTFORMW 『わたしはいいから...あなただけでも助かりなさい...』
+	PRINTFORMW %LOCALS:1%は戸惑いながらもペニスバンドを装着し,%LOCALS:0%の秘所を貫いた
+	PRINTFORMW 『あっがああああ!　ふ,ふとすぎ...あああああああ!』
+	PRINTFORMW 『ごめんなさい...ごめんなさい...!』
+	PRINTFORMW 魔王軍の女には,レズ奴隷となって互いに貪りあう二人の姿が見えていた
+ELSE
+	PRINTFORMW 『はむ...ちゅ...はむ...』
+	PRINTFORMW "お-,いいクンニね,レズ便器が板についてきたんじゃない?"
+	PRINTFORMW 魔王軍の女たちの保養のためにも,レズ便器は存在した
+	PRINTFORMW "ケツ穴まで舐めるのよ.できるでしょ?"
+	PRINTFORMW 『はい...お客様...』
+	PRINTFORMW プライドも誇りも崩壊し,レズ便器となった%LOCALS:2%はアナルまで舌で愛撫した
+ENDIF
+RETURN 0
+;--------------------------------------------
+@BEAST_INV, ARG:0, ARG:1
+;--------------------------------------------
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 貴族の娘
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = 女エルフ戦士
+	LOCALS:1 = エルフ族長の娘
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 女竜騎士
+	LOCALS:1 = 竜族の貴人
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = エンジェルナイト
+	LOCALS:1 = 天使の聖女
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 貴族の娘
+ENDIF
+
+IF RAND:2 == 0
+	PRINTFORMW 捕えられた%LOCALS:1%は強力な催眠魔法によって精神を発情期の獣に変えられてしまった
+	PRINTFORMW ボロボロの高貴な衣装を邪魔そうにして,四つん這いで尻を振る%LOCALS:1%
+	PRINTFORMW 魔王軍の魔獣のために,性処理家畜便器として活用されるのだ
+	PRINTFORMW %LOCALS:1%は完全に発情した雌の顔で,涎を垂らし荒い息をついている
+	PRINTFORMW 『ハッハッ......ハッハッ......ウォォ』
+	PRINTFORMW 魔獣と激しく交尾する%LOCALS:1%は,野獣のような声をあげて盛っていた
+ELSE
+	PRINTFORMW 魔王軍の駐屯地では,たまに捕まえた%LOCALS:0%の捕虜を見世物にしていた
+	PRINTFORMW 野獣が一匹,女の前に連れてこられる
+	PRINTFORMW 『な,何する気...?　まさか...』
+	PRINTFORMW "お待ちかね,獣姦ショ-のはじまり-"
+	PRINTFORMW 男たちが,喝采を送った.少数ながら,女もいるようだ
+	PRINTFORMW 『うそ...でしょ...』
+	PRINTFORMW %LOCALS:0%の捕虜は,自分が獣以下だと思い知らされながら,牝犬の格好で獣に犯された
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@BRAIN_INV, ARG:0, ARG:1
+;--------------------------------------------
+;思いつかなかった
+;やってみた
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = 女エルフの
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 女竜人の
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使の
+ELSE
+	LOCALS:0 = 女
+ENDIF
+
+IF RAND:2 == 0
+	PRINTFORMW %LOCALS:0%司令官への拷問が始まった.敵の情報を洗いざらい喋ってもらう必要がある
+	PRINTFORMW 椅子にしばりつけられ,脳を食する恐ろしい魔物の触手を耳から脳へと伸ばされいていた
+	PRINTFORMW ちゅく......ちゅく......と水音が響き,時折%LOCALS:0%司令官の短い喘ぎ声が聞こえる
+	PRINTFORMW 『あっ......あへぇ......部隊の規模は......補給線は......あへぇ』
+	PRINTFORMW 情報をひとつ喋るたび,脳に直接媚薬を注入するのだ
+	PRINTFORMW 椅子はすでに小便と愛液の混じった汚汁で水たまりができていた
+ELSE
+	PRINTFORMW %LOCALS:0%スパイへの拷問は続けられている
+	PRINTFORMW 『どんなにはずかしめてもぉ...むだなんりゃからぁ...』
+	PRINTFORMW 腫れた顔で強がるスパイもブレインイ-タ-を見れば怯えてしまった
+	PRINTFORMW 自殺のため奥歯に仕込んだ毒薬も,歯ごと抜き取られては意味がない
+	PRINTFORMW スパイの頭部にブレインイ-タ-がかぶりついた
+	PRINTFORMW 『ひ...あっあぅ,ああああううふうああふううふ』
+	PRINTFORMW 数分後,脳と情報を咀嚼された彼女は,自らの撒き散らした糞尿の上に倒れた
+	PRINTFORMW その身体は絶品のため,娼婦の脳を埋め込まれ,慰安用として再利用された
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@HORSE_INV, ARG:0, ARG:1
+;--------------------------------------------
+
+;人間界侵略
+IF ARG == 1
+	LOCALS:0 = 女
+	LOCALS:1 = 地方の女領主
+;エルフの領域侵略
+ELSEIF ARG == 2
+	LOCALS:0 = 女エルフの
+	LOCALS:1 = エルフの女族長
+;ドラゴンの山侵略
+ELSEIF ARG == 3
+	LOCALS:0 = 女竜人の
+	LOCALS:1 = 竜の女族長
+;天界侵略
+ELSEIF ARG == 4
+	LOCALS:0 = 天使の
+	LOCALS:1 = 女天使長
+ELSE
+	LOCALS:0 = 女
+	LOCALS:1 = 地方の女領主
+ENDIF
+
+IF RAND:2 == 0
+	PRINTFORMW 魔王軍の将軍が乗る馬の腹の下に,異様な肉塊がぶら下がっていた
+	PRINTFORMW 元は%LOCALS:1%だったそれは,いまは馬のペニスケ-スだ
+	PRINTFORMW 魔法で肉袋に変えられ,馬の巨根をたやすく膣に納めている
+	PRINTFORMW 彼女の首から下げられているのは,%LOCALS:1%だったころの美しいポ-トレ-トだ
+	PRINTFORMW 理知的で清楚なポ-トレ-トの面影はすでにこの肉袋にはない
+	PRINTFORMW ただ快楽だけを貪る,下品でだらしの無いアヘ顔を晒すのみだ
+ELSE
+	PRINTFORMW 『馬姦刑...?　なにそれ...』
+	PRINTFORMW 木馬に全裸で固定され,%LOCALS:0%レジスタンスは言った
+	PRINTFORMW しかし,一匹の馬がペニスを勃起させて歩み寄ってくると,すべてを理解した
+	PRINTFORMW 『うそ...嘘,嘘,やめろおおおおおおおおお!』
+	PRINTFORMW 馬は女に跨り,性器に馬の巨根をぶち込む
+	PRINTFORMW %LOCALS:0%レジスタンスは泡を噴いて失神してしまったが,馬は興奮状態で激しく犯し,大量の精液を膣内にぶちまけた
+ENDIF
+
+RETURN 0
+
+
+
+
+
+
+
+

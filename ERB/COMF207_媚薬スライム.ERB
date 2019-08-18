@@ -1,0 +1,85 @@
+﻿;eramaou追加コマンド
+
+;-------------------------------------------------
+;媚薬スライム
+;うまく気力だけを減らす要員 レベル100以上
+;-------------------------------------------------
+@COM207
+
+PRINTL Aphrodisiac Slime
+
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;戦闘値の計算
+;-------------------------------------------------
+LOSEBASE:1 += CFLAG:0:9 * 10
+
+CALL ARENA_SLAVE_POINT
+
+;戦闘ポイントが低ければ追加ダメージ
+IF RESULT < (5 * CFLAG:0:9)
+	;気力が0なら追加ダメージ無し
+	IF BASE:1 <= 0
+		PRINTFORMW %SAVESTR:TARGET% is wrapped by aphrodisiac slime and is unable to resist anymore
+	ELSE
+		PRINTFORMW %SAVESTR:TARGET% was wrapped by aphrodisiac slime restricting her movement
+		LOSEBASE:1 += CFLAG:0:9 * 10
+			IF BASE:1 < LOSEBASE:1
+				PRINTFORMW And then %SAVESTR:TARGET% sunk into the aphrodisiac slime
+				PRINTW <Slave capitulation>
+			ENDIF
+	ENDIF
+ELSE
+	PRINTFORMW %SAVESTR:TARGET% is desperately trying to escape from the aphrodisiac slime
+ENDIF
+
+;コロシアム収入
+;TFLAG:402 += LOSEBASE:0 * 10 + RAND:RESULT
+
+TFLAG:400 = 207
+;戦闘後の処理
+CALL COM_AFTER_ARENA
+SIF RESULT == 0
+	RETURN 1
+
+$INPUT_LOOP_0
+PRINTL Where to pour slime?
+PRINTL [0] - Mouth
+SIF TALENT:122 == 0
+	PRINTL [1] - Vagina
+PRINTL [2] - Anal
+PRINTL [999] Don't rape
+
+INPUT
+
+IF RESULT == 0
+	PRINTFORMW Huge quanitity of slime poured down %SAVESTR:TARGET%'s throat
+	SELECTCOM = 51
+	JUMP COM51
+	;コロシアム収入
+	TFLAG:402 += LOSEBASE:1 * 2 + RAND:RESULT
+ELSEIF RESULT == 1
+	;対象がオトコなら戻る
+	SIF TALENT:122
+		RETURN 0
+	PRINTFORMW Huge quantity of slime poured down %SAVESTR:TARGET%'s vagina, reaching the womb
+	SELECTCOM = 51
+	JUMP COM51
+	;コロシアム収入
+	TFLAG:402 += LOSEBASE:1 * 2 + RAND:RESULT
+ELSEIF RESULT == 2
+	PRINTFORMW Huge quanitity of slime poured down %SAVESTR:TARGET%'s ass
+	SELECTCOM = 51
+	JUMP COM51
+	;コロシアム収入
+	TFLAG:402 += LOSEBASE:1 * 2 + RAND:RESULT
+ELSEIF RESULT == 999
+ELSE
+	GOTO INPUT_LOOP_0
+ENDIF
+
+RETURN 1
+;
+;
+;

@@ -1,0 +1,457 @@
+﻿;----------------------------------
+@DUNGEON_AFTER
+;----------------------------------
+;ミッションの結果.Aはキャラ
+
+IF CFLAG:A:1 == 5
+	CALL GOHOUBI
+	CFLAG:A:1 = 0
+ELSEIF CFLAG:A:1 == 6
+	CALL OSIOKI
+	CFLAG:A:1 = 0
+ENDIF
+
+RETURN 0
+
+
+;------------------------------------
+@GOHOUBI
+;------------------------------------
+PRINTL
+PRINTFORMW %SAVESTR:A%は勇者を倒しあなたのもとへ凱旋しました
+PRINTFORMW %SAVESTR:A%にご褒美をあげてください
+
+PRINTL [0] 何もしない
+PRINTL [1] 勲章授与
+PRINTL [2] 約束のモノ
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 3
+	GOTO INPUT_LOOP
+ENDIF
+
+IF RESULT == 0
+	TFLAG:18 = 0
+	PRINTFORMW %SAVESTR:A%は不満そうに自分の部屋へ帰っていった
+	CALL GOHOUBI_AFTER_KOUJO
+ELSEIF RESULT == 1
+	TFLAG:18 = 1
+	PRINTFORMW %SAVESTR:A%に勲章を授与した
+	SIF CFLAG:A:7&1 == 1
+		PRINTFORMW %SAVESTR:A%は迷うことなく自分の乳首につけられたピアスと交換した
+	PRINTFORML %SAVESTR:A%は誇らしげに勲章を身につけている
+	PRINTFORMW 勲章経験+1
+	EXP:A:81 += 1
+	CALL GOHOUBI_AFTER_KOUJO
+ELSEIF RESULT == 2
+	TFLAG:18 = 2
+	IF CFLAG:A:504 == 0
+		;お金を渡す
+		PRINTFORMW あなたは%SAVESTR:A%に金貨の詰まった袋を下賜した.
+		PRINTFORMW 捕らえられた勇者はそのように堕落した%SAVESTR:A%の姿を見てショックを受けている.........
+		CALL GOHOUBI_AFTER_KOUJO
+	ELSEIF CFLAG:A:504 == 1
+		;犬と獣姦
+		IF TALENT:A:0 == 1
+			PRINTFORMW %SAVESTR:A%は全裸で尻穴を広げながら犬小屋の前で犬を誘惑した
+			PRINTFORMW 犬がのしかかり交尾が始まると,%SAVESTR:A%はけだもののような嬌声をあげて尻穴で絶頂した
+			PRINTFORMW 戦いの興奮のせいか,いつもより激しく,そして長く交尾は続く
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTL 絶頂経験+5
+			PRINTW 獣姦経験+10
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:2 += 5
+			EXP:A:56 += 10
+		ELSE
+			PRINTFORMW %SAVESTR:A%は全裸で尻を振りながら犬小屋の前で犬を誘惑した
+			PRINTFORMW 犬がのしかかり交尾が始まると,%SAVESTR:A%はけだもののような嬌声をあげて絶頂した
+			PRINTFORMW 戦いの興奮のせいか,いつもより激しく,そして長く交尾は続く
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTL 絶頂経験+5
+			PRINTW 獣姦経験+10
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:2 += 5
+			EXP:A:56 += 10
+		ENDIF
+	ELSEIF CFLAG:A:504 == 2
+		;豚と獣姦
+		IF TALENT:A:0 == 1
+			PRINTFORMW %SAVESTR:A%は全裸で豚小屋へ飛び込み,夢中でドリルのような臭い豚のペニスにむしゃぶりついた
+			PRINTFORMW 興奮した豚たちは雌豚の登場に色めきたち,次々と%SAVESTR:A%にのしかかった
+			PRINTFORMW ブヒブヒと息を荒げながら%SAVESTR:A%は豚との交尾に心酔している...
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTL 絶頂経験+5
+			PRINTW 獣姦経験+10
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:2 += 5
+			EXP:A:56 += 10
+		ELSE
+			PRINTFORMW %SAVESTR:A%は全裸で豚小屋へ飛び込み,夢中でドリルのような臭い豚のペニスにむしゃぶりついた
+			PRINTFORMW 興奮した豚たちは雌豚の登場に色めきたち,次々と%SAVESTR:A%にのしかかった
+			PRINTFORMW ブヒブヒと息を荒げながら%SAVESTR:A%は豚との交尾に心酔している...
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTL 絶頂経験+5
+			PRINTW 獣姦経験+10
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:2 += 5
+			EXP:A:56 += 10
+		ENDIF
+	ELSEIF CFLAG:A:504 == 3
+		;馬と獣姦
+		IF TALENT:A:0 == 1
+			PRINTFORMW うつぶせで四肢を台に固定された%SAVESTR:A%はこれから起こるアブノ-マルなセックスに股を濡らしていた
+			PRINTFORMW 小柄な馬が連れてこられ,%SAVESTR:A%の背中にのしかかる.その股間には,巨大な馬のペニスが勃起していた
+			PRINTFORMW やがて激しい交尾がが始まった.軋む台の上で%SAVESTR:A%は泡交じりのよだれを垂らしながら快楽に身を任せていた
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTL 絶頂経験+5
+			PRINTL 獣姦経験+10
+			PRINTW A拡張経験+10
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:2 += 5
+			EXP:A:53 += 10
+			EXP:A:56 += 10
+		ELSE
+			PRINTFORMW うつぶせで四肢を台に固定された%SAVESTR:A%はこれから起こるアブノ-マルなセックスに股を濡らしていた
+			PRINTFORMW 小柄な馬が連れてこられ,%SAVESTR:A%の背中にのしかかる.その股間には,巨大な馬のペニスが勃起していた
+			PRINTFORMW やがて激しい交尾がが始まった.軋む台の上で%SAVESTR:A%は泡交じりのよだれを垂らしながら快楽に身を任せていた
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTL 絶頂経験+5
+			PRINTL 獣姦経験+10
+			PRINTW V拡張経験+10
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:2 += 5
+			EXP:A:52 += 10
+			EXP:A:56 += 10
+		ENDIF
+	ELSEIF CFLAG:A:504 == 4
+		;キス
+		PRINTFORMW 眼を閉じた%SAVESTR:A%は手を組んでKissを要求した
+		PRINTFORMW あなたはその手を取って,優しく%SAVESTR:A%にKissをした
+		CALL GOHOUBI_AFTER_KOUJO
+		PRINTW 愛情経験+10
+		EXP:A:23 += 10
+	ELSEIF CFLAG:A:504 == 5
+		;セックス
+		PRINTFORMW あなたは戦いで火照った%SAVESTR:A%の身体を抱きよせ
+		IF ABL:A:2 > ABL:A:3
+			PRINTFORMW 膣とペニスで優しく愛し合った
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTL Sex exp+10
+			PRINTW 絶頂経験+5
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:5 += 10
+			EXP:A:2 += 5
+		ELSE
+			PRINTFORMW 疼きが止まらないアナルをペニスで慰めてやった
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTL Sex exp+10
+			PRINTW 絶頂経験+5
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:5 += 10
+			EXP:A:2 += 5
+		ENDIF
+	ELSEIF CFLAG:A:504 == 6
+		;ザーメン
+		PRINTFORMW 跪いて口をあけ,舌を突き出してザ-メンをねだる%SAVESTR:A%の口めがけてあなたはEjaculationした
+		PRINTFORMW 零れた精液を指ですくって舐め取った%SAVESTR:A%は,愛おしそうにあなたのペニスを舐めている
+		CALL GOHOUBI_AFTER_KOUJO
+		PRINTL 欲情の珠+200
+		PRINTL フェラ経験+10
+		PRINTW Semen exp+5
+		JUEL:A:5 += 200
+		EXP:A:22 += 10
+		EXP:A:20 += 5
+	ELSEIF CFLAG:A:504 == 7
+		;乱交
+		IF TALENT:A:0 == 1
+			PRINTFORMW モンスタ-や魔族たちをあつめて,乱交パ-ティ-がはじまった
+			PRINTFORMW 主役の%SAVESTR:A%は男も女も構わず抱いて,精液と愛液を身体に染みつくほど塗りたくった
+			PRINTFORMW 最後に全員で%SAVESTR:A%に精液や小便を浴びせて,パ-ティ-は終わった
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTW 絶頂経験+5
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:2 += 5
+		ELSE
+			PRINTFORMW モンスタ-や魔族たちをあつめて,乱交パ-ティ-がはじまった
+			PRINTFORMW 主役の%SAVESTR:A%は男も女も構わず抱いて,精液と愛液を身体に染みつくほど塗りたくった
+			PRINTFORMW 最後に全員で%SAVESTR:A%に精液や小便を浴びせて,パ-ティ-は終わった
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTW 絶頂経験+5
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:2 += 5
+		ENDIF
+	ELSEIF CFLAG:A:504 == 8
+		;おしっこ
+		PRINTFORMW \@!TALENT:MASTER:121 && !TALENT:MASTER:122 ? 秘裂 # ペニス\@にむしゃぶりつく%SAVESTR:A%の口のなかに,あなたは小便を放った
+		PRINTFORMW %SAVESTR:A%はうれしそうにごくごくと飲んでいき,
+		PRINTFORMW 床にこぼれたものは舌でなめて啜り取っていた
+		CALL GOHOUBI_AFTER_KOUJO
+		PRINTW 欲情の珠+200
+		JUEL:A:5 += 200
+	ELSEIF CFLAG:A:504 == 9
+		;童貞狩り
+		PRINTFORM %SAVESTR:A%は選ばれた童貞の魔族を
+		IF ABL:A:2 > ABL:A:3
+			PRINTFORMW 膣で咥えこみ
+			PRINTFORMW セックスの喜びを教えてやった
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Vの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL V exp+10
+			PRINTL Sex exp+10
+			PRINTW 絶頂経験+5
+			JUEL:A:1 += 500
+			JUEL:A:5 += 200
+			EXP:A:0 += 10
+			EXP:A:5 += 10
+			EXP:A:2 += 5
+		ELSE
+			PRINTFORMW アナルで迎え入れ
+			PRINTFORMW 尻穴で脱童貞をさせてやった
+			CALL GOHOUBI_AFTER_KOUJO
+			PRINTL 快Aの珠+500
+			PRINTL 欲情の珠+200
+			PRINTL A経験+10
+			PRINTL Sex exp+10
+			PRINTW 絶頂経験+5
+			JUEL:A:2 += 500
+			JUEL:A:5 += 200
+			EXP:A:1 += 10
+			EXP:A:5 += 10
+			EXP:A:2 += 5
+		ENDIF
+	ELSE
+	ENDIF
+ENDIF
+
+;-------------------------------------
+@OSIOKI
+;-------------------------------------
+PRINTL
+PRINTFORMW %SAVESTR:A%は勇者を見つけられず(あるいは敗北し)情けなく戻ってきました
+PRINTFORMW %SAVESTR:A%にお仕置きをしますか?
+
+PRINT [0] 何もしない　
+PRINT [1] 弱電気椅子刑
+PRINTL [2] 路上自慰刑　
+PRINT [3] 路上脱糞刑　
+PRINT [4] 鞭打ち刑　　
+PRINTL [5] 人間小便器刑
+PRINT [6] トイレ掃除刑
+PRINT [7] ご飯抜き刑　
+PRINTL [8] 媚薬放置刑　
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 9
+	GOTO INPUT_LOOP
+ENDIF
+
+IF RESULT == 0
+	TFLAG:18 = 0
+	;何もしない
+	PRINTFORMW %SAVESTR:A%はほっとした顔で自室に戻っていった
+	CALL OSIOKI_KOUJO
+ELSEIF RESULT == 1
+	TFLAG:18 = 1
+	;弱電気椅子刑
+	PRINTFORMW %SAVESTR:A%を電気椅子に縛りつけ弱い電流で責めた
+	IF ABL:A:21 >= 3
+		PRINTFORMW %SAVESTR:A%は恍惚の表情で,電撃の痛みに股を濡らしている
+		CALL OSIOKI_KOUJO
+		PRINTL 苦痛の珠+100
+		PRINTW 欲情の珠+100
+		JUEL:A:9 += 100
+		JUEL:A:5 += 100
+	ELSE
+		PRINTFORMW %SAVESTR:A%は泣き叫びながら電撃の痛みで小便を漏らしている
+		CALL OSIOKI_KOUJO
+		PRINTW 苦痛の珠+100
+		JUEL:A:9 += 100
+	ENDIF
+ELSEIF RESULT == 2
+	TFLAG:18 = 2
+	;路上自慰刑
+	PRINTFORMW %SAVESTR:A%に全裸でダンジョンの大通りに向かわせ,道の真ん中で自慰させた
+	IF ABL:A:17 >= 4
+		PRINTFORMW %SAVESTR:A%は淫語を発しながら道行く魔族たちに痴態を見せつけた
+		CALL OSIOKI_KOUJO
+		PRINTL 欲情の珠+100
+		PRINTL 自慰経験+3
+		PRINTW 調教自慰経験+3
+		JUEL:A:5 += 100
+		EXP:A:10 += 3
+		EXP:A:11 += 3
+	ELSE
+		PRINTFORMW %SAVESTR:A%は顔を真っ赤にして恥ずかしそうに恐る恐る自慰している
+		CALL OSIOKI_KOUJO
+		PRINTL 恥情の珠+100
+		PRINTL 自慰経験+1
+		PRINTW 調教自慰経験+1
+		JUEL:A:8 += 100
+		EXP:A:10 += 1
+		EXP:A:11 += 1
+	ENDIF
+ELSEIF RESULT == 3
+	TFLAG:18 = 3
+	;路上脱糞刑
+	PRINTFORMW %SAVESTR:A%に全裸でダンジョンの大通りに向かわせ,道の真ん中で脱糞させた
+	IF ABL:A:17 >= 6
+		PRINTFORMW %SAVESTR:A%は公衆脱糞の解放感で,淫らに自慰まで始めてしまった
+		PRINTFORMW 道行く魔族たちは侮蔑の表情で%SAVESTR:A%を冷ややかに見ている
+		CALL OSIOKI_KOUJO
+		PRINTL 欲情の珠+500
+		PRINTW 自慰経験+3
+		JUEL:A:5 += 500
+		EXP:A:10 += 3
+	ELSE
+		PRINTFORMW %SAVESTR:A%は顔を真っ赤にして脱糞し,余りの羞恥心に泣きだしてしまった
+		PRINTFORMW 道行く魔族たちは侮蔑の表情で%SAVESTR:A%を冷ややかに見ている
+		CALL OSIOKI_KOUJO
+		PRINTW 恥情の珠+500
+		JUEL:A:8 += 500
+	ENDIF
+ELSEIF RESULT == 4
+	TFLAG:18 = 4
+	;鞭打ち刑
+	PRINTFORMW %SAVESTR:A%を縄で固定し,鞭で何回も打った
+	IF ABL:A:21 >= 3
+		PRINTFORMW %SAVESTR:A%は恍惚の表情で,嬌声を上げ鞭の快感に酔いしれている
+		CALL OSIOKI_KOUJO
+		PRINTL 苦痛の珠+100
+		PRINTW 欲情の珠+100
+		JUEL:A:9 += 100
+		JUEL:A:5 += 100
+	ELSE
+		PRINTFORMW %SAVESTR:A%は泣き叫びながら鞭の痛みで小便を漏らしている
+		CALL OSIOKI_KOUJO
+		PRINTW 苦痛の珠+100
+		JUEL:A:9 += 100
+	ENDIF 
+ELSEIF RESULT == 5
+	TFLAG:18 = 5
+	;人間小便器刑
+	PRINTFORMW %SAVESTR:A%を小便器に固定し,利用者に自由に小便を浴びさせた
+	IF TALENT:A:88 == 1 || TALENT:A:76 == 1
+		PRINTFORMW %SAVESTR:A%は興奮して,小便を口で受けて飲み込んだ
+		PRINTFORMW 小便まみれの%SAVESTR:A%は恍惚の表情で股さえ濡らしていた
+		CALL OSIOKI_KOUJO
+		PRINTL 苦痛の珠+100
+		PRINTW 欲情の珠+100
+		JUEL:A:9 += 100
+		JUEL:A:5 += 100
+	ELSE
+		PRINTFORMW %SAVESTR:A%は泣き叫んで嫌がっていたが,利用者は容赦なくその顔に小便を浴びせかけた
+		PRINTFORMW やがて小便まみれの%SAVESTR:A%は絶望した表情でうわごとを繰り返した
+		CALL OSIOKI_KOUJO
+		PRINTW 苦痛の珠+100
+		JUEL:A:9 += 100
+	ENDIF
+ELSEIF RESULT == 6
+	TFLAG:18 = 6
+	;トイレ掃除刑
+	PRINTFORMW %SAVESTR:A%に罰としてトイレ掃除を命じた
+	PRINTFORMW %SAVESTR:A%は渋々トイレを掃除している
+	CALL OSIOKI_KOUJO
+ELSEIF RESULT == 7
+	TFLAG:18 = 7
+	;ご飯抜き刑
+	PRINTFORMW %SAVESTR:A%は罰としてご飯抜きになった
+	PRINTFORMW %SAVESTR:A%はお腹をすかせている
+	CALL OSIOKI_KOUJO
+ELSEIF RESULT == 8
+	TFLAG:18 = 8
+	;媚薬放置刑
+	PRINTFORMW %SAVESTR:A%の身体を固定し,危険値ギリギリの強力な媚薬を注射した
+	PRINTFORMW すぐさま効果はあらわれ,全身が性感帯となり狂うほどの疼きが訪れる
+	PRINTFORMW 傍には若いレズビアンで魔族の娘が待機しており,隣の台には様々な淫具が並べてある
+	PRINTFORMW %SAVESTR:A%が狂わないようこの娘がたまに相手してやるのだが,ギリギリまで焦らすよう命令してある
+	PRINTFORMW なんども淫猥で屈辱的な台詞やおねだりを強制される%SAVESTR:A%だが,娘は涼しそうな顔で動かない
+	PRINTFORMW %SAVESTR:A%の声に必死の懇願が混じるようになってきたのを聞きながら,あなたは部屋を後にした
+	CALL OSIOKI_KOUJO
+	PRINTL 苦痛の珠+100
+	PRINTL 欲情の珠+100
+	PRINTW 薬物経験+10
+	JUEL:A:9 += 100
+	JUEL:A:5 += 100
+	EXP:A:57 += 10
+ELSEIF RESULT == 9
+	TFLAG:18 = 9
+	;
+	PRINTFORMW 
+ENDIF
+
+RETURN 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

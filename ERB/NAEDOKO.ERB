@@ -1,0 +1,127 @@
+﻿;--------------------------------------------
+@NAEDOKO, ARG:0
+;--------------------------------------------
+;モンスターを産む機械にする
+
+;苗床職についてると苗床領域へ
+SIF TALENT:(ARG:0):209 == 1
+	CFLAG:(ARG:0):1 = 7
+
+;苗床領域にいないと返脚
+SIF CFLAG:(ARG:0):1 != 7
+	RETURN 0
+
+;男の場合別の仕事
+IF TALENT:(ARG:0):オトコ
+	CALL NAEDOKO_MAN, ARG:0
+	RETURN 0
+ENDIF
+
+
+IF TALENT:(ARG:0):273
+	;貞操封印
+	CALL NAEDOKO_NOT_V, ARG:0
+	RETURN 0
+ELSEIF CFLAG:(ARG:0):42 == 79 && (CFLAG:(ARG:0):40 & 64) && FLAG:37
+	;貞操帯
+	CALL NAEDOKO_NOT_V, ARG:0
+	RETURN 0
+ENDIF
+
+
+DRAWLINE
+PRINTFORMW %SAVESTR:(ARG:0)%は肉壁に埋め込まれ穴という穴に触手がねじ込まれていた
+PRINTFORMW 触手からは絶え間なく養分と媚薬と精液が注ぎ込まれていく
+
+IF TALENT:(ARG:0):0 == 1
+	TALENT:(ARG:0):0 = 0
+	PRINTL [処女喪失]
+	SIF CFLAG:(ARG:0):15 == 0
+		CFLAG:(ARG:0):15 = 102
+ENDIF
+
+LOCAL = CFLAG:0:9
+PRINTFORML 快Vの珠+{LOCAL*10}
+PRINTFORML V exp+{LOCAL}
+JUEL:(ARG:0):1 += LOCAL*10
+EXP:(ARG:0):0 += LOCAL
+PRINTFORML 快Aの珠+{LOCAL*10}
+PRINTFORML A経験+{LOCAL}
+JUEL:(ARG:0):2 += LOCAL*10
+EXP:(ARG:0):1 += LOCAL
+PRINTFORML Semen exp+{LOCAL}
+PRINTFORML 絶頂経験+{LOCAL}
+EXP:(ARG:0):20 += LOCAL
+EXP:(ARG:0):2 += LOCAL
+PRINTFORMW 経験値+{LOCAL}
+EXP:(ARG:0):80 += LOCAL
+DRAWLINE
+
+TARGET = ARG:0
+CFLAG:(ARG:0):107 += RAND:40
+CALL IN_VAGINA_SYOKU_TO_T
+CALL CONCEPTION_CHECK_SYOKU_TO_T
+
+RETURN 0
+
+;--------------------------------------------
+@NAEDOKO_MAN, ARG:0
+;--------------------------------------------
+;種馬にする
+;男だって苗床にしたい!というときは
+;A感覚で分岐するとか改造できるかもしれない(任せた)
+;ARG:0 = キャラ
+
+DRAWLINE
+PRINTFORMW %SAVESTR:(ARG:0)%はサキュバスの群れに囲まれて精液を絞り取られていた
+PRINTFORMW 順番待ちのサキュバスが何人も尻を並べて待っている
+PRINTFORMW 全員を妊娠させるまで,精力増強の魔法を何重にもかけさせられるのだ
+
+IF TALENT:(ARG:0):童貞 == 1
+	TALENT:(ARG:0):童貞 = 0
+	PRINTL [童貞喪失]
+ENDIF
+
+LOCAL = CFLAG:0:9
+PRINTFORML 快Cの珠+{LOCAL*10}
+JUEL:(ARG:0):0 += LOCAL*10
+
+PRINTFORML Ejaculation経験+{LOCAL}
+EXP:(ARG:0):3 += LOCAL
+
+PRINTFORML 絶頂経験+{LOCAL}
+EXP:(ARG:0):2 += LOCAL
+PRINTFORMW 経験値+{LOCAL}
+EXP:(ARG:0):80 += LOCAL
+DRAWLINE
+
+
+RETURN 0
+
+;--------------------------------------------
+@NAEDOKO_NOT_V, ARG:0
+;--------------------------------------------
+;性器が使えない場合
+;A経験と経験値に特化
+;ARG:0 = キャラ
+
+DRAWLINE
+PRINTFORMW %SAVESTR:(ARG:0)%はアナルに魔獣の卵を産み付けられた
+PRINTFORMW 卵は腸内ですくすくと育ち,激しい快楽を伴って排出される......
+
+LOCAL = CFLAG:0:9
+PRINTFORML 快Aの珠+{LOCAL*10}
+JUEL:(ARG:0):2 += LOCAL*10
+
+PRINTFORML  %EXPNAME:1%+{LOCAL}
+EXP:(ARG:0):1 += LOCAL
+
+PRINTFORML 絶頂経験+1
+EXP:(ARG:0):2 += 1
+PRINTFORMW 経験値+{LOCAL * 5}
+EXP:(ARG:0):80 += LOCAL * 5
+DRAWLINE
+
+
+RETURN 0
+

@@ -1,0 +1,226 @@
+﻿;--------------------------------------------------
+;Shop List
+;--------------------------------------------------
+振動の宝石,Jewel Of Vibration
+壺ワーム,Vaginal Worm
+振動の杖,Wand Of Vibration
+アナルワーム,Anal Worm
+ペニスバンド,Strapon
+アイマスク,Blindfold
+ビデオカメラ,Video Camera
+水晶球,Crystal Ball
+クリキャップ,Clit Cap
+二プルキャップ,Nipple Cap
+ボールギャグ,Ball Gag
+鞭,Whip
+針,Needle
+オナホール,Onahole
+プレイマット,Play Mat
+縄,Rope
+浣腸器＋プラグ,Enema＋Butt Plug
+大鏡,Big Mirror
+搾乳器,Milker
+首輪,Collar
+エプロン,Apron
+アナルビーズ,Anal Beads
+電極プラグ,Electrode Plug
+野良犬,Stray Dog
+ボンデージ,Bondage
+
+コンドーム,Condom
+ローション,Lotion
+媚薬,Aphrodisiac
+利尿剤,Diuretic
+水晶球の魔力源,Crystal Ball's Magical Charge
+虫下し,Deworming Medicine
+
+栄養剤,Nutrients
+お香,Incense
+ピアスリング,Piercing Ring
+観戦チケット,Colosseum Tickets
+
+ラブスコープ,Love Scope
+ブースターメール,Booster Mail
+【魔界知識】,【Demonic Knowledge】
+
+排卵誘発剤,Fertility Drug
+剛毛剤,Pubicine
+
+【調合知識】,【Mixing Knowledge】
+【技巧Lv】,【Technique Lv】
+【経験値】,【Experience】
+【淫魔知識】,【Succubus Knowledge】
+【罠Lv】,【Trap Lv】
+【魔蟲知識】,【Magical Insect Knowledge】
+
+;--------------------------------------------------
+;Trap List
+;--------------------------------------------------
+落とし穴,Pitfall Trap
+矢の罠,Arrow Trap
+テレポートの罠,Teleporting Trap
+一方通行の罠,One-Way Trap
+催淫ガスの罠,Aphrodisiac Gas Trap
+触手床の罠,Tentacle Floor Trap
+媚薬沼の罠,Aphrodisiac Bath Trap
+自慰催眠の罠,Masturbation Hypnosis Trap
+擬態部屋の罠,Mimic Room Trap
+召喚の罠,Summoning Trap
+夢魔の罠,Succubus Trap
+スライム部屋の罠,Slime Room Trap
+蜘蛛の巣,Cobweb Trap
+行商人,Peddler Trap
+暗闇の罠,Darkness Trap
+シュート,Chute Trap
+魔力拡散の罠,Dispelling Trap
+油壺の罠,Oil Trap
+火炎放射の罠,Flamethrower Trap
+アナルワームの罠,Anal Worm Trap
+淫虫の罠,Lewd Insect Trap
+宝石の罠,Gem Trap
+攻撃陣地の罠,DEF Down Trap
+防御陣地の罠,ATK Down Trap
+魔法陣地の罠,MAG Down Trap
+腕の罠,All Down Trap
+
+;--------------------------------------------------
+触手生物,Tentacle Creature
+装飾の指輪,Decorative Ring
+
+;--------------------------------------------------
+;Monster List
+;--------------------------------------------------
+コボルト,Kobold
+ゴブリン,Goblin
+ウーズ,Ooze
+ドラゴンフライ,Dragonfly
+ゾンビ,Zombie
+オーク,Orc
+ホブゴブリン,Hobgoblin
+モンスターアイビー,Triffid
+ゾンビワーム,Zombie Worm
+ゾンビハウンド,Zombie Hound
+リザードマン,Lizardman
+オーガ,Ogre
+アーマーイーター,Armor Eater
+フェアリー,Fairy
+ポイズンセンティピード,Poisonous Centipede
+トロール,Troll
+ガーゴイル,Gargoyle
+インプ,Imp
+ウィザード,Wizard
+バンシー,Banshee
+レッサーデーモン,Lesser Demon
+ヘルハウンド,Hellhound
+スライム,Slime
+ウィッチ,Witch
+ヴァンパイアツリー,Vampire Tree
+ジャイアント,Giant
+キマイラ,Chimera
+サキュバス,Succubus
+プリースト,Priest
+ナイトガール,Knight Girl
+クノイチ,Kunoichi
+ダークナイト,Dark Knight
+ブレインイーター,Brain Eater
+プリーステス,Priestess
+ピクシー,Pixie
+ニンジャ,Ninja
+デュラハン,Dullahan
+ヴァンパイア,Vampire
+ウィスプ,Wisp
+デススコーピオン,Death Scorpion
+アークデーモン,Archdemon
+ロードオブデス,Lord of Death
+リリス,Lilith
+ナイトメア,Nightmare
+イビルアイ,Evil Eye
+スケルトン,Skeleton
+ダークメサイア,Dark Messiah
+ナインテイル,Nine Tail
+カオスドラゴン,Chaos Dragon
+
+;--------------------------------------------------
+;Trainable Monsters
+;--------------------------------------------------
+コマンダースライム,Slime Commander
+コマンダーコボルト,Kobolt Commander
+コマンダーアント,Ant Commander
+コマンダースプラウト,Sprout Commander
+コマンダースキュラ,Scylla Commander
+コマンダーフェアリー,Fairy Commander
+ジャイアント酋長,Giant Chieftain
+コマンダーデビル,Devil Commander
+ハウンドリーダー,Hound Leader
+
+;--------------------------------------------------
+;Equipment List
+;--------------------------------------------------
+装飾指輪,Decorative Ring
+破壊の指輪,Ring Of Destruction
+護りの指輪,Ring Of Protection
+加速の指輪,Ring Of Acceleration
+再生の指輪,Ring Of Regeneration
+意思の指輪,Ring Of Willpower
+欲望の指輪,Ring Of Desire
+怪力の指輪,Ring Of Strength
+強靭の指輪,Ring Of Resilience
+支配の指輪,Ring Of Domination
+成長の指輪,Ring Of Growth
+虚弱の指輪,Ring Of Feebleness
+鈍重の指輪,Ring Of Dullness
+死の指輪,Ring Of Death
+衰弱の指輪,Ring Of Weakness
+洗脳の指輪,Ring Of Brainwashing
+罠避けの指輪,Ring Of Trap Avoiding
+侵攻の指輪,Ring Of Invasion
+結界の指輪,Ring Of Barrier
+試練の指輪,Ring Of Trials
+不幸の指輪,Ring Of Misfortune
+
+;--------------------------------------------------
+;Weapon List
+;--------------------------------------------------
+ソード,Sword
+スタッフ,Staff
+ウィップ,Whip
+ダガー,Dagger
+シュリケン,Shuriken
+アロー,Arrow
+メイス,Mace
+ハンマー,Hammer
+サイズ,Scythe
+テンタクル,Tentacle
+レイピア,Rapier
+クレセントブレード,Crescent Blade
+ナックル,Knuckles
+
+;--------------------------------------------------
+;Consumable List
+;--------------------------------------------------
+薬草,Herb
+ポーション,Potion
+回復の杖,Wand Of Recovery
+精神の杖,Wand Of Mind
+ちからのたね,Seed Of Strength
+まもりのたね,Seed Of Protection
+経験のコイン,Experience Orb
+いのちのたね,Seed Of Life
+こころのたね,Seed Of Soul
+経験の銀貨,Experience Sphere
+聖水,Holy Water
+堕落の宝石箱,Jewel Box Of Corruption
+透明化の薬,Invisibility Potion
+英雄の薬,Hero Potion
+
+;--------------------------------------------------
+;Facilities
+;--------------------------------------------------
+商店街,Shopping District
+沼地,Summoning Ground
+人間牧場,Human Farm
+氷室,Iceroom
+熱砂,Burning Sand
+迷宮,Labyrinth
+博物館,Museum
+娼館街,Brothel District

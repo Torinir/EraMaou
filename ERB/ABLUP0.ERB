@@ -1,0 +1,199 @@
+﻿;Ｃ感覚のLvUP処理とその可否判定
+;eratohoA ver1,204のスクリプトをベースに処理を簡略化
+;eraIM@Sから導入しました(eramaou)
+;-------------------------------------------------
+;Ｃ感覚のLvUP
+;-------------------------------------------------
+@ABLUP0
+#DIM CALC
+;各部位感覚封鎖
+CALC = 0
+SIF TALENT:103 & 2
+	CALC ++
+SIF TALENT:105 & 2
+	CALC ++
+SIF TALENT:107 & 2
+	CALC ++
+
+;最大Lvは5,[自慰狂い]が付いている場合はLv10まで解放
+DRAWLINE
+;IF TALENT:122
+;	PRINT ペニス
+;ELSEIF TALENT:121
+;	PRINT ペニスとクリトリス
+;ELSE
+;	PRINT クリトリス
+;ENDIF
+;PRINTL の感度をUPします
+;PRINTL Ｃ感覚が高まると,フェラチオやクンニ,自慰行為からより大きな快楽が得られます
+;PRINTL ..............................................................................
+IF ABL:0 >= 5 && TALENT:74 == 0
+	PRINTW Character qualities must be improved before this can be raised further.
+	RETURN 0
+ELSEIF TALENT:101 & 2
+	PRINTW C Sense is blocked.
+	RETURN 0
+ELSEIF ABL:0 >= CALC * 5 + 10
+	PRINTW Already At MAX.
+	RETURN 0
+ENDIF
+
+;必要な快Ｃの珠
+A = 0
+
+;条件別にＯＫかダメかを記録する
+;快Ｃの珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+
+CALL DECIDE_ABLUP0
+
+PRINTFORM [0] - %PALAMNAME:0% Points × {JUEL:0}/{A} ...
+IF I == 0
+	PRINT OK
+ELSE
+	SIF I & 1
+		PRINT Insufficient Points 
+	SIF I & 2
+		PRINT Insufficient Experience 
+ENDIF
+PRINTL 
+
+PRINTL [100] - Back
+
+
+INPUT
+IF (RESULT < 0 || RESULT > 0) && RESULT != 100
+	RESTART
+ELSEIF I != 0 && RESULT == 0
+	PRINTL Requirements have not been met
+	RESTART
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+
+ABL:0 += 1
+
+IF RESULT == 0
+	JUEL:0 -= A
+ENDIF
+
+PRINTFORML %ABLNAME:0% has been raised to {ABL:0}
+
+RETURN 0
+
+;-------------------------------------------------
+;C感覚LvUP判定
+;-------------------------------------------------
+@DECIDE_ABLUP0
+#DIM CALC
+#DIM LCOUNT
+;各部位感覚封鎖
+CALC = 0
+SIF TALENT:103 & 2
+	CALC ++
+SIF TALENT:105 & 2
+	CALC ++
+SIF TALENT:107 & 2
+	CALC ++
+
+;C感覚はLv5が上限,[自慰狂い]が付いている場合はLv10まで解放
+SIF ABL:0 >= 5 && TALENT:74 == 0
+	RETURN 0
+SIF ABL:0 >= CALC * 5 + 10
+	RETURN 0
+;感覚封鎖されている場合は不可
+SIF TALENT:101 & 2
+	RETURN 0
+
+;判定変数を空に
+A = 0
+I = 0
+
+IF ABL:0 == 0
+	A = 1
+ELSEIF ABL:0 == 1
+	A = 20
+ELSEIF ABL:0 == 2
+	A = 400
+ELSEIF ABL:0 == 3
+	A = 8000
+ELSEIF ABL:0 == 4
+	A = 20000
+ELSEIF ABL:0 == 5
+	A = 40000
+ELSEIF ABL:0 == 6
+	A = 60000
+ELSEIF ABL:0 == 7
+	A = 90000
+ELSEIF ABL:0 == 8
+	A = 120000
+ELSEIF ABL:0 == 9
+	A = 180000
+ELSEIF ABL:0 < 15
+	A = 180000
+	FOR LCOUNT, 0, (ABL:0 - 9)
+		A = A * 125 / 100
+	NEXT
+ELSEIF ABL:0 < 20
+	A = 362000
+	FOR LCOUNT, 0, (ABL:0 - 14)
+		A = A * 120 / 100
+	NEXT
+ELSEIF ABL:0 < 25
+	A = 583000
+	FOR LCOUNT, 0, (ABL:0 - 19)
+		A = A * 115 / 100
+	NEXT
+ENDIF
+
+;一線越えない
+IF TALENT:27
+	SIF ABL:0 == 4
+		TIMES A , 2.00
+	SIF ABL:0 == 5
+		TIMES A , 2.50
+	SIF ABL:0 >= 6
+		TIMES A , 3.00
+ENDIF
+
+;Ｃ鈍感
+SIF TALENT:101
+	TIMES A , 1.20
+
+;Ｃ敏感
+SIF TALENT:102
+	TIMES A , 0.80
+
+;他部位の封鎖数
+IF ABL:0 > 5 && ABL:0 <= 10 && CALC > 0
+	A = A * (15 - CALC) / 15
+ELSEIF ABL:0 <= 15 && CALC > 1
+	A = A * (16 - CALC) / 15
+ELSEIF ABL:0 <= 20 && CALC > 2
+	A = A * (17 - CALC) / 15
+ENDIF
+
+;淫乱
+SIF TALENT:76
+	TIMES A , 0.80
+;自慰狂い
+SIF TALENT:74
+	TIMES A , 0.80
+
+;最低でも1個は必要
+SIF A < 1
+	A = 1
+
+;快Ｃの珠で上げる
+SIF JUEL:0 < A
+	I |= 1
+
+IF I == 0
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+;
+;
+;

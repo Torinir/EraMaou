@@ -1,0 +1,181 @@
+﻿;コンドーム関係をこのファイルに分離
+;あんまり至れり尽くせりにしてもしょうがないので
+;コンドームを持ってないなら基本的には生でしてしまう
+;-------------------------------------------------
+;CFLAG:61 = キャラ毎のコンドームの自動使用設定
+;(0:使う度に確認,1:ある限り自動的に使う,2:使わない)
+;-------------------------------------------------
+;調教メニュー内-コンドーム設定
+;-------------------------------------------------
+@CONDOM_SETTINGS
+SIF TARGET < 1
+	RETURN 1
+PRINTFORML Will you use the condom to fuck %SAVESTR:TARGET%?
+PRINTFORML Currently have:%LOCALS:(CFLAG:61)%
+DRAWLINE
+PRINTL [0] Ask everytime
+PRINTL [1] Use if available
+PRINTL [2] Always do raw
+PRINTL [9] returnる
+$INPUT_LOOP_01
+INPUT
+SELECTCASE RESULT
+	CASE 9
+		RETURN 0
+	CASE 0
+		PRINTW Will ask each time.
+		CFLAG:61 = 0
+	CASE 1
+		PRINTW Using the condom.
+		CFLAG:61 = 1
+	CASE 2
+		PRINTFORMW Will do %SAVESTR:TARGET% raw.
+		CFLAG:61 = 2
+	CASEELSE
+		GOTO INPUT_LOOP_01
+ENDSELECT
+RETURN 0
+
+;-------------------------------------------------
+;コンドームを使うかの確認
+;-------------------------------------------------
+@CONFIRM_CONDOM
+;TEQUIP:35 = マスターがコンドーム装着
+;TEQUIP:36 = 助手がコンドーム装着
+;-------------------
+;RETURN 1:コマンド続行
+;RETURN 0:中止
+;-------------------
+
+;コンドーム使わない設定なら続行
+SIF CFLAG:61 == 2
+	RETURN 1
+;獣姦なら続行
+SIF TEQUIP:89
+	RETURN 1
+;コロシアムなら続行
+SIF TEQUIP:55
+	RETURN 1
+;調教者が男でもふたなりでもないなら続行
+SIF !TALENT:PLAYER:121 && !TALENT:PLAYER:122
+	RETURN 1
+;調教者が既にコンドームしてるなら続行
+SIF (!ASSIPLAY && TEQUIP:35) || (ASSIPLAY && TEQUIP:36)
+	RETURN 1
+
+;毎回確認かつコンドーム所持の場合,確認する
+IF CFLAG:61 == 0 && ITEM:24
+	IF !ASSIPLAY
+		PRINTL Will you use condom?
+		PRINTL  [0] - Use
+		PRINTL  [1] - Do raw
+	ELSE
+		PRINTL Will you allow condom usage?
+		PRINTL  [0] - Allow
+		PRINTL  [1] - Let them do raw
+	ENDIF
+	PRINTL  [2] - Always raw
+	PRINTL  [3] - Always use if available
+	
+	$INPUT_LOOP_01
+	INPUT
+	SELECTCASE RESULT
+		CASE 0
+			ITEM:24 -= 1
+			IF !ASSIPLAY
+				PRINTFORML %SAVESTR:PLAYER% put on a condom
+				TEQUIP:35 = 1
+			ELSE
+				PRINTFORML %SAVESTR:PLAYER% had condom put on them
+				TEQUIP:36 = 1
+			ENDIF
+			RETURN 1
+		CASE 1
+			RETURN 1
+		CASE 2
+			PRINTFORML next time will fuck %SAVESTR:TARGET% raw
+			CFLAG:61 = 2
+			RESTART
+		CASE 3
+			PRINTFORML next time will use condom if one is available
+			CFLAG:61 = 1
+			RESTART
+		CASEELSE
+			GOTO INPUT_LOOP_01
+	ENDSELECT
+ENDIF
+
+;自動で使う場合
+IF CFLAG:61 == 1
+	;コンドームがあるか
+	IF ITEM:24 > 0
+		;あるなら使う
+		ITEM:24 -= 1
+		IF !ASSIPLAY
+			PRINTFORML %SAVESTR:PLAYER% put on a condom.
+			TEQUIP:35 = 1
+		ELSE
+			PRINTFORML %SAVESTR:PLAYER% had condom put on them.
+			TEQUIP:36 = 1
+		ENDIF
+		RETURN 1
+	ELSE
+		;ない場合,魔王さまの技巧Lvが5未満だと生でしてしまう
+		;理由:その方がバカっぽいので
+		IF ABL:MASTER:12 > 4
+			PRINTFORM You don't have any condoms left, will you
+			IF !ASSIPLAY
+				PRINTFORML fuck raw?
+			ELSE
+				PRINTFORML let your assistant fuck raw?
+			ENDIF
+			PRINTL  [0] - yes(ask next time as well)
+			PRINTL  [1] - yes(afterwards always raw)
+			PRINTL  [2] - no
+			
+			$INPUT_LOOP_02
+			INPUT
+			SELECTCASE RESULT
+				CASE 0
+					RETURN 1
+				CASE 1
+					PRINTFORML next time won't ask about raw sex with %SAVESTR:TARGET%.
+					CFLAG:61 = 2
+					RETURN 1
+				CASE 2
+					RETURN 0
+				CASEELSE
+					GOTO INPUT_LOOP_02
+			ENDSELECT
+		ELSE
+			PRINTL There are no condoms left, so this time it's raw
+			RETURN 1
+		ENDIF
+	ENDIF
+ENDIF
+
+;全パターン拾えてなかったら申し訳程度のメッセージを出す
+;PRINTW ※COMF_CONDOM.ERB/@CONFIRM_CONDOM/分岐漏れ
+RETURN 1
+
+;-------------------------------------------------
+;コンドームを使うかの確認2
+;COM65"助手を犯させる"のためのもの
+;-------------------------------------------------
+@CONFIRM_CONDOM2
+$INPUT_LOOP_02
+IF TEQUIP:37 == 0 && ITEM:24 && (TALENT:TARGET:121 || TALENT:TARGET:122)
+	PRINTFORML Will you let %SAVESTR:TARGET% use a condom?
+	PRINTL  [0] - Use
+	PRINTL  [1] - Do raw
+	INPUT
+	IF RESULT == 0
+		PRINTFORML %SAVESTR:TARGET% put on a condom
+		ITEM:24 -= 1
+		TEQUIP:37 = 1
+	ELSEIF RESULT != 1
+		GOTO INPUT_LOOP_02
+	ENDIF
+ENDIF
+RETURN 1
+

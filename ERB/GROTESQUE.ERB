@@ -1,0 +1,218 @@
+﻿;------------------------------------------
+@GROTESQUE
+#DIM LV
+#DIMS MATURO
+#DIM FAMILY,3
+;ZはTARGETを保存してるため使用禁止
+;------------------------------------------
+;猟奇-グロ系処刑コマンド
+
+SIF A == 0
+	RETURN 0
+B = A
+
+FAMILY = CFLAG:A:605
+FAMILY:1 = FAMILY % 10
+CALL SEARCH_FAMILY, A
+FAMILY:2 = RESULT
+
+PRINTL [0] 四肢切断刑
+PRINTL [1] 内蔵陵辱刑
+PRINTL [2] ギロチン刑
+PRINTL [3] 火あぶりの刑
+PRINTL [4] 食肉刑
+PRINTL [5] 死霊化
+PRINTL [6] ゾンビ化
+PRINTL  
+PRINTL [100] やめる
+
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 7 && RESULT != 100
+	GOTO INPUT_LOOP
+ENDIF
+
+IF RESULT == 100
+	TARGET = FLAG:1
+	RETURN 0
+ENDIF
+
+TARGET = A
+TFLAG:530 = RESULT
+
+CALL GROTESQUE_KOUJO
+
+IF TFLAG:530 == 0
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW 四肢を固定された%SAVESTR:A%はモンスタ-達に散々になぶり者にされたあと
+	PRINTFORMW 手足を一本ずつ切断され,下級モンスタ-の胃袋に収まった
+	PRINTFORMW %SAVESTR:A%はそのまま放置され失血死した.
+	PRINTFORMW %SAVESTR:A%の身体は綺麗に剥製にされたあと,魔王の大広間に飾られることになった.........
+	SIF TALENT:A:85
+		PRINTFORMW あなたは剥製になった%SAVESTR:A%の顔を愛おしそうに撫でている.........
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = トルソー
+	
+ELSEIF TFLAG:530 == 1
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW 四肢を固定された%SAVESTR:A%はモンスタ-達の手によって生きたまま腹を割かれた
+	PRINTFORMW 肝臓や腎臓は奪うようにして喰われ,生命維持に最低限必要な臓器だけを残されたまま
+	PRINTFORMW %SAVESTR:A%は暫くの間生かされ.........力尽きた.........
+	SIF TALENT:A:85
+		PRINTFORMW あなたは%SAVESTR:A%の死体を綺麗に剥製にすると,あなたの部屋に飾ることにした.........
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 生き餌食
+	
+ELSEIF TFLAG:530 == 2
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW ギロチンにかけられた%SAVESTR:A%はモンスタ-達に散々に犯され.........
+	PRINTFORMW ギロチンの刃は落とされた.........
+	SIF TALENT:A:85
+		PRINTFORMW 切り落とされた%SAVESTR:A%の首はホルマリン漬けにされて保管された.........
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = ギロチン
+	
+ELSEIF TFLAG:530 == 3
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW 火あぶりの刑にかけられた%SAVESTR:A%は炎に包まれた.........
+	SIF TALENT:A:85
+		PRINTFORMW 炎の中から%SAVESTR:A%が泣き叫びながら助けを求める声が聞こえる.........
+	PRINTFORMW 黒焦げになった%SAVESTR:A%の死体はダンジョンの入り口に吊るされた
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 火あぶり
+	
+ELSEIF TFLAG:530 == 4
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし
+	PRINTFORMW %SAVESTR:A%はすべての力を封じる焼印を押され,食肉刑に処された.........
+	PRINTFORMW 魔法によって痛みは快楽に変えられ,モンスタ-達は%SAVESTR:A%の身体をむしゃぶりつくしている.........
+	SIF TALENT:A:85
+		PRINTFORMW "おっぱい...おっぱい...食べられてるのにぃ...気持ちいいよぉ...くひぃ...ぐ...ぐぶっぅう"
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%はすでに気が狂っているようだ.........
+	PRINTFORMW 最後に残った%SAVESTR:A%の頭をモンスターが半分食べた時,ようやく%SAVESTR:A%は絶命した.........
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 食肉
+	
+ELSEIF TFLAG:530 == 5
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW %SAVESTR:A%は死霊化の呪いを施された.........
+	PRINTFORMW 呪いによって低級の死霊になった%SAVESTR:A%は奇妙な叫び声を上げている.........
+	SIF TALENT:A:85
+		PRINTFORMW "あああ...これで...%SAVESTR:PLAYER%とず,ずっと一緒だなんて...う,う,うれししししししし............"
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%はあなたの身体にまとわりつくように漂っている.........
+	PRINTFORMW %SAVESTR:A%は2度と転生することもなく,永遠にあなたに仕える死霊となった.........
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = 低級死霊
+	
+ELSEIF TFLAG:530 == 6
+	SIF TALENT:A:85
+		PRINTFORM %SAVESTR:A%はなぜ処刑されるのか分からぬまま,愛しいあなたの名前を叫んで何度も許しを請う.しかし%SAVESTR:PLAYER%は
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押した
+	PRINTFORMW %SAVESTR:A%はゾンビ化の呪いを施された.........
+	PRINTFORMW ゾンビとなった%SAVESTR:A%はダンジョン拡張の工事に従事している.........
+	SIF TALENT:A:85
+		PRINTFORMW "あう...う...おっぱい...腐っちゃった...あの人に...嫌われちゃう...嫌われちゃう..."
+	SIF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%は口の端からウジ虫をこぼしながらブツブツ呟いている.........
+	PRINTFORMW 永遠の奴隷となった%SAVESTR:A%はあなたの力の礎となることでしょう.
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	
+	MATURO = ゾンビ奴隷
+	
+ENDIF
+
+
+A = TARGET
+
+;武器解除
+W:0 = CFLAG:A:550
+CALL EQUIP_GET
+CFLAG:A:550 = -1
+;指輪解除
+W:0 = CFLAG:A:551
+CALL EQUIP_GET
+CFLAG:A:551 = -1
+;指輪解除
+W:0 = CFLAG:A:552
+CALL EQUIP_GET
+CFLAG:A:552 = -1
+
+LV = CFLAG:A:9
+
+X = NO:A + 199
+FLAG:X = 1
+
+;前回の助手-調教対象だった場合はフラグを空に
+SIF FLAG:1 == TARGET
+	FLAG:1 = -1
+SIF FLAG:2 == TARGET
+	FLAG:2 = -1
+
+;前回の助手-調教対象より前だった場合はフラグを減算
+SIF FLAG:1 > TARGET
+	FLAG:1 -= 1
+SIF FLAG:2 > TARGET
+	FLAG:2 -= 1
+
+TARGET = FLAG:1
+ASSI = FLAG:2
+
+CALL PARTY_CHAR_DEL, A
+
+DELCHARA A
+
+CALL NAME_RESET
+
+
+FLAG:80 += 1
+
+LV += 1
+LV *= 50
+
+EXP:0:80 += LV
+PRINTFORMW 《封印した勇者の力を吸収しあなたは{LV}の経験値を得た!》
+
+TARGET = -1
+RETURN 0
+

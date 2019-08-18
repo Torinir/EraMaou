@@ -1,0 +1,762 @@
+﻿;結婚生活はじまた
+;モンスターと強制結婚...いいよね...
+
+;奴隷同士の結婚について
+;判定は勇者になる前-性格-名前-家族構成の一致によって判定する
+;CFLAG:609 = 結婚相手の名前 (CFLAG:6そのまま)
+;CFLAG:601 = 結婚相手の情報
+;       1の位...9固定
+;      10の位...勇者になる前
+;    1000の位...性格(TALENTから160引いたもの)
+;  100000の位...家族構成
+
+;-----------------------------------------------
+@SHOW_BUTTON_MARRIAGE(NUM, ARG)
+#DIM NUM
+;-----------------------------------------------
+;キャラの能力表示において[結婚]ボタンを表示する
+;引数NUMはボタンの数値,ARGは対象キャラの番号
+
+LOCAL = CHECK_ABLE_TO_MARRIAGE(ARG)
+IF LOCAL == 1
+	; 結婚不可能ならボタン自体を表示しない
+	RETURN 0
+ELSEIF LOCAL == 2
+	; 侵攻中の勇者の場合,恋人選択肢
+	PRINTFORM [{NUM}] Lover Settings　
+	RESETCOLOR
+	RETURN 0
+ENDIF
+PRINTFORM [{NUM}] Marriage　
+RESETCOLOR
+RETURN 0
+
+;-----------------------------------------------
+@CHECK_ABLE_TO_MARRIAGE(ARG)
+#FUNCTION
+;-----------------------------------------------
+;ARG番のキャラに対して,[結婚]できるかの判断を行い,結果に対応する値を返す式中関数
+;可なら0を返す
+
+;侵攻中勇者の場合
+SIF CFLAG:ARG:1 == 2
+	RETURNF 2
+
+IF  CFLAG:ARG:1 != 0 && CFLAG:ARG:1 != 3 && CFLAG:ARG:1 != 7
+	; そのキャラは転職できる状態に無い
+	RETURNF 1
+ENDIF
+RETURNF 0
+
+;-----------------------------------
+@MARRIAGE(ARG)
+#DIM GROOM_NUM = 0;結婚相手の番号を入れる
+#DIM GROOM_TYPE = 0 ;結婚相手のタイプを表す値
+#DIM CHARA = 0 ;結婚相手の奴隷
+;-----------------------------------
+;ARG番のキャラの結婚処理を行う
+;キャラの能力表示において[結婚]のボタンが押されるとここに来る
+
+;先に[結婚]出来るかチェックして,ダメなら値に対応する処理をしてリターン0
+LOCAL = CHECK_ABLE_TO_MARRIAGE(ARG)
+IF LOCAL != 0
+	IF  LOCAL == 1
+		;結婚不可能.ボタンが表示されないが,それでも入力すればここに来る.
+		RETURN 2
+	ELSEIF LOCAL == 2
+		;侵攻中の勇者.続きはLOVERS.ERBにて
+		CALL ENTER_LOVER,ARG
+		;成功の場合ターンエンド
+		SIF RESULT == 1
+			RETURN 1
+	ENDIF
+	RETURN 0
+ENDIF
+
+;一覧表示
+$INPUT_LOOP
+CALL MONSTERPLAY_LIST
+
+SIF ITEM:22 >= 1
+	PRINT [900] Stray Dog　 
+PRINT [901] You　
+SIF CFLAG:(ARG):606 > 0
+	PRINT [902] A Lover　 
+SIF CFLAG:(ARG):606 == 0
+	PRINT [902] Lover Settings　
+SIF CFLAG:(ARG):606 > 0
+	PRINT [903] Separate From A Lover　  
+PRINTL  
+PRINT [904] Choose From Slaves  
+PRINT [998] Divorce　
+PRINTL [999] Back
+
+;入力処理
+INPUT
+IF RESULT == 999
+	;戻る
+	RETURN 0
+ELSEIF RESULT == 901
+	;あなたと結婚
+	IF ARG == 0
+		PRINTFORMW 自分自身とは結婚出来ません.
+		GOTO INPUT_LOOP
+	ENDIF
+ELSEIF RESULT == 902
+	;恋人
+	IF CFLAG:(ARG):606 == 0
+		CALL ENTER_LOVER,ARG
+		GOTO INPUT_LOOP
+	ENDIF
+ELSEIF RESULT == 903
+	;恋人別れる
+	CFLAG:(ARG):606 = 0
+	PRINTFORMW 恋人と別れさせました.
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 904
+	;奴隷から
+	
+	CALL LIFE_LIST
+	PRINTL  [999] - Return
+
+	INPUT
+
+	IF RESULT == 999
+		GOTO INPUT_LOOP
+	ELSEIF RESULT < 0 || RESULT >= CHARANUM
+		GOTO INPUT_LOOP
+	ELSEIF CFLAG:RESULT:1 == 2
+		PRINTFORMW %SAVESTR:RESULT%はまだ支配下に置いていません
+		GOTO INPUT_LOOP
+	ELSEIF CFLAG:RESULT:1 != 0
+		PRINTFORMW %SAVESTR:RESULT%は結婚式に出席できる状態ではありません
+		GOTO INPUT_LOOP
+	ELSEIF CFLAG:RESULT:601 != 0
+		PRINTFORMW %SAVESTR:RESULT%はすでに結婚しています
+		GOTO INPUT_LOOP
+	ENDIF
+	
+	CHARA = RESULT
+	GROOM_TYPE = 1000
+	
+ELSEIF RESULT == 998
+	;離婚
+	CALL DIVORCE,ARG
+	RETURN 0
+ELSEIF ITEM:RESULT <= 0 && RESULT != 900
+	;いないモンスターを指定
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 900 && ITEM:22 <= 0
+	;いない野良犬を指定
+	GOTO INPUT_LOOP
+ELSEIF RESULT <= 99
+	PRINTL それはアイテムです
+	GOTO INPUT_LOOP
+ELSEIF RESULT == CFLAG:ARG:601
+	PRINTL その相手とはすでに結婚している
+	RETURN 0
+ELSEIF CFLAG:ARG:601 > 0
+	PRINTFORMW %SAVESTR:ARG%はすでに結婚している
+	RETURN 0
+ENDIF
+
+;GROOM_NUMに入力値を入れておく
+GROOM_NUM = RESULT
+
+;結婚前に離婚を済ます
+IF CFLAG:ARG:609 > 0
+	CALL SEARCH_FAMILY,ARG,"MARRIAGE"
+	CALL DIVORCE,RESULT
+ENDIF
+
+;結婚する
+PRINTFORM *%SAVESTR:ARG%と
+IF GROOM_NUM == 900
+	PRINT 野良犬
+ELSEIF GROOM_NUM == 901
+	PRINT あなた
+ELSEIF GROOM_NUM == 902
+	IF CFLAG:ARG:606 == 200
+		CALL SEARCH_FAMILY,ARG,"LOVE"
+		LOCAL:1 = RESULT
+		IF LOCAL:1 >= 0
+			PRINTFORM %SAVESTR:(LOCAL:1)%
+			CFLAG:(LOCAL:1):601 = 902
+			CFLAG:(LOCAL:1):602 = 0
+			;結婚状態の更新
+			LOCAL = TALENT:(LOCAL:1):320 % 100000
+			LOCAL /= 10000
+			IF LOCAL == 1
+				;結婚している場合,重婚状態に
+				TALENT:(LOCAL:1):320 += 20000
+			ELSEIF LOCAL == 2
+				;離婚している場合,再婚状態に
+				TALENT:(LOCAL:1):320 += 20000
+			ENDIF
+		ENDIF
+	ELSE
+		CALL NAME_LOVER,CFLAG:ARG:606,1
+	ENDIF
+ELSEIF GROOM_TYPE == 1000
+	;奴隷との結婚
+	;名前の交換
+	CFLAG:CHARA:609 = CFLAG:(ARG):6
+	CFLAG:(ARG):609 = CFLAG:CHARA:6
+	
+	;自分の情報を相手に
+	IF ARG == 0
+		;あなたの場合,魔王と結婚に同じ
+		CFLAG:CHARA:601 = 901
+	ELSE
+		CALL CHARA_ID_OUTPUT,ARG
+		CFLAG:CHARA:601 = RESULT + 9
+	ENDIF
+	
+	;相手の情報を自分に
+	CALL CHARA_ID_OUTPUT,CHARA
+	GROOM_NUM = RESULT + 9
+	PRINTFORM %SAVESTR:CHARA%
+ELSE
+	CALL MONSTER_DATA, GROOM_NUM, 5
+	;陵辱タイプを記憶
+	GROOM_TYPE = E:507
+	PRINTFORM %ITEMNAME:GROOM_NUM%
+ENDIF
+PRINTFORMW との結婚式が開かれました*
+
+;メモ:E:507はB=5によってMONSTAR_DATA内部で作られている.
+
+;結婚相手と結婚愛情の再設定
+CFLAG:ARG:601 = GROOM_NUM
+CFLAG:ARG:602 = 0
+
+;結婚状態の更新
+LOCAL = TALENT:ARG:320 % 100000
+LOCAL /= 10000
+IF LOCAL == 1
+	;結婚している場合,重婚状態に
+	TALENT:ARG:320 += 20000
+ELSEIF LOCAL == 2
+	;離婚している場合,再婚状態に
+	TALENT:ARG:320 += 20000
+ENDIF
+
+IF GROOM_NUM == 900
+	CALL MARRIAGE_DOG(ARG)
+ELSEIF GROOM_NUM == 901
+	CALL MARRIAGE_YOU(ARG)
+ELSEIF GROOM_NUM == 902
+	CALL MARRIAGE_LOVERS(ARG)
+ELSEIF GROOM_TYPE == 1
+	CALL ORC_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 2
+	CALL SLIME_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 3
+	CALL INSECT_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 4
+	CALL IVY_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 5
+	CALL SYOKUSYU_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 6
+	CALL FAILY_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 7
+	CALL GIANT_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 8
+	CALL MAN_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 9
+	CALL GIRL_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 10
+	CALL BEAST_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 11
+	CALL BRAIN_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 12
+	CALL HORSE_MARRIAGE(ARG, GROOM_NUM)
+ELSEIF GROOM_TYPE == 1000
+	CALL SLAVE_MARRIAGE(ARG, CHARA)
+ENDIF
+
+;処女喪失
+IF TALENT:ARG:0 == 1 && EXP:ARG:0 == 0 && TALENT:ARG:273 == 0 && (CFLAG:ARG:42 != 79 && (CFLAG:ARG:40 & 64) && FLAG:37)
+	PRINTW [処女喪失]
+	TALENT:ARG:0 = 0
+	IF CFLAG:ARG:601 == 901
+		CFLAG:ARG:15 = 1
+	ELSEIF CFLAG:ARG:601 == 900
+		CFLAG:ARG:15 = 103
+	ELSEIF CFLAG:ARG:601 == 5
+		CFLAG:ARG:15 = 102
+	ELSE 
+		CFLAG:ARG:15 = 104
+	ENDIF
+ENDIF
+;ファーストキス
+IF CFLAG:ARG:16 == -1
+	PRINTW [ファ-ストKiss]
+	IF CFLAG:ARG:601 == 901
+		CFLAG:ARG:16 = 1
+		CFLAG:ARG:16 = NO:MASTER + 1
+		CSTR:ARG:4 = %SAVESTR:MASTER%
+		;調教者のファーストキス
+		IF CFLAG:MASTER:16 == -1
+			CFLAG:MASTER:16 = NO:ARG + 1
+			CSTR:MASTER:4 = %SAVESTR:ARG%
+		ENDIF
+	ELSEIF CFLAG:ARG:601 == 900
+		CFLAG:ARG:16 = 998
+	ELSEIF CFLAG:ARG:601 == 5
+		CFLAG:ARG:16 = 999
+	ELSE 
+		CFLAG:ARG:16 = 994
+	ENDIF
+ENDIF
+
+;リターン1でターンエンドする
+RETURN 1
+
+;結婚式
+;-----------------------------------------
+@MARRIAGE_DOG(ARG)
+;-----------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は野良犬と結婚することになった
+PRINTFORMW これから%SAVESTR:ARG%は犬小屋で野良犬と共に暮らすのだ
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 魔王の宮殿の中,壇上に首輪に繋がれた雄犬と%SAVESTR:ARG%が現れる
+PRINTFORMW ウェデングドレスを着た%SAVESTR:ARG%は四つん這いで歩き,
+PRINTFORMW 口には雄犬と揃いの首輪を咥えている
+PRINTFORMW 仲人のサキュバスに永遠の愛を誓うかと言われ,
+PRINTFORMW ワンと犬の言葉で宣誓した
+PRINTFORMW そして犬の首輪を首につけて結婚式は終わった......
+
+IF TALENT:ARG:136 == 1
+	;牝犬
+	PRINTFORMW %SAVESTR:ARG%は息を荒げ舌を垂らし完全に雌の犬になって発情していた
+ELSEIF ABL:ARG:39 >= 1
+	;獣姦中毒
+	PRINTFORMW %SAVESTR:ARG%は誇らしげに犬に頬ずりをしてわんわんと鳴いていた
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+RETURN 0
+
+
+;--------------------------------------------
+@MARRIAGE_YOU(ARG)
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%はあなたと結婚することになった
+PRINTFORMW これから%SAVESTR:ARG%は魔王の側室となるのだ
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MARRIAGE_LOVERS(ARG)
+;--------------------------------------------
+
+LOCAL = CFLAG:(ARG):606
+
+PRINTFORMW %SAVESTR:ARG%は信じていた恋人と結婚することを許された
+PRINTFORM これから%SAVESTR:ARG%は
+CALL NAME_LOVER,LOCAL,1
+PRINTW と共に愛ある暮らしを送ることができる......
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@ORC_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は亜人と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 臭気の立ち込める%ITEMNAME:GROOM_NUM%の巣の中に%SAVESTR:ARG%はいた
+PRINTFORMW %SAVESTR:ARG%は全裸にされ赤黒い泥のようなもので全身に化粧されている
+PRINTFORMW それは魔界の邪悪な文様で,ひどく野蛮だった
+PRINTFORMW つがいとなる%ITEMNAME:GROOM_NUM%もまた泥で化粧され,誇らしそうにしている
+PRINTFORMW そして彼らの言葉で%SAVESTR:ARG%は愛の言葉を誓った
+PRINTFORMW %ITEMNAME:GROOM_NUM%の仲間たちがはやし立て長い長い初夜が始まろうとしていた......
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は%ITEMNAME:GROOM_NUM%の男と獣のようにKissを貪っている......
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SLIME_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は粘液と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW ウェディングドレスを着た%SAVESTR:ARG%は粘液の入ったガラス瓶を抱えている
+PRINTFORMW ガラス瓶と%SAVESTR:ARG%は鎖で繋がれていた
+PRINTFORMW 知性が感じられない粘液は%SAVESTR:ARG%を感知して襲いかかろうとするが
+PRINTFORMW ガラス瓶の蓋は固く閉じられている
+PRINTFORMW そして%SAVESTR:ARG%は愛の言葉を誓いカラス瓶の蓋を開けた
+PRINTFORMW %ITEMNAME:GROOM_NUM%がガラス瓶から溢れだし,%SAVESTR:ARG%のドレスを汚していく......
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%はドレスについた粘液を嬉しそうに舐め取っていた
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+WAIT
+
+RETURN 0
+
+;--------------------------------------------
+@INSECT_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は蟲と結婚することになった
+
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW ウェディングドレスを着た%SAVESTR:ARG%は背後から%ITEMNAME:GROOM_NUM%に抱きつかれていた
+PRINTFORMW 魔界のサキュバスの手で蟲の興奮する秘薬を股に塗られる
+PRINTFORMW %ITEMNAME:GROOM_NUM%は興奮し精管を付きたてようとする
+PRINTFORMW "ふふ,お楽しみは初夜に取っておきなさい"
+PRINTFORMW サキュバスは笑い,つがいが成立したことを告げた
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は愛おしそうに蟲の精管を撫でている
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+WAIT
+
+RETURN 0
+
+;--------------------------------------------
+@IVY_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は植物と結婚することになった
+
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW ウェディングドレスを着た%SAVESTR:ARG%は鉢植えにされた%ITEMNAME:GROOM_NUM%を抱えている
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は催淫物質の混じる花粉を吸い込み,味わっている
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+WAIT
+
+
+RETURN 0
+
+;--------------------------------------------
+@SYOKUSYU_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は触手と結婚することになった
+
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW ウェディングドレスを着た%SAVESTR:ARG%はもじもじとしている
+PRINTFORMW じつはそのウェディングドレスは内部から触手が生えているのだ
+PRINTFORMW 太い触手が目の前に伸びてくる
+PRINTFORMW これに口づけせよというのだ......
+PRINTFORMW %SAVESTR:ARG%は衆人環視の中,%ITEMNAME:GROOM_NUM%に愛の口づけをした
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%はうっとりとした目で%ITEMNAME:GROOM_NUM%と口の粘液を交換している
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+WAIT
+
+RETURN 0
+
+;--------------------------------------------
+@FAILY_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は妖精と結婚することになった
+
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW ウェディングドレスを着た%SAVESTR:ARG%は妖精からKissを受けていた
+PRINTFORMW 花やキノコで飾られた壇上はさながら森の中のようだ
+PRINTFORMW 強い酒が運ばれてきて二人はそれを飲んだ......
+PRINTFORMW すぐにふらふらしてきて,夢見心地になる
+PRINTFORMW %SAVESTR:ARG%は皆に祝福される中,%ITEMNAME:GROOM_NUM%に愛の口づけをした
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%はうっとりとした目で%ITEMNAME:GROOM_NUM%と口の粘液を交換している
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は酒に酔ってしまい何も覚えていない
+ENDIF
+
+WAIT
+
+RETURN 0
+
+;--------------------------------------------
+@GIANT_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は巨人と結婚することになった
+PRINTFORMW これから%SAVESTR:ARG%は巨人のペニスケ-スとしての生活を送るのだ
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 露出度の高いウェディングドレスを着た%SAVESTR:ARG%は
+PRINTFORMW %ITEMNAME:GROOM_NUM%の胴体に縛り付けられていた
+PRINTFORMW %SAVESTR:ARG%の股間には素股状態で巨人のものがいきり立っている
+PRINTFORMW これが自分に収まることになるのか......
+PRINTFORMW %SAVESTR:ARG%は息を飲んだ
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は期待に胸を高まらせた
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は絶望している
+ENDIF
+
+WAIT
+
+
+RETURN 0
+
+;--------------------------------------------
+@MAN_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+;旦那の種類
+IF TALENT:ARG:ファザコン
+	LOCALS = %"中年" + ITEMNAME:GROOM_NUM%
+ELSEIF TALENT:ARG:ショタコン
+	LOCALS = %"少年" + ITEMNAME:GROOM_NUM%
+ELSE
+	LOCALS = %ITEMNAME:GROOM_NUM%
+ENDIF
+
+PRINTFORMW %SAVESTR:ARG%は%LOCALS%と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 露出度の高いウェディングドレスを着た%SAVESTR:ARG%は
+PRINTFORMW %LOCALS%と指輪を交換する
+PRINTFORMW そして互いに口づけを交わす......
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は結婚生活に胸を高鳴らせている
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は絶望している
+ENDIF
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@GIRL_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+;嫁の種類
+IF TALENT:ARG:マザコン
+	LOCALS = %"年上の" + ITEMNAME:GROOM_NUM%
+ELSEIF TALENT:ARG:ロリコン
+	LOCALS = %"幼い" + ITEMNAME:GROOM_NUM%
+ELSE
+	LOCALS = %ITEMNAME:GROOM_NUM%
+ENDIF
+
+PRINTFORMW %SAVESTR:ARG%は%LOCALS%と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 露出度の高いウェディングドレスを着た%SAVESTR:ARG%と%LOCALS%は
+PRINTFORMW 互いの指輪を交換し抱き合った
+PRINTFORMW そして互いに口づけを交わす......
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は結婚生活に胸を高鳴らせている
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は絶望している
+ENDIF
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@BEAST_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は魔獣と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 魔王の宮殿の中,壇上に首輪に繋がれた%ITEMNAME:GROOM_NUM%と%SAVESTR:ARG%が現れる
+PRINTFORMW ウェデングドレスを着た%SAVESTR:ARG%は四つん這いで歩き,
+PRINTFORMW 口には%ITEMNAME:GROOM_NUM%と揃いの首輪を咥えている
+PRINTFORMW 仲人のサキュバスに永遠の愛を誓うかと言われ,
+PRINTFORMW 野獣のような吠え声で宣誓した
+PRINTFORMW そして首輪をつけて結婚式は終わった......
+
+IF TALENT:ARG:136 == 1
+	;牝犬
+	PRINTFORMW %SAVESTR:ARG%は息を荒げ舌を垂らし完全に雌の獣になって発情していた
+ELSEIF ABL:ARG:39 >= 1
+	;獣姦中毒
+	PRINTFORMW %SAVESTR:ARG%は誇らしげに%ITEMNAME:GROOM_NUM%に頬ずりをして獣のように吠えていた
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+RETURN 0
+
+;--------------------------------------------
+@BRAIN_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は恐ろしい妖魔と結婚することになった
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 露出度の高いウェディングドレスを着た%SAVESTR:ARG%は
+PRINTFORMW %ITEMNAME:GROOM_NUM%と互いの指輪を交換した
+PRINTFORMW そして%ITEMNAME:GROOM_NUM%の触手の口に口づけをする......
+
+IF TALENT:ARG:76 == 1
+	;淫乱
+	PRINTFORMW %SAVESTR:ARG%は結婚生活に胸を高鳴らせている
+ELSEIF TALENT:ARG:85 == 1
+	;愛
+	PRINTFORMW %SAVESTR:ARG%は静かに結婚式をこなしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は絶望している
+ENDIF
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@HORSE_MARRIAGE(ARG, GROOM_NUM)
+#DIM GROOM_NUM
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%は馬と結婚することになった
+
+PRINTFORMW これから%SAVESTR:ARG%は厩舎で%ITEMNAME:GROOM_NUM%と共に暮らすのだ
+PRINTFORMW ---
+PRINTFORMW %SAVESTR:ARG%の結婚式が開かれた
+PRINTFORMW 魔王の宮殿の中,壇上に%ITEMNAME:GROOM_NUM%と彼の胴体の下にくくりつけられた%SAVESTR:ARG%が現れる
+PRINTFORMW %SAVESTR:ARG%の目の前には硬く勃起した馬のペニスが揺れていた
+PRINTFORMW 仲人のサキュバスに永遠の愛を誓うかと言われ,
+PRINTFORMW ひひんと馬の言葉で宣誓した
+PRINTFORMW 彼女はすでに雌馬となったのだ......
+
+IF TALENT:ARG:136 == 1
+	;牝犬
+	PRINTFORMW %SAVESTR:ARG%は息を荒げ舌を垂らして発情していた
+ELSEIF ABL:ARG:39 >= 1
+	;獣姦中毒
+	PRINTFORMW %SAVESTR:ARG%は誇らしげにペニスに頬ずりしている
+ELSE
+	;その他
+	PRINTFORMW %SAVESTR:ARG%は目に涙を浮かべ屈辱と絶望に震えていた
+ENDIF
+
+
+RETURN 0
+
+;--------------------------------------------
+@SLAVE_MARRIAGE(ARG,CHARA)
+#DIM CHARA
+;--------------------------------------------
+
+PRINTFORMW %SAVESTR:ARG%と%SAVESTR:CHARA%と結婚することになった
+PRINTFORM これから%SAVESTR:ARG%は%SAVESTR:CHARA%と共に暮らすのだ......
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@DIVORCE,ARG
+;--------------------------------------------
+;離婚
+CFLAG:(ARG):601 = 0
+CFLAG:(ARG):609 = 0
+PRINTFORMW %SAVESTR:ARG%は離婚しました
+;結婚状態の更新
+LOCAL = TALENT:ARG:320 % 100000
+LOCAL /= 10000
+IF LOCAL == 3
+	;重婚している場合,結婚状態に戻る
+	TALENT:ARG:320 -= 20000
+ELSEIF LOCAL == 4
+	;再婚している場合,離婚状態に
+	TALENT:ARG:320 -= 20000
+ENDIF
+RETURN 0
+
+

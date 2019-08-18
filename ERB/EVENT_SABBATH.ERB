@@ -1,0 +1,326 @@
+﻿
+;----------------------------------
+@SABBATH
+#DIM SABBATH_USER
+#DIM COUNT_F
+#DIM COUNT_A
+#DIM COUNT_B
+#DIM COUNT_V
+#DIM COUNT_S
+#DIM COUNT_Z
+;----------------------------------
+
+;調教状態以外は除外
+SIF CFLAG:1 != 0
+	RETURN 0
+
+;満月以外は通常
+IF DAY:2 <= 14 || DAY:2 >= 16
+	CALL SABBATH_DAY
+	RETURN 0
+ENDIF
+
+;法術か呪術を持っていないと除外
+SIF TALENT:242 == 0 && TALENT:250 == 0
+	RETURN 0
+
+;淫乱以外は除外
+SIF TALENT:76 == 0
+	RETURN 0
+
+;信仰値が40以上必要
+SIF CFLAG:152 < 40
+	RETURN 0
+
+;各種回数 Fフェラ Aアナル B胸 V性器 S精液 Z獣姦
+COUNT_F = 0
+COUNT_A = 0
+COUNT_B = 0
+COUNT_V = 0
+COUNT_S = 0
+COUNT_Z = 0
+
+PRINTL  
+PRINTFORM %SAVESTR:TARGET%は名もなき淫蕩の女神に捧げる儀式として,
+IF TALENT:122
+	;オトコ
+	PRINTFORM 全裸の魔族女や女奴隷を侍らせて
+ELSEIF TALENT:121
+	;ふたなり
+	PRINTFORM 邪悪な
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM でペニスを勃起させて
+ELSE
+	PRINTFORM 邪悪な
+	CALL PRINT_CLOTHTYPE
+	PRINTFORM で
+ENDIF
+
+PRINTFORMW ダンジョンのモンスタ-に性なる施しを与えた
+
+
+IF TALENT:122
+	;オトコ
+	PRINTFORML %SAVESTR:TARGET%は魔族の女を抱いて
+	PRINTFORMW 精液の施しを与えている
+ELSEIF TALENT:121
+	;ふたなり
+	PRINTFORML %SAVESTR:TARGET%は魔族の女を抱いて
+	PRINTFORMW 精液の施しを与えている.
+	
+	IF TALENT:0 || TALENT:273
+		;処女-処女封印
+		PRINTFORML %SAVESTR:TARGET%は性器を封印されているため
+		PRINTFORMW 自らも施しとして肛門と口でペニスを次々と咥え込んでいる
+		IF TALENT:77
+			;ふたなり処女尻穴狂い
+			PRINTFORMW %SAVESTR:TARGET%は前穴まで伝わるアナルの快感に酔いしれている
+			COUNT_A += 1
+		ENDIF
+		COUNT_A += RAND:10 + 1
+		COUNT_S += COUNT_A + RAND:10
+	ELSE
+		PRINTFORMW 自らも施しとして全ての穴でペニスを次々と咥え込んでいた
+		COUNT_V += RAND:10 + 1
+		COUNT_A += RAND:10 + 1
+		COUNT_S += COUNT_A + COUNT_V + RAND:10
+	ENDIF
+	
+ELSEIF TALENT:0
+	;処女
+	PRINTFORML %SAVESTR:TARGET%は純潔の性器には封印の札が貼られ,
+	PRINTFORMW 肛門と口でペニスを次々と咥え込んでいる
+	IF TALENT:77
+		;処女尻穴狂い
+		PRINTFORMW %SAVESTR:TARGET%はアナルの快感がたまらないようだ
+		COUNT_A += 1
+	ENDIF
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_A + RAND:10
+ELSEIF TALENT:273
+	;処女封印
+	PRINTFORML %SAVESTR:TARGET%は性器を封印されているため
+	PRINTFORMW 肛門と口でペニスを次々と咥え込んでいる
+	IF TALENT:77
+		;処女封印尻穴狂い
+		PRINTFORMW %SAVESTR:TARGET%は前穴まで伝わるアナルの快感に酔いしれている
+		COUNT_A += 1
+	ENDIF
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_A + RAND:10
+ELSEIF CFLAG:42 == 79 && (CFLAG:40 & 64) && FLAG:37
+	;貞操帯
+	PRINTFORML %SAVESTR:TARGET%は貞操帯をつけられているため
+	PRINTFORMW 肛門と口でペニスを次々と咥え込んでいる
+	IF TALENT:77
+		;貞操帯尻穴狂い
+		PRINTFORMW %SAVESTR:TARGET%は前穴まで伝わるアナルの快感に酔いしれている
+		COUNT_A += 1
+	ENDIF
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_A + RAND:10
+ELSEIF ABL:39 >= 1 && RAND:2 == 0
+	;獣姦中毒
+	
+	IF ABL:17 >= 1
+		;露出癖
+		PRINTFORML %SAVESTR:TARGET%が獣と交わると聞いて,ダンジョン中から物好きが集まった
+		COUNT_V += ABL:17
+		COUNT_A += ABL:17
+	ENDIF
+	
+	PRINTFORML %SAVESTR:TARGET%は喜んで豚のペニスを性器にあてがい
+	PRINTFORMW 邪神に捧げる獣姦ショ-を通行人に見せつけた
+	
+	;セックス狂
+	SIF TALENT:75
+		COUNT_V += 1
+	
+	;尻穴狂い
+	SIF TALENT:77
+		COUNT_A += 1
+	
+	COUNT_V += RAND:10 + ABL:39
+	COUNT_A += RAND:10 + ABL:39
+	COUNT_S += COUNT_A + COUNT_V + RAND:10
+	COUNT_Z += COUNT_S
+ELSE
+	
+	IF ABL:17 >= 1
+		;露出癖
+		PRINTFORML %SAVESTR:TARGET%は観客を呼び込んで,公開乱交パ-ティを開いた
+		COUNT_V += ABL:17
+		COUNT_A += ABL:17
+	ENDIF
+	
+	IF ABL:16 >= 1
+		;奉仕精神
+		PRINTFORML %SAVESTR:TARGET%はどんな醜いモンスタ-や魔族も平等に施しを与えた
+		COUNT_V += ABL:16
+		COUNT_A += ABL:16
+	ENDIF
+	
+	PRINTFORML 暇なモンスタ-が列をなして彼女の全ての穴を犯している
+	PRINTFORMW 体中に精液をかけられ,広場は異様な臭気に包まれていた
+	
+	;セックス狂
+	SIF TALENT:75
+		COUNT_V += 1
+	
+	;尻穴狂い
+	SIF TALENT:77
+		COUNT_A += 1
+	
+	COUNT_V += RAND:10 + 1
+	COUNT_A += RAND:10 + 1
+	COUNT_S += COUNT_A + COUNT_V + RAND:10
+ENDIF
+
+IF COUNT_A > 0
+	;A経験
+	PRINTFORML %EXPNAME:1%+{COUNT_A}
+	EXP:1 += COUNT_A
+ENDIF
+
+IF COUNT_V > 0
+	;V経験
+	PRINTFORML %EXPNAME:0%+{COUNT_V}
+	EXP:0 += COUNT_V
+ENDIF
+
+LOCAL:0 = COUNT_A + COUNT_V
+
+IF LOCAL:0 > 0
+	;性交経験
+	PRINTFORML %EXPNAME:5%+{LOCAL:0}
+	EXP:5 += LOCAL:0
+ENDIF
+
+IF S > 0
+	;精液経験
+	PRINTFORML %EXPNAME:20%+{COUNT_S}
+	EXP:20 += COUNT_S
+ENDIF
+
+IF COUNT_Z > 0
+	;獣姦経験
+	PRINTFORML %EXPNAME:56%+{COUNT_Z}
+	EXP:56 += COUNT_Z
+ENDIF
+
+IF COUNT_A > 0
+	;快A
+	PRINTFORML %PALAMNAME:2%の珠+{COUNT_A}
+	JUEL:2 += COUNT_A
+ENDIF
+
+IF COUNT_V > 0
+	;快V
+	PRINTFORML %PALAMNAME:1%の珠+{COUNT_V}
+	JUEL:1 += COUNT_V
+ENDIF
+
+LOCAL:0 = (COUNT_A + COUNT_V + COUNT_S + COUNT_Z) * 10
+
+IF LOCAL:0 > 0
+	;欲情-恥情
+	PRINTFORML %PALAMNAME:5%の珠+{LOCAL:0}
+	PRINTFORML %PALAMNAME:8%の珠+{LOCAL:0}
+	JUEL:5 += LOCAL:0
+	JUEL:8 += LOCAL:0
+ENDIF
+
+IF TALENT:1
+	PRINTL [童貞喪失]
+	TALENT:1 = 0
+ENDIF
+
+WAIT
+
+RETURN 0
+
+;----------------------------------
+@SABBATH_DAY
+#DIM SABBATH_USER
+;----------------------------------
+;モブ姦儀式
+
+;3日に一度
+LOCAL = DAY:2
+LOCAL %= 3
+SIF LOCAL > 0
+	RETURN 0
+
+;法術か呪術を持っていないと除外
+SIF TALENT:242 == 0 && TALENT:250 == 0
+	RETURN 0
+
+;陥落以外は除外
+SIF CFLAG:0 == 0
+	RETURN 0
+
+;信仰値が40以上必要
+SIF CFLAG:152 < 40
+	RETURN 0
+
+SABBATH_USER = RAND:4
+
+
+PRINTL  
+PRINTFORML %SAVESTR:TARGET%は名もなき淫蕩の女神に捧げる儀式として,
+
+IF SABBATH_USER == 0 && ITEM:22
+	;野良犬がいれば,獣姦儀式
+	PRINTDATAW
+		DATAFORM 祭壇の前で信者の少女と山羊を交尾させたようだ......
+		DATAFORM 犬の精液を集めるため信者の女どもにフェラで集めさせたようだ......
+		DATAFORM 祭壇の前で信者の人妻と犬を交尾させたようだ......
+	ENDDATA
+ELSEIF SABBATH_USER == 1 && CFLAG:152 > 80
+	;乱交儀式
+	PRINTDATAW
+		DATAFORM 祭壇の前で信者同士をセックスさせたようだ......
+		DATAFORM 信者の新婚夫婦同士をスワッピングさせて神に捧げたようだ......
+		DATAFORM 祭壇の前で若い信者同士乱交させたようだ......
+	ENDDATA
+
+;かつて信じていた神を冒涜する
+ELSEIF SABBATH_USER == 2 && CFLAG:152 > 60 && TALENT:250 && (TALENT:17 || TALENT:282)
+	PRINTFORM 地の底に潜む死を司る女神
+	PRINTDATAW
+		DATAFORM を冒涜する淫らな絵を捧げたようだ......
+		DATAFORM の聖具で自慰を披露したようだ......
+	ENDDATA
+	
+ELSEIF SABBATH_USER == 2 && CFLAG:152 > 60 && TALENT:242 && (TALENT:17 || TALENT:282)
+	PRINTFORM 清浄なる聖天の女神
+	PRINTDATAW
+		DATAFORM を冒涜する淫語を唱えたようだ......
+		DATAFORM を汚すため信者を野外露出させたようだ......
+	ENDDATA
+	
+ELSEIF SABBATH_USER == 2 && CFLAG:152 > 60 && TALENT:315 == 11 && (TALENT:17 || TALENT:282)
+	PRINTFORM 豊穣なる大地の女神
+	PRINTDATAW
+		DATAFORM の信者をオークに犯させたようだ......
+		DATAFORM の聖なる盃に精液を満たして奉納したようだ......
+	ENDDATA
+	
+ELSEIF SABBATH_USER == 2 && CFLAG:152 > 60 && TALENT:315 == 12 && (TALENT:17 || TALENT:282)
+	PRINTFORM 全てを包み込む大海の女神
+	PRINTDATAW
+		DATAFORM の像に精液を振りかけたようだ......
+		DATAFORM の神官服を淫らに改造して淫靡な踊りを奉納したようだ......
+	ENDDATA
+	
+ELSE
+	;その他
+	PRINTDATAW
+		DATAFORM 祭壇の前で信者の娘に自慰を披露させたようだ......
+		DATAFORM 淫らな彫像を奉納し,信者の少年に精液をかけさせたようだ......
+		DATAFORM 信者の女エルフとオークのセックスを奉納したようだ......
+	ENDDATA
+ENDIF
+
+RETURN 0
+

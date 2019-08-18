@@ -1,0 +1,1085 @@
+﻿;-----------------------------------
+;世界征服
+;-----------------------------------
+
+;---------------------------
+@INVASION
+#DIM AREA, 1
+#DIM SINDO, 1
+#DIM SINKOU, 1
+#DIM TMP0_I
+#DIM YUSYA_I
+#DIM SEIEI_I
+#DIM TMP2_I
+#DIM TIME_I
+#DIM MON_ID
+#DIM MON_ATK
+#DIM MON_NUM
+;---------------------------
+
+;地上征服後
+IF FLAG:82
+	PRINTFORM 地上の魔界領土　侵攻度　　　
+	BAR FLAG:81, 10000, 50
+	PRINTL  
+	IF FLAG:87 >= 1
+		PRINTFORM ダ-クエルフの領土　侵攻度
+	ELSE
+		PRINTFORM エルフの領域　侵攻度
+	ENDIF
+	BAR FLAG:86, 10000, 50
+	PRINTL  
+	IF FLAG:89 >= 1
+		PRINTFORM カオスドラゴンの山　侵攻度
+	ELSE
+		PRINTFORM ドラゴンの山　侵攻度
+	ENDIF
+	BAR FLAG:88, 10000, 50
+	PRINTL  
+	IF FLAG:91 >= 1
+		PRINTFORM 堕天使の淫界　侵攻度　　　　
+	ELSE
+		PRINTFORM 天界　侵攻度　　　　
+	ENDIF
+	BAR FLAG:90, 10000, 50
+	PRINTL  
+	DRAWLINE
+	PRINTL 地上を制覇したあなたは他の領域にも軍を差し向けた.........
+	PRINTL [0] - 地上の魔界領土に侵攻する(征服済みです)
+	PRINT [1] - 
+	IF FLAG:87 >= 1
+		PRINT ダ-クエルフの領土の巡回をする(征服済みです)
+	ELSE
+		PRINT エルフの領域に侵攻する
+	ENDIF
+		PRINTL
+	PRINT [2] - 
+	IF FLAG:89 >= 1
+		PRINT カオスドラゴンの山を巡回する(征服済みです)
+	ELSE
+		PRINT ドラゴンの山に侵攻する
+	ENDIF
+		PRINTL
+	PRINT [3] - 
+	IF FLAG:91 >= 1
+		PRINT 堕天使の淫界を巡回する(征服済みです)
+	ELSE
+		PRINT 天界に侵攻する
+	ENDIF
+		PRINTL
+	PRINT [4] - 
+	IF FLAG:92 == 15
+		PRINT アルカナナイトの売春砦を巡回する(攻略済みです)
+	ELSE
+		PRINT アルカナナイトの砦を攻略する
+	ENDIF
+		PRINTL
+	
+	PRINTL [5] 世界の外を目指す
+	
+	PRINTL [999] - やめる
+	$INPUT_LOOP2
+	INPUT
+		IF RESULT == 999
+			RETURN 0
+		ELSEIF RESULT >= 6
+			GOTO INPUT_LOOP2
+		ELSEIF RESULT < 0
+			GOTO INPUT_LOOP2
+		ENDIF
+	;人間界
+	IF RESULT == 0
+		AREA = 81
+		SINDO = 82
+	;エルフの領域
+	ELSEIF RESULT == 1
+		AREA = 86
+		SINDO = 87
+	;ドラゴンの山
+	ELSEIF RESULT == 2
+		AREA = 88
+		SINDO = 89
+	;天界
+	ELSEIF RESULT == 3
+		AREA = 90
+		SINDO = 91
+	;アルカナナイトの砦
+	ELSEIF RESULT == 4
+		CALL ARCANA_FORT
+		IF RESULT == 1
+			RETURN 1
+		ELSE
+			RETURN 0
+		ENDIF
+	;キャンペーン
+	ELSEIF RESULT == 5
+		CALL CAMPAIGN_MENU
+		RETURN 0
+	ENDIF
+ELSE
+	AREA = 81
+	SINDO = 82
+ENDIF
+
+SIF AREA == 81
+PRINT 侵攻度 
+SIF AREA == 86
+PRINT エルフの領域　侵攻度 
+SIF AREA == 88
+PRINT ドラゴンの山　侵攻度 
+SIF AREA == 90
+PRINT 天界　侵攻度 
+BAR FLAG:AREA, 10000, 50
+
+;あなたの気力表示
+PRINTL 
+PRINT あなたの
+CALL VITAL_BAR, 0, 0
+
+PRINTL  
+MON_NUM = 0
+REPEAT 90
+	MON_ID = COUNT + 100
+	SIF ITEM:MON_ID < 1
+		CONTINUE
+	MON_NUM += ITEM:MON_ID
+REND
+PRINTFORML あなたの配下数 {MON_NUM}体
+DRAWLINE
+
+IF MON_NUM < 600
+	PRINTL [-] - モンスタ-の数が足りません.600体は必要です
+ELSE
+	PRINTL [0] - モンスタ-の半数を侵攻させる(資金-捕虜)
+ENDIF
+PRINTL [1] - 魔王の魔法を使う(経験値)
+IF MON_NUM < 600
+	PRINTL [-] - モンスタ-の数が足りません.600体は必要です
+ELSE
+	PRINTL [2] - 奴隷とモンスタ-の1/3を侵攻させる(資金-経験値-捕虜)
+ENDIF
+PRINTL [3] - 奴隷に略奪で資金を集めさせる(資金-経験値)
+PRINTL [999] - やめる
+$INPUT_LOOP
+INPUT
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT >= 4
+	GOTO INPUT_LOOP
+ELSEIF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 0 && MON_NUM < 600
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 2 && MON_NUM < 600
+	GOTO INPUT_LOOP
+ENDIF
+;進行種別
+TMP0_I = RESULT
+;侵攻ポイント
+SINKOU = 0
+;MONSTER_DATAで使う隊列.ここでは座標指定.A = 0はバグ対策
+A = 0
+B = 0
+
+;モンスター侵攻
+IF TMP0_I == 0
+	REPEAT 90
+		MON_ID = COUNT + 100
+		MON_ATK = 0
+		SIF ITEM:MON_ID < 1
+			CONTINUE
+		
+		CALL MONSTER_DATA, MON_ID, 0
+		
+		MON_ATK += E:2
+		MON_ATK += E:3
+		MON_ATK += E:4
+		
+		SIF E:5 != 0
+			MON_ATK += E:1
+			
+		SIF E:6 != 0
+			MON_ATK += E:1
+		
+		ITEM:MON_ID /= 2
+		
+		SINKOU += MON_ATK * ((ITEM:MON_ID / 9) + 1)
+	REND
+	;モンスターカンストで最大約19万の1/20
+	SINKOU /= 20
+	PRINTFORMW モンスタ-の戦力　{SINKOU}ポイント
+
+;魔王の魔法
+ELSEIF TMP0_I == 1
+	SINKOU = BASE:0:1 / 25
+	BASE:0:1 /= 2
+	PRINTFORMW 戦力　{SINKOU}ポイント
+
+;勇者の侵攻
+ELSEIF TMP0_I == 2
+	;妊娠出撃可
+	IF GETBIT(FLAG:5,10)
+		YUSYA_I = 0
+		REPEAT CHARANUM
+			;助手でなおかつ愛か淫乱がついてないと侵攻不可.
+			IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0
+				PRINTFORM [{YUSYA_I}] %SAVESTR:COUNT% {CFLAG:COUNT:9}LV
+				YUSYA_I += 1
+				SIF CFLAG:COUNT:0 > 1 && COUNT != 0
+				PRINT [侵攻可能]
+				PRINTL  
+			ENDIF
+		REND
+
+		IF YUSYA_I == 0
+			PRINTW 侵攻可能な勇者がいません.
+			RETURN 0
+		ENDIF
+	
+		PRINTL  
+		PRINTL [100] 戻る
+		DRAWLINE
+		$INPUT_LOOP1
+		INPUT
+			IF RESULT < 0
+				GOTO INPUT_LOOP1
+			ELSEIF RESULT >= YUSYA_I && RESULT != 100
+				GOTO INPUT_LOOP1
+			ENDIF
+		SIF RESULT == 100
+			RETURN 0
+
+		TMP2_I = RESULT
+		YUSYA_I = 0
+		REPEAT CHARANUM
+			IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && YUSYA_I == TMP2_I
+				YUSYA_I = COUNT
+				BREAK
+			ENDIF
+			SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && COUNT != 0 && CFLAG:COUNT:0 == 2
+				YUSYA_I += 1
+		REND
+	;妊娠出撃不可
+	ELSE
+		YUSYA_I = 0
+		REPEAT CHARANUM
+			;助手でなおかつ愛か淫乱がついてないと侵攻不可,妊婦も侵攻不可.
+			IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && TALENT:COUNT:153 == 0
+				PRINTFORM [{YUSYA_I}] %SAVESTR:COUNT% {CFLAG:COUNT:9}LV
+				YUSYA_I += 1
+				SIF CFLAG:COUNT:0 > 1 && COUNT != 0
+				PRINT [侵攻可能]
+				PRINTL  
+			ENDIF
+		REND
+
+		IF YUSYA_I == 0
+			PRINTW 侵攻可能な勇者がいません.
+			RETURN 0
+		ENDIF
+	
+		PRINTL  
+		PRINTL [100] 戻る
+		DRAWLINE
+		$INPUT_LOOP3
+		INPUT
+			IF RESULT < 0
+				GOTO INPUT_LOOP3
+			ELSEIF RESULT >= YUSYA_I && RESULT != 100
+				GOTO INPUT_LOOP3
+			ENDIF
+		SIF RESULT == 100
+			RETURN 0
+
+		TMP2_I = RESULT
+		YUSYA_I = 0
+		REPEAT CHARANUM
+			IF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && CFLAG:COUNT:0 == 2 && COUNT != 0 && YUSYA_I == TMP2_I && TALENT:COUNT:153 == 0
+				YUSYA_I = COUNT
+				BREAK
+			ENDIF
+			SIF (CFLAG:COUNT:1 == 0 || CFLAG:COUNT:1 == 7) && (TALENT:COUNT:85 == 1 || TALENT:COUNT:76 == 1) && COUNT != 0 && CFLAG:COUNT:0 == 2 && TALENT:COUNT:153 == 0
+				YUSYA_I += 1
+		REND
+	ENDIF
+	REPEAT 90
+		MON_ID = COUNT + 100
+		MON_ATK = 0
+		SIF ITEM:MON_ID < 1
+			CONTINUE
+		
+		CALL MONSTER_DATA, MON_ID, 0
+		
+		MON_ATK += E:2
+		MON_ATK += E:3
+		MON_ATK += E:4
+		
+		SIF E:5 != 0
+			MON_ATK += E:1
+			
+		SIF E:6 != 0
+			MON_ATK += E:1
+		ITEM:MON_ID /= 3
+		SINKOU += MON_ATK * ((ITEM:MON_ID / 9) + 1)
+		ITEM:MON_ID *= 2
+	REND
+
+	;モンスターカンストで最大約12万の1/20
+	SINKOU /= 20
+	PRINTFORMW モンスタ-の戦力　{SINKOU}ポイント
+		TMP2_I = CFLAG:YUSYA_I:9 + 100
+		IF CFLAG:YUSYA_I:9 < 10
+			PRINTFORMW 勇者補正　x{TMP2_I/100}.0{TMP2_I%100}
+		ELSE
+			PRINTFORMW 勇者補正　x{TMP2_I/100}.{TMP2_I%100}
+		ENDIF
+	SINKOU *= TMP2_I
+	SINKOU /= 100
+	;勲章補正
+	CALL MEDAL_BONUS,YUSYA_I
+	SINKOU *= RESULT
+	SINKOU /= 100
+ELSEIF TMP0_I == 3
+	;略奪
+	;選択基準は迎撃に準じる
+	$INPUT_LOOP_TMPO3
+	
+	CALL LIFE_LIST
+	PRINTFORML [100] - 戻る
+	
+	INPUT
+	IF RESULT == 100
+		RETURN 0
+	ELSEIF RESULT < 0 || RESULT >= CHARANUM
+		GOTO INPUT_LOOP_TMPO3
+	;臨死中のキャラは排除
+	ELSEIF  BASE:RESULT:0 < 1
+		GOTO INPUT_LOOP_TMPO3
+	;自分は排除
+	ELSEIF RESULT == 0
+		PRINTL 自分はできません
+		WAIT
+		GOTO INPUT_LOOP_TMPO3
+	;奴隷待機以外は除外
+	ELSEIF CFLAG:RESULT:1 != 0
+		GOTO INPUT_LOOP_TMPO3
+	;売却可以外は除外
+	ELSEIF CFLAG:RESULT:0 == 0 && TALENT:RESULT:254 == 0
+		PRINTFORMW %SAVESTR:RESULT%は言うことを聞くほど従順になっていない
+		GOTO INPUT_LOOP_TMPO3
+	;妊婦は除外
+	ELSEIF TALENT:RESULT:153 == 1 && GETBIT(FLAG:5,10) == 0
+		PRINTFORMW %SAVESTR:RESULT%は妊娠している,出撃は許可されない
+		GOTO INPUT_LOOP_TMPO3
+	ENDIF
+	
+	YUSYA_I = RESULT
+	
+	SINKOU = BASE:0:1 / 25
+	BASE:0:1 /= 2
+	PRINTFORMW 魔王の力　{SINKOU}ポイント
+	
+	TMP2_I = CFLAG:YUSYA_I:9 + 100
+		IF CFLAG:YUSYA_I:9 < 10
+			PRINTFORMW 勇者補正　x{TMP2_I/100}.0{TMP2_I%100}
+		ELSE
+			PRINTFORMW 勇者補正　x{TMP2_I/100}.{TMP2_I%100}
+		ENDIF
+	SINKOU *= TMP2_I
+	SINKOU /= 100
+	;勲章補正
+	CALL MEDAL_BONUS,YUSYA_I
+	SINKOU *= RESULT
+	SINKOU /= 100
+	
+ENDIF
+
+;-------------------------------------------------
+;共通処理
+;-------------------------------------------------
+TMP2_I = CFLAG:0:9 + 100
+IF CFLAG:0:9 < 10
+	PRINTFORMW 魔王補正　x{TMP2_I/100}.0{TMP2_I%100}
+ELSE
+	PRINTFORMW 魔王補正　x{TMP2_I/100}.{TMP2_I%100}
+ENDIF
+SINKOU *= TMP2_I
+SINKOU /= 100
+
+IF TALENT:0:325 == 1
+	PRINTFORMW 魔界知識補正　x1.50
+SINKOU *= 150
+SINKOU /= 100
+ENDIF
+
+IF TALENT:0:327 == 1
+	PRINTFORMW 淫魔知識補正　x1.20
+SINKOU *= 120
+SINKOU /= 100
+ENDIF
+
+IF TALENT:0:328 == 1
+	PRINTFORMW 魔蟲知識補正　x1.10
+SINKOU *= 110
+SINKOU /= 100
+ENDIF
+
+;勲章補正
+CALL MEDAL_BONUS,0
+SINKOU *= RESULT
+SINKOU /= 100
+
+
+PRINTFORMW 合計　{SINKOU}ポイント
+
+;メモ
+;侵略度が5000を越えてると精鋭部隊出現
+;rand:侵略度 > 2000で出現する.
+;勇者が負けると捕獲されてＮＴＲフラグが立つ
+IF FLAG:AREA == 0 && FLAG:SINDO == 0
+	DRAWLINE
+	PRINTFORMW 噂によると魔王軍の侵略を受けて狂王による精鋭部隊が組織され始めたらしい.
+	DRAWLINE
+ELSEIF FLAG:AREA >= 1 && FLAG:AREA < 5000 && FLAG:SINDO == 0 && TMP0_I != 1
+	DRAWLINE
+	PRINTFORMW 狂王の精鋭部隊が編成され,移動を開始したらしい.
+	PRINTFORMW そろそろ気をつけなければ.........
+	DRAWLINE
+ELSEIF FLAG:AREA >= 1 && FLAG:AREA < 10000 && FLAG:SINDO == 0 && TMP0_I != 1
+	DRAWLINE
+	PRINTFORMW 斥候によると狂王の精鋭部隊がこの先の村や町で防衛ラインを引いているようだ.
+	PRINTFORMW そしてその精鋭部隊の真の目的は魔王軍に下った勇者を捕獲することらしい.........
+	DRAWLINE
+ENDIF
+
+;----------------------------------
+;精鋭部隊との戦闘
+;----------------------------------
+IF FLAG:AREA >= 5000 && FLAG:SINDO == 0 && TMP0_I == 2
+	LOCAL = FLAG:AREA
+	LOCAL = RAND:LOCAL
+	IF LOCAL > 2000
+		PRINTFORMW .........
+		PRINTFORMW ......
+		PRINTFORMW ...
+		PRINTFORMW 精鋭部隊が現れた!
+		;精鋭部隊は体力気力9000攻撃150防御200レベル50の防御型と 体力気力7500攻撃200防御150レベル50の攻撃型の2種類
+		;20回殴り合って決着つける
+		;勝ったら侵略開始,負けたら敗走or攫われる(NTRフラグ時)引き分けは撤退.
+		;勇者側のダメージ＝(自分の攻撃-相手の防御)*((合計戦力/1024)+1)*2
+		;勇者側は会心の一撃を1/5で出せる(”ダメージ”2倍)
+		;勇者側は攻め手なので必ず先制攻撃
+		PRINTFORMW あなたの勇者%SAVESTR:YUSYA_I%に率いられた魔王軍は狂王の精鋭部隊と激突した!
+		PRINTFORMW (モンスタ-の戦力ポイントに補正されたものが攻撃力と体力と気力に加算されます)
+		TIME_I = 0
+		IF RAND:2 == 0
+			;防御型
+			ADDCHARA 18
+			SEIEI_I = GETCHARA(18)
+		ELSE
+			;攻撃型
+			ADDCHARA 19
+			SEIEI_I = GETCHARA(19)
+		ENDIF
+		;勇者基礎レベル補正
+		CFLAG:SEIEI_I:11 += FLAG:60
+		CFLAG:SEIEI_I:12 += FLAG:60
+		MAXBASE:SEIEI_I:0 += (10 * FLAG:60)
+		MAXBASE:SEIEI_I:1 += (10 * FLAG:60)
+		BASE:SEIEI_I:0 += (10 * FLAG:60)
+		BASE:SEIEI_I:1 += (10 * FLAG:60)
+		;SINKOU補正
+		BASE:YUSYA_I:0 += SINKOU
+		BASE:YUSYA_I:1 += SINKOU
+		REPEAT 21
+			IF TIME_I > 19
+				PRINTFORMW .........
+				PRINTFORMW ......
+				PRINTFORMW ...
+				PRINTFORML 時間切れだ,これ以上は戦線が維持できない!
+				PRINTFORML %SAVESTR:YUSYA_I%は部隊を撤退させたが部下は散り散りになって逃げてしまい
+				PRINTFORML 魔王の洞窟に帰ってくる頃には部下の数は10の数にも満たなかった.........
+				PRINTL
+				EXP:YUSYA_I:80 += SINKOU / 10
+				PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/10}ポイント得ました!
+				SEIEI_I = CHARANUM - 1
+				CALL PARTY_CHAR_DEL, SEIEI_I
+				DELCHARA SEIEI_I
+				CALL NAME_RESET
+				RETURN 1
+			ENDIF
+
+		DRAWLINE
+		;魔王軍
+		PRINTFORML 魔王軍 %SAVESTR:YUSYA_I%
+		PRINT HP
+		BAR BASE:YUSYA_I:0, MAXBASE:YUSYA_I:0, 50
+		PRINTFORML {BASE:YUSYA_I:0}/{MAXBASE:YUSYA_I:0}
+		PRINT 気力
+		BAR BASE:YUSYA_I:1, MAXBASE:YUSYA_I:1, 50
+		PRINTFORML {BASE:YUSYA_I:1}/{MAXBASE:YUSYA_I:1}
+		PRINTFORML 攻撃{CFLAG:YUSYA_I:11 * (SINKOU/1024+1)} 防御{CFLAG:YUSYA_I:12} モンスタ-との合計戦力{SINKOU}ポイント
+		
+		PRINTW VS
+		
+		;精鋭部隊
+		PRINTFORML %CALLNAME:SEIEI_I%
+		PRINT HP
+		BAR BASE:SEIEI_I:0, MAXBASE:SEIEI_I:0, 50
+		PRINTFORML {BASE:SEIEI_I:0}/{MAXBASE:SEIEI_I:0}
+		PRINT 気力
+		BAR BASE:SEIEI_I:1, MAXBASE:SEIEI_I:1, 50
+		PRINTFORML {BASE:SEIEI_I:1}/{MAXBASE:SEIEI_I:1}
+		PRINTFORML 攻撃{CFLAG:SEIEI_I:11} 防御{CFLAG:SEIEI_I:12}
+		WAIT
+		DRAWLINE
+
+		;魔王軍の先制攻撃
+		IF CFLAG:SEIEI_I:12 < (CFLAG:YUSYA_I:11 * (SINKOU/2048+1))
+			IF RAND:5 == 0
+				TMP2_I = CFLAG:SEIEI_I:12
+				CFLAG:SEIEI_I:12 /= 2
+				PRINTFORML 痛恨の一撃!
+				PRINTFoRML 魔王軍%SAVESTR:YUSYA_I%の攻撃により%CALLNAME:SEIEI_I%は{(CFLAG:YUSYA_I:11 *(SINKOU/1024+1) - TMP2_I)*4}のダメ-ジを受けた!
+				SIF TALENT:SEIEI_I:251 == 0
+					CFLAG:SEIEI_I:11 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)/100
+				SIF CFLAG:SEIEI_I:11 < 1
+					CFLAG:SEIEI_I:11 = 1
+				BASE:SEIEI_I:0 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)*4
+				BASE:SEIEI_I:1 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)*4
+				WAIT
+			ELSE
+				TMP2_I = CFLAG:SEIEI_I:12
+				CFLAG:SEIEI_I:12 /= 2
+				PRINTFORML 魔王軍%SAVESTR:YUSYA_I%の攻撃により%CALLNAME:SEIEI_I%は{(CFLAG:YUSYA_I:11 *(SINKOU/1024+1) - TMP2_I)*2}のダメ-ジを受けた!
+				SIF TALENT:SEIEI_I:251 == 0
+					CFLAG:SEIEI_I:11 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)/100
+				SIF CFLAG:SEIEI_I:11 < 1
+					CFLAG:SEIEI_I:11 = 1
+				BASE:SEIEI_I:0 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)*2
+				BASE:SEIEI_I:1 -= (CFLAG:YUSYA_I:11*(SINKOU/1024+1) - TMP2_I)*2
+				WAIT
+			ENDIF
+		ELSE
+			PRINTFORML %SAVESTR:YUSYA_I%の攻撃を%CALLNAME:SEIEI_I%は必死に耐えている.........
+			CFLAG:SEIEI_I:12 /= 2
+		ENDIF
+
+		CALL DEATH_CHECK3
+		IF RESULT == 2
+			SEIEI_I = CHARANUM - 1
+			CALL PARTY_CHAR_DEL, SEIEI_I
+			DELCHARA SEIEI_I
+			CALL NAME_RESET
+			BREAK
+		ELSEIF RESULT == 1
+			SEIEI_I = CHARANUM - 1
+			CALL PARTY_CHAR_DEL, SEIEI_I
+			DELCHARA SEIEI_I
+			CALL NAME_RESET
+			RETURN 1
+		ENDIF
+
+		;精鋭部隊の攻撃
+		;ダメージ5倍でちと痛い
+		IF CFLAG:YUSYA_I:12 < CFLAG:SEIEI_I:11
+			TMP2_I = CFLAG:YUSYA_I:12
+			CFLAG:YUSYA_I:12 /= 3
+			CFLAG:YUSYA_I:12 *= 2
+			PRINTFORML %CALLNAME:SEIEI_I%の攻撃により魔王軍%SAVESTR:YUSYA_I%は{(CFLAG:SEIEI_I:11 - TMP2_I)*5}のダメ-ジを受けた!
+			SIF TALENT:YUSYA_I:251 == 0
+				CFLAG:YUSYA_I:11 -= (CFLAG:SEIEI_I:11 - TMP2_I) / 100
+			SIF CFLAG:YUSYA_I:11 < 1
+				CFLAG:YUSYA_I:11 = 1
+			BASE:YUSYA_I:0 -= (CFLAG:SEIEI_I:11 - TMP2_I)*5
+			BASE:YUSYA_I:1 -= (CFLAG:SEIEI_I:11 - TMP2_I)*5
+			WAIT
+		ELSE
+			PRINTFORML %CALLNAME:SEIEI_I%の攻撃を魔王軍%SAVESTR:YUSYA_I%は必死に耐えている.........
+			CFLAG:YUSYA_I:12 /= 3
+			CFLAG:YUSYA_I:12 *= 2
+		ENDIF
+
+		CALL DEATH_CHECK3, YUSYA_I, SEIEI_I
+		IF RESULT == 2
+			SEIEI_I = CHARANUM - 1
+			CALL PARTY_CHAR_DEL, SEIEI_I
+			DELCHARA SEIEI_I
+			CALL NAME_RESET
+			BREAK
+		ELSEIF RESULT == 1
+			SEIEI_I = CHARANUM - 1
+			CALL PARTY_CHAR_DEL, SEIEI_I
+			DELCHARA SEIEI_I
+			CALL NAME_RESET
+			RETURN 1
+		ENDIF
+		TIME_I += 1
+		REND
+	ELSE
+		PRINTFORMW .........
+		PRINTFORMW ......
+		PRINTFORMW ...
+		PRINTFORMW 噂の精鋭部隊とやらは現れなかった............
+	ENDIF
+ELSEIF TMP0_I == 2
+	PRINTFORMW .........
+	PRINTFORMW ......
+	PRINTFORMW ...
+	PRINTFORMW 噂の精鋭部隊とやらは現れなかった............
+ENDIF
+
+;----------------------------------
+;侵攻結果共通
+;----------------------------------
+
+IF TMP0_I == 3 && FLAG:SINDO == 0
+	;略奪は侵攻力が激減
+	FLAG:AREA += SINKOU / 20
+	
+ELSEIF FLAG:SINDO == 0
+	FLAG:AREA += SINKOU
+ENDIF
+
+IF TMP0_I == 0
+	DRAWLINE
+
+	;人間界クリア済
+	IF AREA == 81 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 10}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 10
+	;エルフの領域クリア済
+	ELSEIF AREA == 86 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 10}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 10
+	;ドラゴンの山クリア済
+	ELSEIF AREA == 88 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 10}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 10
+	;天界クリア済
+	ELSEIF AREA == 90 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 10}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 10
+	ELSE
+		PRINTFORMW {SINKOU * 5}ポイントの戦利品を得ました!
+		MONEY += SINKOU * 5
+	ENDIF
+
+	DRAWLINE
+	SIF AREA == 81
+	PRINT 侵攻度 
+	SIF AREA == 86
+	PRINT エルフの領域　侵攻度 
+	SIF AREA == 88
+	PRINT ドラゴンの山　侵攻度 
+	SIF AREA == 90
+	PRINT 天界　侵攻度 
+	BAR FLAG:AREA, 10000, 50
+	PRINTL  
+	DRAWLINE
+	WAIT
+
+	;人間界
+	IF AREA == 81
+		CALL INVASION_RYOUZYOKU, 1, SINKOU
+	;エルフの領域
+	ELSEIF AREA == 86
+		CALL INVASION_RYOUZYOKU, 2, SINKOU
+	;ドラゴンの山
+	ELSEIF AREA == 88
+		CALL INVASION_RYOUZYOKU, 3, SINKOU
+	;天界
+	ELSEIF AREA == 90
+		CALL INVASION_RYOUZYOKU, 4, SINKOU
+	ENDIF
+	
+	PRINTFORMW どうやら抵抗してきた勇者を捕まえたらしい......
+	CALL GET_ENEMY
+	
+	SIF RESULT == 0
+		PRINTFORMW 奴隷部屋に空きがなかったため,勇者は部下に下賜された
+	
+ELSEIF TMP0_I == 1
+	;気力最大,レベル1００,知識を2つ所持で1440ポイント
+	PRINTFORML %NAME:MASTER%の魔力が炸裂する!
+	IF SINKOU < 100
+		PRINTFORMW {SINKOU}ポイントの魔力は大風となり大木を吹き倒した!
+	ELSEIF SINKOU < 300
+		PRINTFORMW {SINKOU}ポイントの魔力は炎となり平原を焼き払った!
+	ELSEIF SINKOU < 600
+		PRINTFORMW {SINKOU}ポイントの魔力は雷となり村を吹き飛ばした!
+	ELSEIF SINKOU < 900
+		PRINTFORMW {SINKOU}ポイントの魔力は大水となり町を水没させた!
+	ELSEIF SINKOU < 1200
+		PRINTFORMW {SINKOU}ポイントの魔力は猛毒のガスとなり騎士団を窒息させた!
+	ELSE
+		PRINTFORMW {SINKOU}ポイントの魔力は純粋なエネルギ-となり城を飲み込んだ!
+	ENDIF
+	DRAWLINE
+	;人間界クリア済
+	IF AREA == 81 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW %NAME:MASTER%は{SINKOU/2}ポイントの経験値を得ました!
+		EXP:0:80 += SINKOU / 2
+	;エルフの領域クリア済
+	ELSEIF AREA == 86 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW %NAME:MASTER%は{SINKOU/2}ポイントの経験値を得ました!
+		EXP:0:80 += SINKOU / 2
+	;ドラゴンの山クリア済
+	ELSEIF AREA == 88 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW %NAME:MASTER%は{SINKOU/2}ポイントの経験値を得ました!
+		EXP:0:80 += SINKOU / 2
+	;天界クリア済
+	ELSEIF AREA == 90 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW %NAME:MASTER%は{SINKOU/2}ポイントの経験値を得ました!
+		EXP:0:80 += SINKOU / 2
+	ELSE
+		PRINTFORMW %NAME:MASTER%は{SINKOU/2}ポイントの経験値を得ました!
+		EXP:0:80 += SINKOU / 2
+	ENDIF
+	
+	DRAWLINE
+	SIF AREA == 81
+	PRINT 侵攻度 
+	SIF AREA == 86
+	PRINT エルフの領域　侵攻度 
+	SIF AREA == 88
+	PRINT ドラゴンの山　侵攻度 
+	SIF AREA == 90
+	PRINT 天界　侵攻度 
+	BAR FLAG:AREA, 10000, 50
+	PRINTL  
+ELSEIF TMP0_I == 2
+	PRINTFORM %SAVESTR:YUSYA_I%はモンスタ-達と共に
+	;人間界
+	IF AREA == 81
+		PRINT 人間界
+	;エルフの領域
+	ELSEIF AREA == 86
+		PRINT エルフの領域
+	;ドラゴンの山
+	ELSEIF AREA == 88
+		PRINT ドラゴンの山
+	;天界
+	ELSEIF AREA == 90
+		PRINT 天界
+	ENDIF
+	PRINTW で暴虐の限りを尽くした.(カルマ:-50) 
+	CALL KARMA, YUSYA_I, -50
+	;慈愛
+	IF TALENT:YUSYA_I:160
+		PRINTFORMW %SAVESTR:YUSYA_I%は侵略の間中,慈愛に満ちた笑みを絶やさなかった.なぜなら全ては%NAME:MASTER%のためであると理解していたからだ.........
+	;自信家
+	ELSEIF TALENT:YUSYA_I:161
+		PRINTFORMW %SAVESTR:YUSYA_I%は自ら先陣を切って戦地に飛び込んでいった.そしてその身は怪我の1つも負わなかったそうだ.........
+	;気弱
+	ELSEIF TALENT:YUSYA_I:162
+		PRINTFORMW %SAVESTR:YUSYA_I%は見事な指揮をとり,モンスタ-達を率いて侵略していった.........
+	;高貴
+	ELSEIF TALENT:YUSYA_I:163
+		PRINTFORMW %SAVESTR:YUSYA_I%は%NAME:MASTER%に与えられた呪われた鎧を着ると,高笑いをしながらモンスタ-達を率いて突進していった.........
+	;冷徹
+	ELSEIF TALENT:YUSYA_I:164
+		PRINTFORMW %SAVESTR:YUSYA_I%は命乞いする民草を鼻で笑うと飢えたモンスタ-達のおもちゃにした.........
+	;村娘
+	ELSEIF TALENT:YUSYA_I:165
+		PRINTFORMW 燃えさかる松明を片手にあちこちに火を付ける%SAVESTR:YUSYA_I%は異様な笑い声を発していたという.........
+	;悪女,
+	ELSEIF TALENT:YUSYA_I:166
+		PRINTFORMW %SAVESTR:YUSYA_I%は侵略した土地の金銀財宝を奪うとその全てを%NAME:MASTER%に献上した.........
+	ELSE
+		PRINTL
+	ENDIF
+
+	;人間界クリア済
+	IF AREA == 81 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 5}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 5
+		EXP:YUSYA_I:80 += SINKOU / 2
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/2}ポイント得ました!
+	;エルフの領域クリア済
+	ELSEIF AREA == 86 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 5}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 5
+		EXP:YUSYA_I:80 += SINKOU / 2
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/2}ポイント得ました!
+	;ドラゴンの山クリア済
+	ELSEIF AREA == 88 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 5}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 5
+		EXP:YUSYA_I:80 += SINKOU / 2
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/2}ポイント得ました!
+	;天界クリア済
+	ELSEIF AREA == 90 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU * 5}ポイントの強制徴収をしました!
+		MONEY += SINKOU * 5
+		EXP:YUSYA_I:80 += SINKOU / 2
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/2}ポイント得ました!
+	ELSE
+		PRINTFORMW {SINKOU * 5}ポイントの戦利品を得ました!
+		MONEY += SINKOU * 5
+		EXP:YUSYA_I:80 += SINKOU / 2
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/2}ポイント得ました!
+	ENDIF
+
+	DRAWLINE
+	SIF AREA == 81
+	PRINT 侵攻度 
+	SIF AREA == 86
+	PRINT エルフの領域　侵攻度 
+	SIF AREA == 88
+	PRINT ドラゴンの山　侵攻度 
+	SIF AREA == 90
+	PRINT 天界　侵攻度 
+	BAR FLAG:AREA, 10000, 50
+	PRINTL  
+	DRAWLINE
+	WAIT
+	
+	;人間界
+	IF AREA == 81
+		CALL INVASION_RYOUZYOKU, 1, SINKOU
+	;エルフの領域
+	ELSEIF AREA == 86
+		CALL INVASION_RYOUZYOKU, 2, SINKOU
+	;ドラゴンの山
+	ELSEIF AREA == 88
+		CALL INVASION_RYOUZYOKU, 3, SINKOU
+	;天界
+	ELSEIF AREA == 90
+		CALL INVASION_RYOUZYOKU, 4, SINKOU
+	ENDIF
+	
+	PRINTFORMW どうやら抵抗してきた勇者を捕まえたらしい......
+	CALL GET_ENEMY
+	
+	SIF RESULT == 0
+		PRINTFORMW 奴隷部屋に空きがなかったため,勇者は部下に下賜された
+	
+	
+ELSEIF TMP0_I == 3
+	PRINTFORM %SAVESTR:YUSYA_I%は魔王の力を得て
+	;人間界
+	IF AREA == 81
+		PRINT 人間界
+	;エルフの領域
+	ELSEIF AREA == 86
+		PRINT エルフの領域
+	;ドラゴンの山
+	ELSEIF AREA == 88
+		PRINT ドラゴンの山
+	;天界
+	ELSEIF AREA == 90
+		PRINT 天界
+	ENDIF
+	PRINTW で略奪行為を行った.(カルマ:-5) 
+	CALL KARMA, YUSYA_I, -5
+	
+	;人間界クリア済
+	IF AREA == 81 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU}ポイントの強制徴収をしました!
+		MONEY += SINKOU
+		EXP:YUSYA_I:80 += SINKOU / 20
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/20}ポイント得ました!
+	;エルフの領域クリア済
+	ELSEIF AREA == 86 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU}ポイントの強制徴収をしました!
+		MONEY += SINKOU
+		EXP:YUSYA_I:80 += SINKOU / 20
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/20}ポイント得ました!
+	;ドラゴンの山クリア済
+	ELSEIF AREA == 88 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU}ポイントの強制徴収をしました!
+		MONEY += SINKOU
+		EXP:YUSYA_I:80 += SINKOU / 20
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/20}ポイント得ました!
+	;天界クリア済
+	ELSEIF AREA == 90 && FLAG:SINDO
+		SINKOU = MIN( SINKOU, 10000 * 10 )
+		PRINTFORMW {SINKOU}ポイントの強制徴収をしました!
+		MONEY += SINKOU
+		EXP:YUSYA_I:80 += SINKOU / 20
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/20}ポイント得ました!
+	ELSE
+		PRINTFORMW {SINKOU}ポイントの戦利品を得ました!
+		MONEY += SINKOU
+		EXP:YUSYA_I:80 += SINKOU / 20
+		PRINTFORMW %SAVESTR:YUSYA_I%は経験値を{SINKOU/20}ポイント得ました!
+	ENDIF
+
+	DRAWLINE
+	SIF AREA == 81
+	PRINT 侵攻度 
+	SIF AREA == 86
+	PRINT エルフの領域　侵攻度 
+	SIF AREA == 88
+	PRINT ドラゴンの山　侵攻度 
+	SIF AREA == 90
+	PRINT 天界　侵攻度 
+	BAR FLAG:AREA, 10000, 50
+	PRINTL  
+	DRAWLINE
+	WAIT
+	
+ENDIF
+DRAWLINE
+WAIT
+
+;侵略イベント2017/1/1
+;侵攻度2000,4000,6000,8000,10000でイベント開始
+;人間界
+IF AREA == 81
+	CALL INVASION_EVENT, 1
+;エルフの領域
+ELSEIF AREA == 86
+	CALL INVASION_EVENT, 2
+;ドラゴンの山
+ELSEIF AREA == 88
+	CALL INVASION_EVENT, 3
+;天界
+ELSEIF AREA == 90
+	CALL INVASION_EVENT, 4
+ENDIF
+
+CALL INVASION_CHECK
+RETURN 1
+
+@INVASION_CHECK
+
+SIF FLAG:81 >= 10000 && FLAG:82 == 0
+	CALL ENDING_1
+SIF FLAG:86 >= 10000 && FLAG:87 == 0
+	CALL ENDING_3
+SIF FLAG:88 >= 10000 && FLAG:89 == 0
+	CALL ENDING_4
+SIF FLAG:90 >= 10000 && FLAG:91 == 0
+	CALL ENDING_5
+
+
+;--------------------------------------
+@DEATH_CHECK3, ARG:0, ARG:1
+;ARG:0が元勇者　ARG:1が精鋭部隊
+;-------------------------------------- 
+
+;勇者死亡判定
+IF BASE:(ARG:1):0 <= 0
+	PRINTFORML %CALLNAME:(ARG:1)%はあなたの勇者%SAVESTR:(ARG:0)%との戦いで潰滅した.........
+	PRINTL
+	PRINT そして,
+	RETURN 2
+ELSEIF BASE:(ARG:1):0 <= 100
+	PRINTFORML %CALLNAME:(ARG:1)%は降伏し,命乞いをした.........
+	PRINTL
+	PRINT そして,
+	RETURN 2
+ELSEIF BASE:(ARG:1):1 <= 0
+	PRINTFORML %CALLNAME:(ARG:1)%は戦意を失って,武器を捨て降伏した.........
+	PRINTL
+	PRINT そして,
+	RETURN 2
+ENDIF
+
+;魔王側の生き残りを判定
+
+IF BASE:(ARG:0):0 <= 0 && (FLAG:5 & 128)
+	PRINTFORMW あなたの勇者,%SAVESTR:(ARG:0)%は%CALLNAME:(ARG:1)%との戦いで敗北し,捕獲された.........
+	CFLAG:(ARG:0):1 = 9
+	DRAWLINE
+	RETURN 1
+ELSEIF BASE:(ARG:0):0 <= 300 && (FLAG:5 & 128)
+	PRINTFORML あなたの勇者,%SAVESTR:(ARG:0)%は生命の危機を感じて降伏し,命乞いをした
+	PRINTFORMW %CALLNAME:(ARG:1)%は%SAVESTR:(ARG:0)%を捕獲し,本国に送還した.........
+	DRAWLINE
+	CFLAG:(ARG:0):1 = 9
+	RETURN 1
+ELSEIF BASE:(ARG:0):1 <= 1000 && TALENT:(ARG:0):280 && (FLAG:5 & 128)
+	PRINTFORML 狂王の虜である%SAVESTR:(ARG:0)%はあっさりと戦意を失い,武器を捨て降伏した
+	PRINTFORMW %CALLNAME:(ARG:1)%は%SAVESTR:(ARG:0)%を捕獲し,本国に送還した.........
+	CFLAG:(ARG:0):1 = 9
+	RETURN 1
+ELSEIF BASE:(ARG:0):1 <= 0 && (FLAG:5 & 128)
+	PRINTFORML あなたの勇者,%SAVESTR:(ARG:0)%は戦意を失って,武器を捨て降伏した
+	PRINTFORMW %CALLNAME:(ARG:1)%は%SAVESTR:(ARG:0)%を捕獲し,本国に送還した.........
+	DRAWLINE
+	CFLAG:(ARG:0):1 = 9
+	RETURN 1
+ENDIF
+
+IF BASE:(ARG:0):0 <= 0
+	PRINTFORMW あなたの勇者,%SAVESTR:(ARG:0)%は精鋭部隊との戦いで敗北し,這々の体で戻ってきた.........
+	DRAWLINE
+	CFLAG:(ARG:0):1 = 0
+	RETURN 1
+ELSEIF BASE:(ARG:0):0 <= 300
+	PRINTFORMW あなたの勇者,%SAVESTR:(ARG:0)%は生命の危機を感じて降伏し,無様に戻ってきた.........
+	DRAWLINE
+	CFLAG:(ARG:0):1 = 0
+	RETURN 1
+ELSEIF BASE:(ARG:0):1 <= 0
+	PRINTFORMW あなたの勇者,%SAVESTR:(ARG:0)%は戦意を失って,武器を捨て降伏し,無様に戻ってきた.........
+	DRAWLINE
+	CFLAG:(ARG:0):1 = 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+;-----------------------------
+@MEDAL_BONUS,ARG
+;-----------------------------
+;ARGのキャラの補正量を返す関数
+
+LOCAL = 100
+
+IF EXP:ARG:81 > 500
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.60
+	LOCAL = 160
+ELSEIF EXP:ARG:81 > 250
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.50
+	LOCAL = 150
+ELSEIF EXP:ARG:81 > 150
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.40
+	LOCAL = 140
+ELSEIF EXP:ARG:81 > 100
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.30
+	LOCAL = 130
+ELSEIF EXP:ARG:81 > 60
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.20
+	LOCAL = 120
+ELSEIF EXP:ARG:81 > 40
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.10
+	LOCAL = 110
+ELSEIF EXP:ARG:81 > 30
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.05
+	LOCAL = 105
+ELSEIF EXP:ARG:81 > 20
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.04
+	LOCAL = 104
+ELSEIF EXP:ARG:81 > 15
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.03
+	LOCAL = 103
+ELSEIF EXP:ARG:81 > 10
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.02
+	LOCAL = 102
+ELSEIF EXP:ARG:81 > 5
+	PRINTFORMW %SAVESTR:(ARG)%の勲章補正　x1.01
+	LOCAL = 101
+ENDIF
+
+RETURN LOCAL
+
+

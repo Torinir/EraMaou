@@ -1,0 +1,295 @@
+﻿;------------------------------------------
+@INFRASTRUCTURE
+;------------------------------------------
+;施設-設備の様子を見る
+;処刑コマンド内に各調度品(人形とか宝石像とか)の様子を見るコマンドを追加しようと思ったけど
+;結構数あるし視覚的に宜しくないかなと思い別コマンドに
+;ついでに肉便器もこっちに統一
+
+;FLAG:83  肉便器の数
+;FLAG:84  調度品の合計数
+
+;FLAG:600 = 石像の個数
+;FLAG:601 = 剥製の個数
+;FLAG:602 = 蝋人形の個数
+;FLAG:603 = 人形(マネキン)の個数
+;FLAG:604 = 人形(球体間接)の個数
+;FLAG:605 = 金属像の個数
+;FLAG:606 = 氷像の個数
+;FLAG:607 = 金属像の個数
+;FLAG:608 = 家具の個数
+;FLAG:609 = 絵画の個数
+
+;FLAG:611 = 噴水像(石)の個数
+;FLAG:612 = 噴水像(金属)の個数
+
+
+;SIF A == 0
+;	RETURN 0
+;B = A
+
+PRINTL どの施設を見ますか?
+PRINTL 
+PRINTL [人間牧場]
+PRINTL [51] 肉便器の様子を見る
+PRINTL 
+PRINTL [博物館]
+PRINTL [50] 全ての調度品を見る
+PRINTL 
+PRINTL [0] 石像の状態を見る
+PRINTL [1] 剥製の状態を見る
+PRINTL [2] 蝋人形の状態を見る
+PRINTL [3] 人形(マネキン)の状態を見る
+PRINTL [4] 人形(球体間接)の状態を見る
+PRINTL [5] 金属像の状態を見る
+PRINTL [6] 氷像の状態を見る
+PRINTL [7] 宝石の状態を見る
+PRINTL [8] 屋内家具の状態を見る
+PRINTL [9] 絵画の状態を見る
+PRINTL 
+PRINTL [11] 噴水像(石)の状態を見る
+PRINTL [12] 噴水像(金属)の状態を見る
+PRINTL 
+PRINTL [100] 戻る
+DRAWLINE
+
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 0
+	IF FLAG:600 == 0
+		PRINTFORMW まだ石像を作っていないようだ.
+	ELSEIF FLAG:600 >= 1
+		PRINTFORML 博物館には現在 {FLAG:600}個の石像がある
+		PRINTW 石となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 苦悶,驚愕,恍惚,悲壮...石像は様々な表情を浮かべ,見る者に何かを訴えかけているが
+		PRINTW それらが伝わることはもうないだろう...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 1
+	IF FLAG:601 == 0
+		PRINTFORMW まだ剥製を作っていないようだ.
+	ELSEIF FLAG:601 >= 1
+		PRINTFORML 博物館には現在 {FLAG:601}個の剥製がある
+		PRINTW 剥製となったかつての勇者達の美しい肢体は,虚空を見つめたまま壁に飾られている
+		PRINTW 苦悶,恍惚,悲壮,諦観...剥製は様々な表情を浮かべ,見る者に何かを訴えかけているが
+		PRINTW 彼女達がその凍りついた感情を動かすことはもうないだろう...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 2
+	IF FLAG:602 == 0
+		PRINTFORMW まだ蝋人形を作っていないようだ.
+	ELSEIF FLAG:602 >= 1
+		PRINTFORML 博物館には現在 {FLAG:602}個の蝋人形がある
+		PRINTW 蝋人形となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 苦悶,驚愕,恍惚,悲壮...彼女達は様々な表情を浮かべ,今にも動き出しそうだが
+		PRINTW もう二度とその身を動かすことは無いだろう...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 3
+	IF FLAG:603 == 0
+		PRINTFORMW まだマネキン人形を作っていないようだ.
+	ELSEIF FLAG:603 >= 1
+		PRINTFORML 博物館には現在 {FLAG:603}個のマネキン人形がある
+		PRINTW マネキン人形となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 彼女達の四肢や頭部,半身は自由に取り外す事が出来,完全に人の型を保っているものは少ない
+		PRINTW 取り外されたパ-ツは,無造作に散らばっていたり,本来のものとは違う人形に取り付けられていたりと散々な扱いをされていた
+		PRINTW 儀式用の新しい衣装を身に着けたマネキンも展示されるようになり,それ以来堕落神の信者を含め多くの客で賑わうようになった
+		PRINTW 局部や乳房を露出した衣装を身に着け,大衆の面前にその肢体を晒す彼女達は表情を崩さず静かに佇んでいる...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 4
+	IF FLAG:604 == 0
+		PRINTFORMW まだ球体間接人形を作っていないようだ.
+	ELSEIF FLAG:604 >= 1
+		PRINTFORML 博物館には現在 {FLAG:604}個の球体間接人形がある
+		PRINTW 球体間接人形となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 彼女達の四肢や頭部,半身は自由に動かす事が出来,生身の人間では出来ない姿勢にされている人形もある
+		PRINTW 彼女達と性交は出来ないが,それでもあえて見る者を誘うような姿勢にする者もいた
+		PRINTW どんな姿勢にされようと,彼女達は表情を変えることなく為すがままにされている...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 5
+	IF FLAG:605 == 0
+		PRINTFORMW まだ金属像を作っていないようだ.
+	ELSEIF FLAG:605 >= 1
+		PRINTFORML 博物館には現在 {FLAG:605}個の金属像がある
+		PRINTW 金属となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 全ての金属像は毎日決まった時間に全身を磨かれ,常に美しい光沢を放つような状態で展示されている
+		PRINTW あまりの美しさに何度も全身を弄られ,一部が破損した像も中にはあるようだ
+		PRINTW かつての美しい肢体を身体が欠ける程弄ばれ続けても,彼女達は何も感じることは無く静かに佇んでいる...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 6
+	IF FLAG:606 == 0
+		PRINTFORMW まだ氷像を作っていないようだ.
+	ELSEIF FLAG:606 >= 1
+		PRINTFORML 博物館には現在 {FLAG:606}個の氷像がある
+		PRINTW 氷像となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 氷漬けである彼女達の姿を維持するため,他の調度品があるエリアよりも気温が低くなっている
+		PRINTW その寒さに思わず尿意を催し,氷像に向かって排尿する者もいたが,翌日になるとそれも凍りつき氷像に新たな氷柱が出来ているのだった
+		PRINTW その身に何をされようと彼女達は表情を崩さず,かつての美しい肢体を大衆の面前に晒し続けるのだった...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 7
+	IF FLAG:607 == 0
+		PRINTFORMW まだ宝石像を作っていないようだ.
+	ELSEIF FLAG:607 >= 1
+		PRINTFORML 博物館には現在 {FLAG:607}個の宝石像がある
+		PRINTW 宝石となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う姿勢で飾られている
+		PRINTW 全ての宝石像は毎日決まった時間に全身を磨かれ,半透明の輝きが常に美しく光る状態で展示されている
+		PRINTW まれに大量の精液にまみれている宝石像もあったが,翌日には元に戻っているため特に気にする者は居なかった
+		PRINTW 宝石像たちの表情は何かを訴えかけているようにも見えるが,見る者は大抵像の美しさに感動した後去っていくのだった...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 8
+	IF FLAG:608 == 0
+		PRINTFORMW まだ家具を作っていないようだ.
+	ELSEIF FLAG:608 >= 1
+		PRINTFORML 博物館には現在 {FLAG:608}個の家具がある
+		PRINTW かつて生身の人間だった勇者たちは,無機質な家具に再構築され展示されている
+		PRINTW 燭台の蝋燭には青い炎が灯され,花瓶には魔界の花が添えられている
+		PRINTW 箪笥には様々な道具や雑貨が収納されており,ここでの小休止に役立つものも入っている
+		PRINTW 独特な雰囲気の中,展示されている机や椅子を使い休憩の場に使う者もいるようだ
+		PRINTW 今の彼女達は人間としてではなく,家具として魔界のため魔物たちのために役立っているのだ
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 9
+	IF FLAG:609 == 0
+		PRINTFORMW まだ絵画を作っていないようだ.
+	ELSEIF FLAG:609 >= 1
+		PRINTFORML 博物館には現在 {FLAG:609}個の絵画がある
+		PRINTW かつて生身の人間だった勇者たちは,絵画の一部となり壁に展示されている
+		PRINTW 絵画の前には水晶球が置かれており,この水晶球を通じて絵画の中の様子を垣間見ることが出来る
+		PRINTW 絵の中の世界で,永遠に続くであろう辱めを受けている彼女達の様子を見て楽しむのがこのエリアの一般的な楽しみ方である
+		PRINTW 彼女達は助けを求めるが,それは見る者には伝わらず,今日も絵の中の世界で陵辱され続ける...
+	ENDIF
+	RETURN 0
+
+ELSEIF RESULT == 11
+	IF FLAG:611 == 0
+		PRINTFORMW まだ噴水用石像を作っていないようだ.
+	ELSEIF FLAG:611 >= 1
+		PRINTFORML 博物館には現在 {FLAG:611}個の噴水用石像がある
+		PRINTW 石となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う恥辱的な姿勢で飾られている
+		PRINTW 乳房や性器,尿道などを噴水装置に変換された彼女達は,それぞれの場所から水を勢いよく噴き出している
+		PRINTW 彼女達に人間的な恥じらいは既に無く,これからも人目をはばからず水を噴き出し続けるだろう...
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 12
+	IF FLAG:612 == 0
+		PRINTFORMW まだ噴水用金属像を作っていないようだ.
+	ELSEIF FLAG:612 >= 1
+		PRINTFORML 博物館には現在 {FLAG:612}個の噴水用金属像がある
+		PRINTW 金属となったかつての勇者達の美しい肢体は,一つ一つそれぞれ違う恥辱的な姿勢で飾られている
+		PRINTW 乳房や性器,尿道などを噴水装置に変換された彼女達は,それぞれの場所から水を勢いよく噴き出している
+		PRINTW 噴き出す水のせいで,一部に錆が生じている金属像もあるようだ
+		PRINTW しかし彼女達はそれも気にすることはなく,水を噴き出し続けることしか出来ないのだった
+	ENDIF
+	RETURN 0
+	
+ELSEIF RESULT == 50
+	IF FLAG:84 == 0
+		PRINTFORMW まだ調度品を作っていないようだ.
+	ELSEIF FLAG:84 >= 1
+		PRINTFORML このダンジョンには現在 {FLAG:84}個の調度品がある
+		PRINTL かつての勇者の美しい肢体をそのまま残した様々な彫像や剥製からは
+		PRINTL 苦悶の表情や驚きの表情,絶望の表情など様々な感情が窺い知れる
+		PRINTW それらがその凍りついた感情を動かすことはもうない.
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 51
+	IF FLAG:83 == 0
+		PRINTFORMW このダンジョンには肉便器は設置されていないようだ.
+	ELSEIF FLAG:83 >= 1
+		
+		PRINTFORML このダンジョンの便所には現在 {FLAG:83}台の肉便器が設置されている.
+		PRINT 肉便器達は
+		
+		IF FLAG:613 == 1
+			PRINT 捕虜の中年男
+		ELSEIF FLAG:613 == 2
+			PRINT 捕虜の少年
+		ELSEIF FLAG:613 == 3
+			PRINT ふたなり淫魔
+		ELSE
+			PRINT モンスタ-
+		ENDIF
+		
+		PRINTL たちに寝る間も無く使われているようだ
+		PRINTL 暴れようと気絶していようと妊娠していようとお構いなしに犯されていた
+		
+		IF FLAG:613 == 1
+			PRINTL 捕虜の中年男のドロドロとした臭いザ-メンは肉便器の改造子宮を一瞬で受胎させ,魔物の子供を宿す......
+		ELSEIF FLAG:613 == 2
+			PRINTL 捕虜の少年の若々しい濃厚ザ-メンは肉便器の改造子宮を一瞬で受胎させ,魔物の子供を宿す......
+		ELSEIF FLAG:613 == 3
+			PRINTL ふたなり淫魔の媚薬ザ-メンは肉便器の改造子宮を一瞬で受胎させ,魔物の子供を宿す......
+		ENDIF
+		
+		$INPUT_LOOP_FARM
+		
+		PRINTW このダンジョンの便所は壊れたような嬌声や悲鳴と饐えた臭いで溢れている.
+		
+		PRINTL 各種設定
+		PRINT [0] 種付け役　　　　　　現在:
+		IF FLAG:613 == 1
+			PRINT 捕虜の中年男  
+		ELSEIF FLAG:613 == 2
+			PRINT 捕虜の少年  
+		ELSEIF FLAG:613 == 3
+			PRINT ふたなり淫魔  
+		ELSE
+			PRINT モンスタ-
+		ENDIF
+		PRINTL  
+		PRINTFORML [1] 人間牧場ログ表示　　現在:\@ GETBIT(FLAG:614,0) ? 非表示 # 表示 \@
+		PRINTFORML [2] 生まれた子供の売却　現在:\@ GETBIT(FLAG:614,1) ? 売却 # しない \@
+		
+		PRINTFORML [999]戻る
+		
+		INPUT
+		
+		IF RESULT == 999
+			RETURN 0
+		ELSEIF RESULT == 0
+			PRINTL 種付け役を選んでください
+			PRINTL [0] モンスタ-  
+			PRINT [1] 捕虜の中年男  
+			PRINT [2] 捕虜の少年  
+			PRINT [3] ふたなり淫魔  
+			PRINTL  
+			
+			INPUT
+			
+			IF RESULT == 1
+				PRINTW 種付け役を捕虜の中年男にしました
+			ELSEIF RESULT == 2
+				PRINTW 種付け役を捕虜の少年にしました
+			ELSEIF RESULT == 3
+				PRINTW 種付け役をふたなり淫魔にしました
+			ELSE
+				PRINTW 種付け役をモンスタ-にしました
+				RESULT = 0
+			ENDIF
+			FLAG:613 = RESULT
+		ELSEIF RESULT >= 1 && RESULT <= 2
+			LOCAL = RESULT - 1
+			INVERTBIT FLAG:614,LOCAL
+		ELSE
+			GOTO INPUT_LOOP_FARM
+		ENDIF
+		
+		GOTO INPUT_LOOP_FARM
+		
+		
+		
+	ENDIF
+	RETURN 0
+ELSEIF RESULT != 100
+	GOTO INPUT_LOOP
+ENDIF
+
+SIF RESULT == 100
+	RETURN 0

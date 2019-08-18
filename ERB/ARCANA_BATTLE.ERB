@@ -1,0 +1,254 @@
+﻿;--------------------------------------------------
+@ARCANA_BATTLE
+#DIM TURN
+#DIM ATKER
+#DIM DEFER
+;--------------------------------------------------
+;アルカナナイトと元勇者の戦闘
+;A-ATKERが元勇者
+;B-DEFERがアルカナナイト
+
+IF FLAG:5 & 32
+	PRINTW *一騎討ちだ!*
+	DRAWLINE
+ENDIF
+
+;対戦者代入
+ATKER = A
+DEFER = B
+
+;弾の補充
+CFLAG:ATKER:571 = 15
+CFLAG:DEFER:571 = 15
+
+;先制
+IF TALENT:ATKER:252 == 1
+	CALL DUEL_ATTACK, ATKER, 2, DEFER, 3
+ENDIF
+
+;先制アルカナ
+IF TALENT:DEFER:252 == 1
+	CALL DUEL_ATTACK, DEFER, 2, ATKER, 2
+ENDIF
+
+FOR TURN, 0, 20
+	IF TURN > 15
+		SIF FLAG:5 & 32
+			PRINTFORML %SAVESTR:ATKER%は逃げ出した.........
+		BASE:ATKER:1 -= RAND:30
+		BREAK
+	ENDIF
+	
+	IF FLAG:5 & 32
+		PRINTFORML %SAVESTR:ATKER%
+		PRINT HP
+		BARL BASE:ATKER:0,MAXBASE:ATKER:0,50
+		PRINT 気力
+		BARL BASE:ATKER:1,MAXBASE:ATKER:1,50
+		PRINTFORML 攻撃{CFLAG:ATKER:11} 防御{CFLAG:ATKER:12}
+		
+		PRINTW VS
+		
+		PRINTFORML %SAVESTR:B%
+		PRINT HP
+		BARL BASE:DEFER:0,MAXBASE:DEFER:0,50
+		PRINT 気力
+		BARL BASE:DEFER:1,MAXBASE:DEFER:1,50
+		PRINTFORML 攻撃{CFLAG:DEFER:11} 防御{CFLAG:DEFER:12}
+		WAIT
+	ENDIF
+	
+	;先制(旧処理の場所)
+	
+	SIF FLAG:5 & 32
+		DRAWLINE
+	
+	;先攻後攻決定
+	A = ATKER
+	B = DEFER
+	X = RAND:6
+	Y = RAND:6
+	CALL SPEED_PLUS3
+	
+	IF X >= Y
+		;奴隷先攻
+		CALL DUEL_ATTACK, ATKER, 0, DEFER, 3
+		;アルカナ後攻
+		SIF RESULT == 0
+			CALL DUEL_ATTACK, DEFER, 1, ATKER, 2
+		IF RESULT == 999
+			IF FLAG:5 & 32
+				PRINTL 戦闘が中断された
+				BREAK
+			ENDIF
+		ENDIF
+	ELSE
+		;アルカナ先攻
+		CALL DUEL_ATTACK, DEFER, 0, ATKER, 2
+		;奴隷後攻
+		SIF RESULT == 0
+			CALL DUEL_ATTACK, ATKER, 1, DEFER, 3
+		IF RESULT == 999
+			IF FLAG:5 & 32
+				PRINTL 戦闘が中断された
+				BREAK
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	A = ATKER
+	B = DEFER
+	
+	CALL DEATH_CHECK4
+	IF RESULT == 2
+		BREAK
+	ELSEIF RESULT == 1
+		BREAK
+	ENDIF	
+	BASE:ATKER:1 -= RAND:20
+	BASE:DEFER:1 -= RAND:20
+NEXT
+
+SIF CFLAG:DEFER:1 == 2
+	PRINTFORML %SAVESTR:ATKER%はアルカナナイトに敗北した.........
+
+;装備の回復
+CALL WEAPON_RESTORE,ATKER
+CALL WEAPON_RESTORE,DEFER
+
+SIF CFLAG:DEFER:1 == 0
+	RETURN 2
+RETURN 0
+
+;------------------------------
+@SPEED_PLUS3
+;------------------------------
+;速度補正
+
+;奇襲
+SIF TALENT:A:243 == 1
+	X += 1
+SIF TALENT:B:243 == 1
+	Y += 1
+;悪魔翼
+SIF TALENT:A:245 == 1
+	X += 1
+SIF TALENT:B:245 == 1
+	Y += 1
+;俊足
+SIF TALENT:A:258 == 1
+	X += 1
+SIF TALENT:B:258 == 1
+	Y += 1
+;ホビットの加速ボーナス
+SIF TALENT:A:314 == 10
+	X += 1
+SIF TALENT:B:314 == 10
+	Y += 1
+;ドワーフの減速
+SIF TALENT:A:314 == 11
+	X -= 1
+SIF TALENT:B:314 == 11
+	Y -= 1
+
+
+;装備効果
+W:8 = 3
+CALL EQUIP_CHECK
+X += RESULT
+
+;装備効果
+W:8 = 12
+CALL EQUIP_CHECK
+X -= RESULT
+
+T:1 = A
+A = B
+;装備効果
+W:8 = 3
+CALL EQUIP_CHECK
+Y += RESULT
+W:8 = 12
+CALL EQUIP_CHECK
+Y -= RESULT
+B = A
+A = T:1
+
+RETURN 0
+
+;--------------------------------------
+@DEATH_CHECK4
+;--------------------------------------
+
+;アルカナナイト死亡判定
+IF BASE:B:0 <= 0
+	PRINTFORML %SAVESTR:B%は奮戦空しく,力尽きた
+	CFLAG:B:1 = 0
+	RETURN 2
+ELSEIF BASE:B:0 <= 300
+	PRINTFORML %SAVESTR:B%は生命の危機を感じて降伏し,命乞いをした
+	CFLAG:B:1 = 0
+	RETURN 2
+ELSEIF BASE:B:1 <= 0
+	PRINTFORML %SAVESTR:B%は戦意を失って,武器を捨て降伏した
+	CFLAG:B:1 = 0
+	RETURN 2
+ENDIF
+
+;魔王側の生き残りを判定
+
+IF BASE:A:0 <= 0 && (FLAG:5 & 128)
+	PRINTFORML %SAVESTR:A%はアルカナナイトの前についに力尽きた
+	PRINTFORMW %SAVESTR:B%は彼女を抱き上げると狂王の城へと連行した.
+	CFLAG:A:1 = 9
+	RETURN 1
+ELSEIF BASE:A:0 <= 300 && (FLAG:5 & 128)
+	PRINTFORML %SAVESTR:A%は生命の危機を感じて降伏し,命乞いをした
+	PRINTFORMW %SAVESTR:B%は彼女を縛り上げると狂王の城へ連行した.
+	CFLAG:A:1 = 9
+	RETURN 1
+ELSEIF BASE:A:1 <= 0 && (FLAG:5 & 128)
+	PRINTFORML %SAVESTR:A%は戦意を失って,武器を捨て降伏した
+	PRINTFORMW %SAVESTR:B%は彼女を縛り上げると狂王の城へ連行した.
+	CFLAG:A:1 = 9
+	RETURN 1
+ENDIF
+
+IF BASE:A:0 <= 0
+	PRINTFORML %SAVESTR:A%はアルカナナイトの前でついに力尽きた
+	CFLAG:A:1 = 0
+	RETURN 1
+ELSEIF BASE:A:0 <= 300
+	PRINTFORML %SAVESTR:A%は生命の危機を感じて降伏し,命乞いをした
+	PRINTFORMW %SAVESTR:B%は堕ちた彼女を憐れみ,砦の外へ追い返した.
+	CFLAG:A:1 = 0
+	RETURN 1
+ELSEIF BASE:A:1 <= 0
+	PRINTFORML %SAVESTR:A%は戦意を失って,武器を捨て降伏した
+	PRINTFORMW %SAVESTR:B%は堕ちた彼女を憐れみ,砦の外へ追い返した.
+	CFLAG:A:1 = 0
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

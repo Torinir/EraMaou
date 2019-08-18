@@ -1,0 +1,2755 @@
+﻿;-------------------------------------
+@RYOUZYOKU,ARG
+#DIM VIRGIN
+#DIM MON_COUNT
+#DIM MON_FEAR
+;-------------------------------------
+
+ARG = A
+VIRGIN = TALENT:ARG:0
+PRINTFORML %SAVESTR:ARG%の凌辱――
+PRINTL  
+DRAWLINE
+CALL SHOW_DATA,ARG
+PRINTL  
+
+PRINTL [0] - 陵辱を見る
+PRINTL [1] - 陵辱しない
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 2
+	GOTO INPUT_LOOP
+ENDIF
+SIF RESULT == 1
+	RETURN 0
+
+;凌辱畏怖記憶があるか
+MON_COUNT = 0
+MON_FEAR = 0
+WHILE MON_COUNT < 300
+	LOCAL = MON_COUNT + 99
+	IF E:LOCAL <= 0
+		LOCAL = MON_COUNT + 7
+		E:LOCAL = 0
+	ENDIF
+	LOCAL = MON_COUNT + 7
+	IF E:LOCAL > 0
+		LOCAL:1 = E:MON_COUNT
+		;被凌辱モンスターID記憶を見る
+		SIF CFLAG:ARG:130 == LOCAL:1
+			MON_FEAR = MON_COUNT
+	ENDIF
+	MON_COUNT += 100
+WEND
+
+
+TARGET = ARG
+CALL DUNGEON_RYOUZYOKU
+
+MON_COUNT = 0
+WHILE MON_COUNT < 300
+	LOCAL = MON_COUNT + 7
+	LOCAL:1 = E:MON_COUNT
+	IF E:LOCAL > 0 && MON_FEAR == 0
+		CALL MONSTER_NAME,LOCAL:1,0
+		PRINTFORMW の陵辱が始まった
+		;凌辱畏怖記憶
+		CFLAG:ARG:130 = LOCAL:1
+		MON_FEAR = LOCAL:1
+		CFLAG:ARG:131 = 0
+	ELSEIF E:LOCAL > 0 && MON_FEAR == LOCAL:1
+		CALL MONSTER_NAME,LOCAL:1,0
+		PRINTFORMW の再陵辱が始まった
+		CFLAG:ARG:131++
+	ELSEIF E:LOCAL > 0 && MON_FEAR != LOCAL:1
+		CALL MONSTER_NAME,LOCAL:1,0
+		PRINTFORMW の陵辱が始まった
+	ENDIF
+	B = MON_COUNT
+	IF E:LOCAL == 1
+		;カタコト
+		CALL ORC_RYOU,ARG
+	ELSEIF E:LOCAL == 2
+		;スライム
+		CALL SLIME_RYOU,ARG
+	ELSEIF E:LOCAL == 3
+		;昆虫
+		CALL INSECT_RYOU,ARG
+	ELSEIF E:LOCAL == 4
+		;蔦触手
+		CALL IVY_RYOU,ARG
+	ELSEIF E:LOCAL == 5
+		;触手
+		CALL SYOKUSYU_RYOU,ARG
+	ELSEIF E:LOCAL == 6
+		;妖精
+		CALL FAILY_RYOU,ARG
+	ELSEIF E:LOCAL == 7
+		;巨人
+		CALL GIANT_RYOU,ARG
+	ELSEIF E:LOCAL == 8
+		;男
+		CALL MAN_RYOU,ARG
+	ELSEIF E:LOCAL == 9
+		;女
+		CALL GIRL_RYOU,ARG
+	ELSEIF E:LOCAL == 10
+		;獣
+		CALL BEAST_RYOU,ARG
+	ELSEIF E:LOCAL == 11
+		;脳姦
+		CALL BRAIN_RYOU,ARG
+	ELSEIF E:LOCAL == 12
+		;馬
+		CALL HORSE_RYOU,ARG
+	ENDIF
+	PRINTL  
+	MON_COUNT += 100
+WEND
+
+IF EXP:0 > 0 && TALENT:0 == 1
+	TALENT:0 = 0
+	PRINTL [処女喪失]
+	CFLAG:15 = 104
+ENDIF
+
+CALL DUNGEON_RYOUZYOKU_AFTER
+
+RETURN 0
+
+;--------------------------------------------
+@ORC_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『コイツヲ縛リ上ゲロ...』
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 『オデタチノ...チ○ポニ...ドハマリダナ』
+		DATAFORM 『モウ...オデタチノ...ヨメダ!』
+		DATAFORM 『マタキタノカ...モウ,ワスレラレナイカ?』
+		DATAFORM 『オデタチノ...子ヲ...タノム』
+		DATAFORM 『ブヒヒッ...臭イガスキカ?』
+		DATAFORM 『オデタチノ...家畜ダ』
+		DATAFORM 『ブヒヒッ!マッテタゼ』
+		DATAFORM 『ソンナニ,チ○ポ,好キカ?』
+		DATAFORM 『ハァハァ...離サナイゾ...』
+		DATAFORM 『ブヒヒッ,オデタチノ仲間ダ』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 『イイ目ヲシテキタナ...』
+		DATAFORM 『マタオマエカ...』
+		DATAFORM 『許シテクダサイ,ダロ?』
+		DATAFORM 『ソロソロダナ...』
+		DATAFORM 『ブヒヒッ,ソノ調子ダ』
+		DATAFORM 『素直ニナッテキタナ』
+		DATAFORM 『尻ヲダセ...』
+		DATAFORM 『ケツヲ向ケロ』
+		DATAFORM 『ハァハァ......手ヲ抜イタナ......?』
+		DATAFORM 『顔ガ赤イゾ?』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 0
+	;弱畏怖状態
+	PRINTDATAW
+		DATAFORM 『オ...マタカ...』
+		DATAFORM 『オマエ,コノ前モ...』
+		DATAFORM 『コイツ...マタキタナ?』
+		DATAFORM 『オデタチニ,マタ負ケルナンテナ』
+		DATAFORM 『ブヒヒッ,ヨワイナ』
+		DATAFORM 『コンナモノカ......』
+		DATAFORM 『マタ負ケタノカ?』
+		DATAFORM 『ヤッターッ!　マタオデタチノ,勝チダ!』
+		DATAFORM 『ハァハァ...マタ勝テタ...』
+		DATAFORM 『オオーッ!　オデタチツヨイ!』
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『オ...オンナ...ウゥ...』
+		DATAFORM 『イイオンナダ...オデ...モウ...』
+		DATAFORM 『コイツ...スキニシテモ,イイノカ?』
+		DATAFORM 『オデノコドモ,ハラメ.オマエ,キットジョウブナコ,ウム』
+		DATAFORM 『ブヒヒッ,オンナダァ...』
+		DATAFORM 『テコズラセヤガッテ......』
+		DATAFORM 『ウゴクナヨ......イママデノ借リヲ,返シテヤル』
+		DATAFORM 『ヤッターッ!　オデタチノ,勝チダ!』
+		DATAFORM 『ハァハァ......オ,オンナ......』
+		DATAFORM 『オオーッ!　オデタチデモ,勝テル!』
+	ENDDATA
+ENDIF
+
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTW 『クソッ,コイツ封印シテヤガル!』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られており,手で触れると痺れてしまうのだ
+	PRINTFORMW 『ショウガネェ,ケツニブチコメ!』
+	PRINTFORMW %SAVESTR:ARG%のもう一つの穴に,獣欲が迸る......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTDATAL
+		DATAFORM 『オマエ,オレダケノモノ...』
+		DATAFORM 『ヒトリジメダ......ブヒヒッ』
+		DATAFORM 『ダレモミテナイヨ......』
+		DATAFORM 『オデ,勝ッタ!　イキノコッタ!』
+	ENDDATA
+	PRINTFORML %SAVESTR:ARG%は1体の亜人に組み伏せられ存分に精液を流しこまれる
+	
+	IF TALENT:ARG:12
+		;気丈
+		PRINT 歯を食いしばって
+	ELSE 
+		PRINT 頭をうなだれて
+	ENDIF
+	
+	PRINT 両手両膝を地につき,
+	
+	IF TALENT:ARG:陰毛の状態 > 200
+		PRINT 剛毛のはみ出た
+	ELSEIF TALENT:ARG:陰毛の状態 > 150
+		PRINT 陰毛の覗く
+	ENDIF
+	
+	IF TALENT:ARG:チャームポイント == 14
+		;ヒップライン
+		PRINT 綺麗な尻を晒した後ろから
+	ELSEIF TALENT:ARG:チャームポイント == 23
+		;大きな尻
+		PRINT 大きな尻を晒した後ろから
+	ELSE
+		PRINT 尻を晒した後ろから
+	ENDIF
+	
+	PRINTDATA
+		DATAFORM 剛直
+		DATAFORM 汚いペニス
+		DATAFORM イボイボのペニス
+		DATAFORM 凶悪なペニス
+		DATAFORM カリの高いペニス
+	ENDDATA
+	
+	PRINTL をねじ込まれ,
+	
+	PRINT その顔は
+	IF CFLAG:ARG:131 > 5
+		;隷属状態
+		IF TALENT:ARG:35
+			;恥じらい
+			PRINTL 羞恥と欲情にまみれていた......
+			PRINTFORML 恥情の珠+{MON_NUM * 12}
+			JUEL:ARG:8 += MON_NUM * 10
+		ELSE 
+			PRINTL 屈服の喜びと涎で汚れていた......
+			PRINTFORML 屈服の珠+{MON_NUM * 12}
+			JUEL:ARG:6 += MON_NUM * 10
+		ENDIF
+	ELSEIF CFLAG:ARG:131 > 2
+		;中畏怖状態
+		IF TALENT:ARG:35
+			;恥じらい
+			PRINTL 羞恥と快楽の狭間で揺れていた......
+			PRINTFORML 恥情の珠+{MON_NUM * 12}
+			JUEL:ARG:8 += MON_NUM * 10
+		ELSE 
+			PRINTL 屈服の喜びを隠しきれずにいた......
+			PRINTFORML 屈服の珠+{MON_NUM * 12}
+			JUEL:ARG:6 += MON_NUM * 10
+		ENDIF
+	ELSE
+		IF (TALENT:ARG:14 || TALENT:ARG:26 || TALENT:ARG:44) && TALENT:ARG:45 == 0
+			;大人しい-悲観的-涙もろいで泣かないが無い
+			PRINTL 涙で濡れていた......
+			PRINTFORML 恐怖の珠+{MON_NUM * 10}
+			JUEL:ARG:10 += MON_NUM * 10
+		ELSEIF TALENT:ARG:35
+			;恥じらい
+			PRINTL 羞恥に染まっていた......
+			PRINTFORML 恥情の珠+{MON_NUM * 10}
+			JUEL:ARG:8 += MON_NUM * 10
+		ELSEIF TALENT:ARG:11
+			;反抗的
+			PRINTL 怒りで歪んでいた......
+		ELSE 
+			PRINTL 絶望に染まっていた......
+			PRINTFORML 屈服の珠+{MON_NUM * 10}
+			JUEL:ARG:6 += MON_NUM * 10
+		ENDIF
+	ENDIF
+	
+	PRINTL V exp+1
+	PRINTL Semen exp+1
+	EXP:ARG:0 += 1
+	EXP:ARG:20 += 1
+	
+	;処女
+	SIF TALENT:ARG:0
+		PRINTL 『生娘ブヒィ!　初貫通オメデトウブヒィ......』
+	;濡れやすい
+	SIF TALENT:ARG:42
+		PRINTL 『コイツレイプデ濡レテルブヒィ』
+	
+	WAIT
+	RETURN 0
+ENDIF
+
+
+IF RAND:5 == 0
+	
+	;フェラ
+	
+	PRINTDATAW
+		DATAFORM 『オラ,シャブレ...ウウ,モットナメロ』
+		DATAFORM 『キレイニ,シテクレヨ』
+		DATAFORM 『戦ッテタラ勃起シタブヒィ......』
+	ENDDATA
+	
+	SIF TALENT:ARG:種族 == 4
+		PRINTFORM デュラハンの
+	
+	PRINTFORMW %SAVESTR:ARG%は
+	
+	IF TALENT:ARG:種族 == 4
+		PRINTFORM 身体を拘束され頭だけをオナホのように使われ
+	ELSE
+		PRINTFORM 全裸で
+	ENDIF
+	PRINTFORMW 亜人たちのペニスに奉仕した.{MON_NUM}人全員の精液を飲みこまない限り,彼女の下半身の無事は保障できない.........
+	
+	IF CFLAG:ARG:131 > 5
+		;隷属状態
+		IF TALENT:ARG:13
+			;素直
+			PRINTFORM 躊躇わず素直に
+		ELSEIF TALENT:ARG:14
+			;大人しい
+			PRINTFORM 大事そうに
+		ELSEIF TALENT:ARG:17
+			;プライド低い
+			PRINTFORM 土下座しつつ腰を振りながら
+		ELSEIF TALENT:ARG:35
+			;恥じらい
+			PRINTFORM 期待と羞恥で頬を赤めた
+		ELSEIF TALENT:ARG:0
+			;処女
+			PRINTFORM 処女を守るため
+		ELSE
+			PRINTFORM むしろ期待に顔を染めた
+		ENDIF
+	ELSEIF CFLAG:ARG:131 > 2
+		;中畏怖状態
+		IF TALENT:ARG:13
+			;素直
+			PRINTFORM 亜人に逆らえず素直に
+		ELSEIF TALENT:ARG:14
+			;大人しい
+			PRINTFORM 慎重に
+		ELSEIF TALENT:ARG:17
+			;プライド低い
+			PRINTFORM ペニスに媚びながら
+		ELSEIF TALENT:ARG:35
+			;恥じらい
+			PRINTFORM ペニスを前にして顔を赤めた
+		ELSEIF TALENT:ARG:0
+			;処女
+			PRINTFORM 処女を守るため
+		ELSE
+			PRINTFORM もはや逆らえない
+		ENDIF
+	ELSE
+		IF TALENT:ARG:11
+			;反抗的
+			PRINTFORM 反抗的な目で
+		ELSEIF TALENT:ARG:13
+			;素直
+			PRINTFORM 亜人に威圧され素直に
+		ELSEIF TALENT:ARG:14
+			;大人しい
+			PRINTFORM 恐る恐る
+		ELSEIF TALENT:ARG:17
+			;プライド低い
+			PRINTFORM へらへらと媚びた笑いを浮かべた
+		ELSEIF TALENT:ARG:35
+			;恥じらい
+			PRINTFORM ペニスを直視できず目をつぶった
+		ELSEIF TALENT:ARG:0
+			;処女
+			PRINTFORM 処女を守るため
+		ENDIF
+	ENDIF
+	
+	PRINTFORM %SAVESTR:ARG%は
+	
+	PRINTDATA
+		DATAFORM 剛直
+		DATAFORM 汚いペニス
+		DATAFORM イボイボのペニス
+		DATAFORM 凶悪なペニス
+		DATAFORM カリの高いペニス
+	ENDDATA
+	
+	PRINT を咥え,
+	
+	IF TALENT:ARG:52
+		;舌使い
+		PRINTFORM 天性の舌使いで
+		;舌使いボーナス
+		MON_NUM *= 2
+	ELSEIF TALENT:ARG:21
+		;無関心
+		PRINTFORM 事務的に
+	ELSEIF TALENT:ARG:36
+		;恥薄い
+		PRINTFORM 下品に音を立てて
+	ELSEIF TALENT:ARG:50
+		;習得早い
+		PRINTFORM コツを掴みながら
+	ELSEIF TALENT:ARG:62
+		;汚臭敏感
+		PRINTFORM 汚臭にえずきながら
+	ELSEIF TALENT:ARG:63
+		;献身的
+		PRINTFORM 必死に舌を使って
+	ENDIF
+	
+	PRINTL 奉仕を続けた......
+	
+	PRINTFORML フェラ経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:22 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+
+ELSEIF RAND:4 == 0
+	
+	;全穴奉仕
+	
+	PRINTDATAW
+		DATAFORM 『ツカエルアナ,ゼンブツカウ』
+		DATAFORM 『オラ,サンドイッチダ』
+		DATAFORM 『ミミマデザーメン漬ケニ,シテヤル』
+	ENDDATA
+	
+	PRINTFORMW %SAVESTR:ARG%は{MON_NUM}人の亜人にもみくちゃにされ,穴という穴に精液を注がれた......
+	
+	PRINT 亜人の
+	
+	PRINTDATA
+		DATAFORM 剛直
+		DATAFORM 汚いペニス
+		DATAFORM イボイボのペニス
+		DATAFORM 凶悪なペニス
+		DATAFORM カリの高いペニス
+	ENDDATA
+	
+	PRINTFORM が喉の奥までねじ込まれ,Ejaculationと同時にあふれ出した精液が%SAVESTR:ARG%の
+	
+	IF CFLAG:ARG:42 == 83
+		PRINT 眼鏡にふりかかった......
+	ELSEIF TALENT:ARG:チャームポイント == 2
+		PRINT 愛らしい目元にふりかかった......
+	ELSEIF TALENT:ARG:チャームポイント == 3
+		PRINT 綺麗な鼻から噴き出した......
+	ELSEIF TALENT:ARG:チャームポイント == 22
+		PRINT 光沢のある髪にふりかかった......
+	ELSE
+		PRINT 顔にふりかかった......
+	ENDIF
+	
+	PRINTW   
+	PRINTFORM 亜人たちはロ-ションで%SAVESTR:ARG%の
+	
+	IF TALENT:ARG:チャームポイント == 21
+		PRINT 綺麗な
+	ELSEIF TALENT:ARG:チャームポイント == 14
+		PRINT 綺麗な尻の割れ目にある
+	ELSEIF TALENT:ARG:チャームポイント == 23
+		PRINT 大きな尻の割れ目にある
+	ELSEIF TALENT:ARG:125
+		PRINT 無毛の
+	ELSEIF TALENT:ARG:248
+		PRINT 筋肉質なふとももの間の
+	ELSEIF TALENT:ARG:陰毛の状態 > 200
+		PRINT 尻毛まで繋がった陰毛の密生した
+	ELSEIF TALENT:ARG:陰毛の状態 > 150
+		PRINT 恥ずかしいほど濃い陰毛の生えた
+	ENDIF
+	
+	PRINTL 性器とアナルの下ごしらえをすると,
+	PRINTFORM %SAVESTR:ARG%の
+	
+	IF TALENT:ARG:99
+		;大柄
+		PRINT 大きな身体を
+	ELSEIF TALENT:ARG:100
+		;小柄体型
+		PRINT 小さな身体を
+	ELSEIF TALENT:ARG:115
+		;肥満
+		PRINT ふくよかな身体を
+	ELSEIF TALENT:ARG:248
+		;筋肉質
+		PRINT 引き締まった身体を
+	ELSEIF TALENT:ARG:256
+		;虚弱
+		PRINT 華奢な身体を
+	ELSEIF TALENT:ARG:肉付き <= 100
+		PRINT 細い身体を
+	ELSEIF TALENT:ARG:肉付き > 200
+		PRINT 肉感的な身体を
+	ELSE
+		PRINT 身体を
+	ENDIF
+	
+	PRINTL プレスするように激しく犯し続けた......
+	
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML フェラ経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:22 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+
+ELSEIF RAND:3 == 0
+	
+	;屈辱プレイ
+	
+	PRINTDATAW
+		DATAFORM 『オマエ,キョウカラ家畜.ブタミタイニナイテミロ』
+		DATAFORM 『ブタラシイ,礼儀ヲ,ミセテミロ』
+		DATAFORM 『オマエハ,オレタチ以下ノ,家畜ナンダヨ』
+	ENDDATA
+	
+	PRINTFORM %SAVESTR:ARG%は全裸で四つん這いになり,
+	
+	IF TALENT:ARG:10 || TALENT:ARG:14
+		;臆病-大人しい
+		PRINT びくびく震えながら
+	ELSEIF TALENT:ARG:11
+		;反抗的
+		PRINT 怒りに震える目で
+	ELSEIF TALENT:ARG:13
+		;素直
+		PRINT 命令に従って必死に
+	ELSEIF TALENT:ARG:17
+		;プライド低い
+		PRINT 媚びた顔で必死に
+	ELSEIF TALENT:ARG:35
+		;恥じらい
+		PRINT 羞恥に頬を染めて
+	ENDIF
+	
+	PRINTW 豚の鳴き真似をしている......
+	
+	PRINTFORMW {MON_NUM}人の亜人たちはそれを見て大声で笑った.そこにはすでに輝かしい勇者の姿はなく,惨めに鳴く豚が一匹いるだけだった
+	
+	IF ABL:ARG:17
+		;露出癖
+		PRINTFORMW %SAVESTR:ARG%はどこか熱っぽい表情でその行為を繰り返している
+		PRINTFORMW 見られていることに感じているようだ......
+		PRINTFORML 恥情の珠+{MON_NUM * 10}
+		JUEL:ARG:8 += MON_NUM * 10
+	ENDIF
+	
+	IF ABL:ARG:21
+		;マゾっ気
+		PRINTFORMW %SAVESTR:ARG%は罵倒されることに快感を覚えているようだ
+		PRINTFORMW 『メスブタガッ　勇者トカ言ッテエラソウニシヤガッテ!』
+		PRINTFORMW %SAVESTR:ARG%の瞳はどこか潤んでいるように見えた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORM "豚
+	IF TALENT:ARG:17
+		;プライド低い
+		;喜び
+		CALL GOBI_KOUJO, 1
+	ELSE
+		;情けない
+		CALL GOBI_KOUJO, 5
+	ENDIF
+	PRINTFORM 勇者とか言って......馬鹿
+	
+	IF TALENT:ARG:17
+		;プライド低い
+		;喜び
+		CALL GOBI_KOUJO, 1
+	ELSE
+		;情けない
+		CALL GOBI_KOUJO, 5
+	ENDIF
+	
+	PRINTFORMW 　ぶうぶう,ぶひぃ!"
+	
+	IF TALENT:ARG:17
+		;プライド低い
+		PRINTFORMW %SAVESTR:ARG%はプライドを捨てて必死に命乞いをしている
+		PRINTFORML 屈服の珠+{MON_NUM * 10}
+		JUEL:ARG:6 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML 恥情の珠+{MON_NUM * 10}
+	PRINTFORML 屈服の珠+{MON_NUM * 10}
+	JUEL:ARG:8 += MON_NUM * 10
+	JUEL:ARG:6 += MON_NUM * 10
+ELSEIF RAND:2 == 0
+	PRINTW 『ドコマデブットイノハイルカ,タメシテミヨウゼ』
+	PRINTFORMW %SAVESTR:ARG%はこれから自分の身に降りかかる危機を感じ取り,必死に哀願した
+	PRINTFORMW しかし,無情にも彼女の体は他の亜人に拘束され,M字開脚で無防備な性器と肛門を晒している
+	PRINTFORMW 一人の亜人が,彼女の愛用する武器の柄を彼女の穴にねじ込んで............
+	PRINTFORMW %SAVESTR:ARG%の叫びが,{MON_NUM}人の亜人たちの耳に響き渡った
+	
+	IF TALENT:ARG:40
+		;痛みに弱い
+		PRINTFORMW "痛い......やめて......あああ-っ!"
+		PRINTFORMW %SAVESTR:ARG%は痛みに耐えかねて泣きだしてしまった
+		PRINTFORML 苦痛の珠+{MON_NUM * 10}
+		JUEL:ARG:9 += MON_NUM * 10
+	ENDIF
+	
+	IF ABL:ARG:21
+		;マゾっ気
+		PRINTFORMW %SAVESTR:ARG%は痛みの中にも快楽を感じつつあるようだ
+		PRINTFORMW 自分の中に潜む変態性に%SAVESTR:ARG%は少し恐怖を感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+ELSE
+	PRINTW 『シリヲダシテ,ドウカオツカイクダサイトイエ』
+	PRINTFORMW %SAVESTR:ARG%は尻を突き出した屈辱的な姿勢でダンジョンの壁に手をついている
+	PRINTFORMW 彼女の消え入りそうなおねだりの声を聞いた{MON_NUM}人の亜人たちは,うすら笑いを浮かべ彼女の膣と肛門を代わる代わる犯した
+	PRINTFORMW %SAVESTR:ARG%の嗚咽は,亜人たちの歓声にかき消されダンジョンの闇に消えた
+	
+	IF TALENT:ARG:70 || TALENT:ARG:73
+		;快感に素直-即落ち
+		PRINTFORMW 凌辱が続き,%SAVESTR:ARG%の性器も少しずつ粘液が零れるようになってきた
+		PRINTFORMW 『カンジテヤガルナ,オレハイママデ何人モ人間ノオンナヲ泣カセテキタンダ』
+		PRINTFORMW %SAVESTR:ARG%は熱っぽい吐息を漏らし,足を振るわせた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+		
+	ELSEIF TALENT:ARG:11
+		;反抗的
+		PRINTFORMW 『オイ,腰ヲアゲロ!　マダマダイルンダゾ!』
+		PRINTFORMW %SAVESTR:ARG%は亜人たちに冷たい目を向けて,きっと睨んだ
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SLIME_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 粘液が勇者の足を絡め取り,動きを封じてしまった
+	RETURN 0
+ENDIF
+
+PRINTDATAW
+	DATAFORM 怪しく粘液は蠢動している.........
+	DATAFORM 勇者は意思の感じられない粘液に嫌悪感を感じた
+	DATAFORM 勇者は迫りくる粘液に逃げ場がないことを悟った
+	DATAFORM 勇者の身体に粘液が触れ,彼女は悲鳴を上げた
+	DATAFORM 粘液が勇者を取り囲んでいる.........
+ENDDATA
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られており,粘液が侵入しようとすると弾かれてしまう
+	PRINTFORMW 粘液はしばらく迷っていたが,すぐに侵入口を見つけ蠢きだした
+	PRINTFORMW %SAVESTR:ARG%の肛門と口に,一気に粘液が流れ込んだ
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:5 == 0
+	PRINTW 粘液は勇者の口めがけて殺到した
+	PRINTFORMW %SAVESTR:ARG%は呼吸困難になりもがき苦しんだ.すぐに解放されたが,粘液の一部は消化器の中に入り込み彼女を内部から蹂躙している
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+ELSEIF RAND:4 == 0
+	PRINTW 粘液は勇者の肛門めがけ殺到した
+	PRINTFORMW %SAVESTR:ARG%は肛門から逆流する大量の粘液に苦しんだが,四肢は完全に粘液に捕らわれて抵抗できなかった
+	IF CFLAG:ARG:131 > 5
+		;隷属状態
+		PRINTFORMW %SAVESTR:ARG%は逆に腰を突き出し,粘液の肛虐を楽しんでいるようだ......
+	ELSEIF CFLAG:ARG:131 > 3
+		;強畏怖状態
+		PRINTFORMW %SAVESTR:ARG%は粘液にハマりつつある......
+	ELSEIF CFLAG:ARG:131 > 0
+		;弱畏怖状態
+		PRINTFORMW %SAVESTR:ARG%は粘液の流入に慣れ始めている......
+	ELSE
+		PRINTW 勇者は肛虐の苦しみに半狂乱になって絶叫している
+	ENDIF
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+ELSEIF RAND:3 == 0
+	PRINTW 全裸で四つん這いになった勇者の肛門に次々と粘液が吸い込まれていく
+	PRINTFORML %SAVESTR:ARG%は腹に力を入れて肛門から粘液を噴出させたが,
+	PRINTFORMW 大量の粘液が彼女の体内に流れ込んでしまった......
+	PRINTFORML 恥情の珠+{MON_NUM * 10}
+	PRINTFORML 屈服の珠+{MON_NUM * 10}
+	JUEL:ARG:8 += MON_NUM * 10
+	JUEL:ARG:6 += MON_NUM * 10
+ELSEIF RAND:2 == 0
+	PRINTW 粘液の陵辱で,大量の粘液が勇者の腸に入り込み彼女の腹は幾分か膨らんでいた
+	IF TALENT:ARG:12
+		;気丈
+		PRINTFORMW %SAVESTR:ARG%は気丈にも立ちあがってみせたが
+		PRINTFORMW すぐに大量の粘液を肛門からぶちまけて膝から崩れ落ちた
+	ELSE
+		PRINTFORMW %SAVESTR:ARG%は腹を抱えて中腰で立ち上がったが,
+		PRINTFORMW すぐに大量の粘液を肛門からぶちまけて膝から崩れ落ちた
+	ENDIF
+	
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	EXP:ARG:1 += MON_NUM
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+ELSE
+	PRINTW 粘液に体中を包まれた勇者は,頭だけ出してぶつぶつとうわごとを呟いている
+	PRINTFORMW %SAVESTR:ARG%は助けが来なければこのまま消化されるのを知っていたが,
+	PRINTFORMW 粘液に体中を愛撫されてこのまま溶けてしまってもいいと感じていた
+	PRINTFORMW 粘液の麻痺成分は,陵辱で痛めつけられた%SAVESTR:ARG%の身体を癒した
+	BASE:ARG:0 += 100
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@INSECT_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 節足動物が勇者の首筋に麻痺毒を打ち込む......
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 節足動物は歓喜の声を上げ,勇者はゆっくりと甲殻を抱きしめた...
+		DATAFORM 勇者は感情の感じられない節足動物に欲情を覚えていた
+		DATAFORM 勇者は仲間や使命を忘れ,いまは快楽に身をゆだねていた
+		DATAFORM 目の前に突き出された産卵管を見て,勇者はゆっくりと愛撫をした
+		DATAFORM 言葉は通じなくとも,節足動物と勇者の間には無言の情愛があった
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 節足動物は歓喜の声を上げ,勇者はへたり込んでしまった...
+		DATAFORM 勇者は感情の感じられない節足動物に微かな期待を膨らませた
+		DATAFORM 勇者は助けを呼ぶのを諦め,腰を突き出した
+		DATAFORM 目の前に突き出された産卵管を見て,勇者は頬を赤らめた
+		DATAFORM 言葉は通じなくとも,節足動物の手を取ってキスをすることはできた
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 0
+	;弱畏怖状態
+	PRINTDATAW
+		DATAFORM 節足動物の甲殻が歓迎するように軋んだ...
+		DATAFORM 勇者は感情の感じられない節足動物の陵辱に息をのんだ
+		DATAFORM 勇者は助けを呼ぶのを諦め,身を任せた
+		DATAFORM 目の前に突き出された産卵管を見て,勇者はつばを飲み込んだ
+		DATAFORM 言葉は通じなくとも,節足動物の歓喜が伝わってくる
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 節足動物の甲殻が軋んでいる...
+		DATAFORM 勇者は感情の感じられない節足動物の陵辱に恐怖している
+		DATAFORM 勇者は必死に助けを求めたが,この節足動物は聞き入れる気配が全くない
+		DATAFORM 節足動物は,産卵管を勇者の目の前に突き出した
+		DATAFORM 勇者は言葉の通じない相手に絶望した
+	ENDDATA
+ENDIF
+
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTW 『ギチギチギチッ』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られており,節足動物の侵入を許さなかった
+	PRINTFORMW 彼は怒り狂い,管を肛門へと突き立てる
+	PRINTFORMW %SAVESTR:ARG%は激痛に悲鳴を上げた......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTL 『ギチギチギチ...』
+	PRINTFORML %SAVESTR:ARG%は節足動物に捕らえられ産卵管を膣に突き立てられた
+	PRINTL 彼女は悲鳴を上げたが,節足動物は全く手加減をしなかった
+	PRINTL V exp+1
+	EXP:ARG:0 += 1
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:2 == 0
+	PRINTW 『ギチギチギチ......』
+	PRINTFORMW %SAVESTR:ARG%は口に産卵管を挿入され,卵を産みつけられた
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+
+ELSE
+	PRINTW 『ギ-ギ-ギ-』
+	PRINTFORMW %SAVESTR:ARG%は肛門に産卵管をねじ込まれ,卵を産みつけられた
+	PRINTW 虫下しを飲まなければ,魔界の昆虫が肛門で孵化するだろう
+	PRINTFORMW {MON_NUM}匹が代わる代わる彼女に覆いかぶさり,尻や背中まで卵だらけにさせられた
+	PRINTFORML A経験+{MON_NUM}
+	EXP:ARG:1 += MON_NUM
+	TALENT:ARG:190 = 1
+
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@IVY_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 植物の蔦が勇者の武器を奪い取った
+	RETURN 0
+ENDIF
+
+PRINTDATAW
+	DATAFORM 植物の蔦が勇者を絡め取った
+	DATAFORM 勇者は蔦に縛り上げられている
+	DATAFORM 『シュルシュル...』
+	DATAFORM 植物の締め付けに,勇者は悲鳴を上げた
+	DATAFORM 蔦が巻きついて,勇者は緑の塊になった
+ENDDATA
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られており,植物は触れるだけで焦げてしまった
+	PRINTFORMW しかし元より純潔に興味のない植物は
+	PRINTFORMW 気にせず%SAVESTR:ARG%の肛門を目指す......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:2 == 0
+	PRINTW 蔦は勇者の首を絞めた
+	PRINTFORMW %SAVESTR:ARG%は呼吸困難になりもがき苦しんだ.すぐに解放され,彼女は荒い息をついている
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+ELSE
+	PRINTW 蔦は勇者の肛門に根を下ろした
+	PRINTFORMW %SAVESTR:ARG%は肛門を蹂躙され喉が裂けるほどの絶叫を上げた
+	PRINTW 蔦は養分を吸収すると,肛門から一気に根を引き抜く
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SYOKUSYU_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 勇者の身体を触手が縛り上げた
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 勇者は蠢動する触手を愛おしそうに撫でた.........
+		DATAFORM 勇者は卑猥な形状をした触手に,期待で目を濁らせた
+		DATAFORM 勇者は触手の出す媚薬成分に,涎を垂らして鼻をスンスンならしている
+		DATAFORM 勇者の身体を触手が縛り上げ,勇者はびくびくと身体をしならせる......
+		DATAFORM 触手が勇者を取り囲み,勇者は自ら服をはだけ触手を誘惑した
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 勇者は男性器に似た形の触手を突き付けられ,顔を赤らめていた
+		DATAFORM 触手は抵抗が弱くなってきた勇者に気付き,びくびくと歓喜した
+		DATAFORM 勇者は媚薬成分の香りをかいだだけで,股が湿るのを感じていた
+		DATAFORM 触手は勇者を取り囲んだが,逃げようとしない勇者に困惑したように蠢いた
+		DATAFORM 勇者の身体を触手が縛り上げるが,以前のような抵抗はなく,勇者は顔を逸らしただけだった
+		DATAFORM 勇者は触手を前にして,自ら武器を捨てた
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 怪しく触手は蠢動している.........
+		DATAFORM 勇者は卑猥な形状をした触手に,自らの運命を呪った
+		DATAFORM 勇者は触手の出す媚薬成分にくらくらしている
+		DATAFORM 勇者の身体を触手が縛り上げた
+		DATAFORM 触手が勇者を取り囲んでいる.........
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られており,触手は触れるだけで痺れてしまう
+	PRINTFORMW 諦めた触手は,次なる目標に向けてすぐさま動き出した
+	PRINTFORMW %SAVESTR:ARG%の不浄の穴がこじ開けられる......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:5 == 0
+	PRINTW 触手は勇者の口めがけて殺到した
+	PRINTFORMW %SAVESTR:ARG%は喉に大量の体液を流しこまれ,むせた.やがて彼女の意識は混濁してくる.........
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+ELSEIF RAND:4 == 0
+	PRINTW 触手は勇者の肛門めがけ殺到した
+	PRINTFORMW %SAVESTR:ARG%は後ろの穴に大量の体液を流しこまれ,直腸から直に吸収される成分で朦朧としてきた
+	PRINTW やがて筋肉が弛緩して,だらしなく肛門から大量の濁った体液を垂れ流した
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+ELSEIF RAND:3 == 0
+	PRINTW 仰向けに倒れた勇者の秘所に太い触手がねじ込まれた
+	PRINTFORMW %SAVESTR:ARG%は悲鳴を上げたが,やがて大量の体液を注ぎこまれると口を半開きにしてよだれをたらしながら虚空を見つめた
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+	EXP:ARG:0 += MON_NUM
+ELSEIF RAND:2 == 0
+	PRINTW 触手に縛り上げられ,勇者は空中に吊り下げられた
+	PRINTFORMW %SAVESTR:ARG%は,口も膣も肛門も触手の入る所はすべて犯され大量の体液を流しこまれた
+	PRINTFORMW ......やがて,地面に落ちる液体にも触手の体液以外のものが混じり始める...
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+ELSE
+	PRINTW 勇者は触手に乳首をくわえられて搾乳された
+	PRINTFORMW %SAVESTR:ARG%は信じられない顔をしたが,すぐその口にぶち込まれた触手から流れ込む体液に脳髄を溶かされた
+	PRINTFORMW すぐさま彼女の乳房は張り始め,触手は搾乳を開始した
+	PRINTFORMW しばらく後,%SAVESTR:ARG%は解放されたが乳首から噴出する母乳はしばらく止まらなかった
+	PRINTFORML 噴乳経験+1
+	EXP:ARG:54 += 1
+ENDIF
+PRINTFORMW 触手経験+{MON_NUM}
+EXP:ARG:55 += MON_NUM
+RETURN 0
+
+;--------------------------------------------
+@FAILY_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『もっと遊ぼうよ～』
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 『おねーさん,もう戻れないね』
+		DATAFORM 『これからもずーっと,あそぼうね!』
+		DATAFORM 『わーい,おねーさんが来てくれた!』
+		DATAFORM 『おねーさん,けっこんしよ♪』
+		DATAFORM 『おねーさん,すっかりこわれちゃったね』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 『おねーさんどうしたのかな?』
+		DATAFORM 『また遊びに来てくれたんだね』
+		DATAFORM 『えっちになったね,おねーさん♪』
+		DATAFORM 『また来たんだ,おねーさん』
+		DATAFORM 『わーい,また遊べる!』
+		DATAFORM 『抵抗しても,いーんだよ?』
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『おねーさん,もっとえっちになろーね』
+		DATAFORM 『いーっぱいイタズラしてあげる!』
+		DATAFORM 『わーい,あたらしいオモチャだ!』
+		DATAFORM 『こんどはおねーさんが,おいつめられるがわだよ♪』
+		DATAFORM 『おねーさんのこわれるとこ,みたいなぁ』
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW 『ゆ-しゃさんってお堅いこなんだね』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られている.手出しはできないだろう
+	PRINTFORMW 妖精は自分の身長ほどもあるディルドを取り出して言った
+	PRINTFORMW 『おね-さんのこっちの穴で楽しもうっと』
+	PRINTFORMW %SAVESTR:ARG%の悲鳴がダンジョンに響いた
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTL 『おね-さん,ぼくのにくべんきにならない?』
+	PRINTFORML %SAVESTR:ARG%は1体の妖精に淫核をフェラされていた
+	PRINTFORML %SAVESTR:ARG%はM字開脚で屈辱に耐えている......
+	PRINTL 快Cの珠+1
+	JUEL:ARG:0 += 10
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:2 == 0
+	PRINTW 『おね-さんのなか,ど-なってるんだろ-』
+	PRINTFORMW %SAVESTR:ARG%の膣に,妖精が潜り込んだ.彼女の反応が面白くて,妖精は膣の襞をしごいたりして遊んでいる
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML 快Vの珠+{MON_NUM * 10}
+	EXP:ARG:0 += MON_NUM
+	JUEL:ARG:1 += MON_NUM * 10
+ELSE
+	PRINTW 『なめちゃえ-!』
+	PRINTFORMW %SAVESTR:ARG%は,クリトリスと両乳首を妖精たちにフェラされた
+	PRINTW 彼女は妖精たちの舌さばきに悶えている
+	PRINTFORML 快Cの珠+{MON_NUM * 10}
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:0 += MON_NUM * 10
+	JUEL:ARG:5 += MON_NUM * 10
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@GIANT_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『モウ,オワリカ』
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 『スッカリ　オナホニ　ナッタジャネェカ』
+		DATAFORM 『巨人チ○ポノ　カタチ　オボエテヤガル』
+		DATAFORM 『ハハ　モウ　ガバガバダ』
+		DATAFORM 『モウ　巨人ペニス　ジャナイト　マンゾク　デキナイカ?』
+		DATAFORM 『巨人チ○ポニ　ピッタリノ　チ○ポケース　ダナ』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 『ハハ　馴染ンデキタゾ』
+		DATAFORM 『マタ来タカ......オナホ女』
+		DATAFORM 『飽キズニ　ヨク来ルモンダ』
+		DATAFORM 『無駄ナンダヨ　巨人ニ　逆ラウナンテ......』
+		DATAFORM 勇者は圧倒的な巨人の質量に,逆らえない矮小な種族であることを思い知らされていた......
+		DATAFORM 巨大な雄の質量に,勇者は武器を落とし,静かに跪いた
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『イイ　オナホニ　ナリソウダ』
+		DATAFORM 『サケルカモナ』
+		DATAFORM 『ケツト　マ○コノ　アナヲ　ツナゲテ　ヤロウカ?』
+		DATAFORM 『マンゾク　サセテクレヨ』
+		DATAFORM 『チイサスギル』
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW 『キサマ,封印シテイルノカ』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られていて,巨人と言えども封印を破ることは不可能だった
+	PRINTFORMW 『小指ナラ,ハイルカ』
+	PRINTFORMW %SAVESTR:ARG%の窄まった肛門に,巨人の太い小指がめり込んでいく......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+	EXP:ARG:1 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+IF MON_NUM == 1
+	PRINTL 『ナメロヨ』
+	PRINTFORML %SAVESTR:ARG%は1体の巨人に奉仕した.到底口に入るようなサイズではない
+	PRINTL 絶頂した巨人の精液で,彼女の全身は精液まみれになってしまった
+	PRINTL フェラ経験+1
+	PRINTL Semen exp+1
+	EXP:ARG:22 += 1
+	EXP:ARG:20 += 1
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:4 == 0
+	PRINTFORMW 『マルデ　オナホ　ダナ』
+	PRINTFORMW %SAVESTR:ARG%は胴を掴まれ巨人の巨大なペニスをしごくための道具,オナホとなっていた
+	PRINTFORMW 『オイ　ツギ　カシテクレヨ』
+	
+	IF TALENT:ARG:41
+		;痛みに強い
+		PRINTFORMW %SAVESTR:ARG%はよく訓練されていたせいか,意識を保っていた
+		PRINTFORMW 『イイコエデナケヨ,オラ』
+		PRINTFORMW %SAVESTR:ARG%はヒキガエルのような声を漏らして,必死に拡張に耐えている
+		PRINTFORML 恐怖の珠+{MON_NUM * 10}
+		JUEL:ARG:10 += MON_NUM * 10
+		
+	ELSE
+		;その他
+		PRINTFORMW 最初にぶちこまれたとき失禁して失神した彼女には,いまが何人目かさえももはやわからなかった
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	PRINTFORML V拡張経験+{MON_NUM}
+	PRINTFORML 異常経験+1
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	EXP:ARG:50 += 1
+	EXP:ARG:53 += MON_NUM
+ELSEIF RAND:3 == 0
+	PRINTW 『ハヤクシロヨ』
+	PRINTFORMW %SAVESTR:ARG%は巨人たちのペニスを必死になめている
+	PRINTW 彼女の必死の哀願で,性器や肛門の崩壊だけは勘弁してくれたのだ
+	PRINTFORMW 早く{MON_NUM}人イかせなければ,いつ気が変わってもおかしくない.........
+	
+	IF TALENT:ARG:52
+		;舌使い
+		PRINTW 『オオッ,チイサキモノニシテハ,ナカナカイイ舌ダ』
+		PRINTFORMW %SAVESTR:ARG%は必死に舌を使って奉仕するが,その技術には天性のものがあった
+		PRINTFORMW 巨人たちはその舌使いにたまらずEjaculationし%SAVESTR:ARG%は頭からバケツで被ったように精液で汚された
+		Y *= 2
+	ENDIF
+	
+	PRINTFORML フェラ経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:22 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+ELSEIF RAND:2 == 0
+	PRINTW 『ハハ　イイコエデ　ナクナァ』
+	PRINTFORMW %SAVESTR:ARG%の肛門は巨人の剛直の一撃で裂け,処女のように血を散らした.断末魔の叫びをあげて彼女は失神する
+	PRINTFORMW 『マタコワレタ　カイフクヤク　モッテコイ　モイッパツ　イクゾ』
+	PRINTFORMW 壊れた肛門は,すぐさま回復薬で再生させられる.{MON_NUM}人全員が満足するまで.........
+	
+	IF TALENT:ARG:34
+		;抵抗
+		PRINTFORMW %SAVESTR:ARG%は勇気を振り絞り,逃げようと這いまわった
+		PRINTFORMW 『オイ,ニゲルナ.オサエテロ』
+		PRINTFORMW %SAVESTR:ARG%は巨人の大きな腕で四肢を固定された.その無防備な肛門にもう一度巨根があてがわれ......
+		PRINTFORML 恐怖の珠+{MON_NUM * 10}
+		JUEL:ARG:10 += MON_NUM * 10
+		
+	ENDIF
+	
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	PRINTFORML A拡張経験+{MON_NUM}
+	PRINTFORML 異常経験+1
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	EXP:ARG:50 += 1
+	EXP:ARG:53 += MON_NUM
+ELSE
+	PRINTW 『イイコトオモイツイタ』
+	PRINTFORMW 巨人たちは何やら自慰を始め,巨大なタライに精液を集め始めた
+	PRINTFORMW %SAVESTR:ARG%はなにが起こるのかわからないまま,恐怖に震えている
+	PRINTFORMW 巨人は,大きなタライになみなみと溜められた精液を彼女に見せて,言った
+	PRINTFORMW 『シニタクナケレバ　コレヲゼンブ　ノメ』
+	PRINTFORMW %SAVESTR:ARG%の顔から,血の気が引いた
+	
+	IF TALENT:ARG:11
+		;反抗的
+		PRINTFORMW %SAVESTR:ARG%は冷たい目で巨人を睨み,否定の意を示した
+		PRINTFORMW 『ワカッテナイヨウダナ』
+		PRINTFORMW 巨人は%SAVESTR:ARG%の頭を大きな手で掴み,無理矢理タライに頭をぶちこんだ
+		PRINTFORMW "オボッ,ゴボ,オボボッ"
+		PRINTFORMW 頃合いを見て頭は引き上げられた.精液まみれのその顔に,もはや反抗の意思は見られない......
+		PRINTFORML 恐怖の珠+{MON_NUM * 10}
+		JUEL:ARG:10 += MON_NUM * 10
+		
+	ENDIF
+	
+	PRINTFORML Semen exp+{MON_NUM * 10}
+	EXP:ARG:20 += MON_NUM * 10
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MAN_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『命だけは助けてやるよ』
+	RETURN 0
+ENDIF
+
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 『もう,俺らから離れられないな』
+		DATAFORM 『へへ,今日も好きにさせてもらうぜ』
+		DATAFORM 『闇の世界に,ドはまりってか』
+		DATAFORM 『また犯されに来やがったか』
+		DATAFORM 『また抱かれに来たか...昔の自分が見たら,どう思うかなぁ?』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 『おっ,また来たな』
+		DATAFORM 『わざと負けてんじゃねぇのか?』
+		DATAFORM 『そんなに俺たちのチ○ポが好きか?』
+		DATAFORM 『口程にもねぇ』
+		DATAFORM 勇者は魔族の男たちの言いなりになっている......
+		DATAFORM 魔族の男たちは,馴れ馴れしく勇者に近づき,勇者は目を逸らした
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『いい女じゃねぇか』
+		DATAFORM 『本当に好きにしていいんですか!?』
+		DATAFORM 『嬢ちゃん,闇の世界へようこそ』
+		DATAFORM 『悪く思うな,攻めてきたのはお前たちだ』
+		DATAFORM 『こんなことになるなんて考えたことあったか?』
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW 『バカな女だ.前を守ったって,後ろが完全にガラ空きだぜ』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られているが,肛門を塞ぐことはできないでいた
+	PRINTFORMW 『オラッ,ケツから飲み込めッ』
+	PRINTFORMW %SAVESTR:ARG%の肛門に剛直がねじ込まれ,次々と精が放たれていった......
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTL 『肉便器になって払い下げられたら,毎晩抱いてやるよ...うっ』
+	PRINTFORML %SAVESTR:ARG%は一人の男に後背位で突かれている
+	PRINTL 彼女は四つん這いの姿勢のまま顔を床に埋め,後ろから剛直を叩きこまれて泣いていた
+	PRINTL V exp+1
+	PRINTL Semen exp+1
+	EXP:ARG:0 += 1
+	EXP:ARG:20 += 1
+	WAIT
+	RETURN 0
+ENDIF
+
+
+IF RAND:5 == 0
+	IF TALENT:ARG:109
+		;貧乳
+		PRINTFORMW 『情けない乳だな!　尻を出せ,尻コキだ!』
+		PRINTFORMW %SAVESTR:ARG%は屈辱にまみれた顔をしながら,男たちに尻を差し出した
+	
+	ELSE
+		PRINTW 『乳も使えよ...パイズリって言うんだ,知らないのか?』
+	ENDIF
+	PRINTFORMW %SAVESTR:ARG%は全裸で男たちのペニスに奉仕した.{MON_NUM}人全員の精液を飲みこまない限り,彼女の下半身の無事は保障できない.........
+	
+	IF TALENT:ARG:110 || TALENT:ARG:114 || TALENT:ARG:119
+		;巨乳-爆乳-超乳
+		PRINTFORMW %SAVESTR:ARG%の豊かな胸でペニスを挟まれた男たちは次々と絶頂していった
+		PRINTFORMW 『おおっ,これはいい乳だ......ペニス専用乳だな』
+		PRINTFORMW %SAVESTR:ARG%は胸の感覚に頬を上気させ俯いた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+		
+	ELSEIF TALENT:ARG:109
+		;貧乳
+		PRINTFORMW 『次はフェラだ!　てめえの尻で汚くなったペニスをちゃんと掃除しろよ』
+		PRINTFORMW %SAVESTR:ARG%は言われたとおりにペニスに奉仕するしかなかった......
+	
+	ENDIF
+	PRINTFORML フェラ経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:22 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+
+ELSEIF RAND:4 == 0
+	
+	PRINTFORMW %SAVESTR:ARG%は肉便器宣言を強要させられ,全身に卑猥な言葉を書かれた
+	
+	;落書きの文字
+	PRINTFORM %SAVESTR:ARG%は
+	IF TALENT:ARG:0
+		;処女
+		PRINT 処女穴開通記念 
+	ELSE
+		PRINT ペニス大好き 
+	ENDIF
+	
+	IF TALENT:ARG:22 || TALENT:ARG:21
+		;感情乏しい-無関心
+		PRINT マグロ便器 
+	ENDIF
+	
+	IF TALENT:ARG:24 || TALENT:ARG:30
+		;保守的-貞操観念
+		PRINT 箱入り娘便器デビュ- 
+	ENDIF
+	
+	IF TALENT:ARG:42
+		;濡れやすい
+		PRINT ドロドロに濡れてます 
+	ENDIF
+	
+	IF TALENT:ARG:70 || TALENT:ARG:73
+		;快感に素直-即落ち
+		PRINT アヘ顔晒しました 
+	ENDIF
+	
+	IF TALENT:ARG:110 || TALENT:ARG:114 || TALENT:ARG:119
+		;巨乳-爆乳-超乳
+		PRINT 雌牛 
+	ENDIF
+	
+	IF TALENT:ARG:121 || TALENT:ARG:122
+		;ふたなり-オトコ
+		PRINT チンポ奴隷 
+	ENDIF
+	
+	IF RAND:3 == 0
+		PRINT ファックミ- 
+	ELSEIF RAND:2 == 0
+		PRINT アナル無料 
+	ELSE
+		PRINT 雌豚 
+	ENDIF
+	
+	PRINTFORM などと身体中に書かれている
+	
+	PRINTFORMW 代わる代わる男たちは膣でも口でもアヌスでも好きな場所を犯し,精液を注ぎこんだ
+	PRINTFORMW 最後の一人に抱かれているときにはもう,%SAVESTR:ARG%は感情の消えた顔で全身の穴からだらしなく精液を垂れ流す便器となっていた
+	PRINTFORMW {MON_NUM}人分の溜まりに溜まった精液と愛液でダンジョンは異様な臭気に包まれ,男たちは便器として生まれ変わった元勇者を歓迎している
+	
+	;肌の色で分岐
+	IF TALENT:ARG:244
+		;青肌
+		PRINTFORMW %SAVESTR:ARG%の青い肌は白濁した精液で彩られた
+	ELSEIF TALENT:ARG:253
+		;褐色肌
+		PRINTFORMW %SAVESTR:ARG%の健康的な褐色肌は白濁した精液で淫靡なコントラストを見せていた
+	ELSEIF TALENT:ARG:255
+		;白皙
+		PRINTFORMW %SAVESTR:ARG%の美しい白い肌を汚れた白濁液が汚していった
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML フェラ経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:22 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	;ファーストキス
+	SIF CFLAG:16 == -1
+		CFLAG:16 = 995
+ELSEIF RAND:3 == 0
+	PRINTW 『勇者のくせに,クソも我慢できないのか?』
+	PRINTFORMW %SAVESTR:ARG%は肛門に薬液を浣腸され,激しい便意に耐えていた
+	PRINTFORMW 『オナニ-でイけ.漏らす前にイったらトイレにつれてってやってもいいぞ』
+	PRINTFORMW %SAVESTR:ARG%は必死で自慰をしたがこの異常な状況で興奮できるはずもなく,
+	PRINTFORMW 肛門から汚物を撒き散らして崩れ落ちた
+	PRINTFORMW 男たちはそれを見て侮蔑の言葉を投げかけ,%SAVESTR:ARG%は屈辱で泣き出してしまった
+	
+	IF TALENT:ARG:62
+		;汚臭敏感
+		PRINTFORMW %SAVESTR:ARG%は自分の出したモノの匂いに顔をしかめ,屈辱を感じていた
+		PRINTFORML 苦痛の珠+{MON_NUM * 10}
+		JUEL:ARG:9 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML 恥情の珠+{MON_NUM * 10}
+	PRINTFORML 屈服の珠+{MON_NUM * 10}
+	PRINTL 自慰経験+1
+	PRINTL 調教自慰経験+1
+	JUEL:ARG:8 += MON_NUM * 10
+	JUEL:ARG:6 += MON_NUM * 10
+	EXP:ARG:10 += 1
+	EXP:ARG:11 += 1
+ELSEIF RAND:2 == 0
+	PRINTW 『あの勇者様が俺のアナル舐めてるなんてな-』
+	PRINTFORMW %SAVESTR:ARG%は命の保証と引き換えに,この男たちのアナルすべてを舐めて掃除することを約束させられてしまった
+	PRINTFORMW 『てめぇプライドはねぇのかよっ』
+	PRINTFORMW %SAVESTR:ARG%は必死に死ぬよりましだと心の中で言い聞かせたが,目には涙が浮かんでいた
+	PRINTFORMW 奉仕が終わると,屈辱的な言葉を強要されて%SAVESTR:ARG%は泣きながらアナルを舐めるのは大好きですと宣言させられた
+	
+	IF TALENT:ARG:17
+		;プライド低い
+		PRINTFORMW プライドの低い%SAVESTR:ARG%は,自分はアナル舐め奴隷ですと必死に宣言している
+		Y += 10
+	ENDIF
+	
+	IF TALENT:ARG:62
+		;汚臭敏感
+		PRINTFORMW %SAVESTR:ARG%は汚い男たちのアナルを舐めすぎて吐きそうになっている
+		Y += 10
+	ENDIF
+	
+	PRINTFORML 苦痛の珠+{MON_NUM * 10}
+	PRINTFORML 恐怖の珠+{MON_NUM * 10}
+	JUEL:ARG:9 += MON_NUM * 10
+	JUEL:ARG:10 += MON_NUM * 10
+ELSE
+	PRINTW 『命惜しさに誰にでも股を開く売女めっ』
+	PRINTFORMW %SAVESTR:ARG%は尻を高く突き出した屈辱的な姿勢のまま,何人もの男の肉棒を受け入れ罵声と精液を浴びていた
+	PRINTFORMW 『言えよ!　本当は勇者の責務よりもチ○ポのほうが大切な淫乱ビッチですってよ!』
+	PRINTFORMW %SAVESTR:ARG%は激しく挿入されるペニスの感触で声を途切れさせながら,屈辱的な台詞を繰り返した
+	
+	IF TALENT:ARG:17
+		;プライド低い
+		PRINTFORMW %SAVESTR:ARG%は必死に淫らな台詞を繰り返して命乞いをしている.その顔は恐怖と媚で歪んでいる......
+		PRINTFORML 屈服の珠+{MON_NUM * 10}
+		JUEL:ARG:6 += MON_NUM * 10
+	ENDIF
+	
+	IF ABL:ARG:21 > 0
+		;マゾっ気
+		PRINTFORMW 激しい言葉攻めに,%SAVESTR:ARG%は心の奥底で情欲が芽生えるのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@GIRL_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	IF TALENT:ARG:100
+		;小柄体型
+		IF RAND:3 == 0
+			PRINTW 『ボク,いい子にしててね』
+		ELSEIF RAND:2 == 0
+			PRINTW 『お姉さんがいいこと教えてあげる』
+		ELSE
+			PRINTW 『あら-?　勃起してるの?』
+		ENDIF
+	ELSE
+		PRINTW 『情けなぁい,勃起してるの?』
+	ENDIF
+	
+	MON_NUM = E:(B + 99)
+	
+	IF MON_NUM == 1
+		;一人
+		PRINTFORMW 『一人占めしてあげる.もしかして,初めての女?』
+		PRINTFORMW %SAVESTR:ARG%は魔界の女にフェラされていた
+		PRINTFORM 紫色の長い舌が%SAVESTR:ARG%の
+		IF TALENT:ARG:318 == 1
+			PRINT 巨根
+		ELSEIF TALENT:ARG:318 == 2
+			PRINT 短小包茎ペニス
+		ELSEIF TALENT:ARG:318 == 3
+			PRINT 包茎ペニス
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINT 馬ペニス
+		ELSE
+			;0もしくはイレギュラー
+			PRINT ペニス
+		ENDIF
+		PRINTFORMW に絡みつき,精を吸い取っていく
+		IF TALENT:ARG:318 == 1
+			PRINTW 『顎がはずれそう♪』
+		ELSEIF TALENT:ARG:318 == 2
+			PRINTW 『勇者様のここ,子供ち○ぽね♪』
+		ELSEIF TALENT:ARG:318 == 3
+			PRINTW 『皮を剥いて恥垢落としてあげるね』
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINTW 『ふふ,誰かに改造された?』
+		ELSE
+			;0もしくはイレギュラー
+			PRINTW 『Ejaculationしないようにせいぜい頑張ってね♪』
+		ENDIF
+		PRINTFORML 恥情の珠+{MON_NUM * 10}
+		PRINTFORML 屈服の珠+{MON_NUM * 10}
+		PRINTFORML 絶頂経験+{MON_NUM}
+		PRINTFORML Ejaculation経験+{MON_NUM}
+		
+		JUEL:ARG:8 += MON_NUM * 10
+		JUEL:ARG:6 += MON_NUM * 10
+		EXP:ARG:2 += MON_NUM
+		EXP:ARG:3 += MON_NUM
+		
+	ELSEIF RAND:3 == 0
+		PRINTFORMW 『みんなでフェラしてあげる.Ejaculationしたら,おしおきだよ』
+		PRINTFORMW %SAVESTR:ARG%は魔界の女たちにフェラされていた
+		PRINTFORM 紫色の長い舌が%SAVESTR:ARG%の
+		IF TALENT:ARG:318 == 1
+			PRINT 巨根
+		ELSEIF TALENT:ARG:318 == 2
+			PRINT 短小包茎ペニス
+		ELSEIF TALENT:ARG:318 == 3
+			PRINT 包茎ペニス
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINT 馬ペニス
+		ELSE
+			;0もしくはイレギュラー
+			PRINT ペニス
+		ENDIF
+		PRINTFORMW に絡みつき,精を吸い取っていく
+		IF TALENT:ARG:318 == 1
+			PRINTW 『顎がはずれそう♪』
+		ELSEIF TALENT:ARG:318 == 2
+			PRINTW 『勇者様のここ,子供ち○ぽね♪』
+		ELSEIF TALENT:ARG:318 == 3
+			PRINTW 『皮を剥いて恥垢落としてあげるね』
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINTW 『ふふ,誰かに改造された?』
+		ELSE
+			;0もしくはイレギュラー
+			PRINTW 『Ejaculationしないようにせいぜい頑張ってね♪』
+		ENDIF
+		
+		PRINTFORML 恥情の珠+{MON_NUM * 10}
+		PRINTFORML 屈服の珠+{MON_NUM * 10}
+		PRINTFORML 絶頂経験+{MON_NUM}
+		PRINTFORML Ejaculation経験+{MON_NUM}
+		
+		JUEL:ARG:8 += MON_NUM * 10
+		JUEL:ARG:6 += MON_NUM * 10
+		EXP:ARG:2 += MON_NUM
+		EXP:ARG:3 += MON_NUM
+		
+	ELSEIF RAND:2 == 0
+		PRINTFORMW 『魔界の女の味を教えてあげる......二度と同族を抱けなくなるくらい』
+		PRINTFORMW %SAVESTR:ARG%は魔界の女たちに騎乗位で跨られて精を絞られていた
+		
+		IF TALENT:ARG:318 == 1
+			;巨根
+			PRINTW 『あは,おっきぃ♪』
+		ELSEIF TALENT:ARG:318 == 2
+			;短小包茎
+			PRINTW 『ちっちゃくて入ってるんだか分からないわ......♪』
+		ELSEIF TALENT:ARG:318 == 4
+			;馬ペニス
+			PRINTW 『す,すごい......おっきぃよぉ』
+		ELSE
+			;普通-包茎
+			PRINTW 『Ejaculationしないようにせいぜい頑張ってね♪』
+		ENDIF
+		
+		PRINTFORML 恥情の珠+{MON_NUM * 15}
+		PRINTFORML 屈服の珠+{MON_NUM * 15}
+		PRINTFORML Sex exp+{MON_NUM}
+		PRINTFORML 絶頂経験+{MON_NUM}
+		PRINTFORML Ejaculation経験+{MON_NUM}
+		
+		JUEL:ARG:8 += MON_NUM * 15
+		JUEL:ARG:6 += MON_NUM * 15
+		EXP:ARG:5 += MON_NUM
+		EXP:ARG:2 += MON_NUM
+		EXP:ARG:3 += MON_NUM
+		
+	ELSE
+		PRINTFORMW 『おっぱいおいしい?　ヌキヌキしてあげるね』
+		PRINTFORMW %SAVESTR:ARG%は魔界の女たちに授乳されながらペニスをしごかれていた
+		PRINTFORM 紫色の爪の優しい手が%SAVESTR:ARG%の
+		IF TALENT:ARG:318 == 1
+			PRINT 巨根
+		ELSEIF TALENT:ARG:318 == 2
+			PRINT 短小包茎ペニス
+		ELSEIF TALENT:ARG:318 == 3
+			PRINT 包茎ペニス
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINT 馬ペニス
+		ELSE
+			;0もしくはイレギュラー
+			PRINT ペニス
+		ENDIF
+		PRINTFORMW を愛おしそうに撫でていく
+		IF TALENT:ARG:318 == 1
+			PRINTW 『おっきいのね......はやく楽になりなさい♪』
+		ELSEIF TALENT:ARG:318 == 2
+			PRINTW 『皮かむりの短小ち○ぽ♪　先走りでドロドロよ』
+		ELSEIF TALENT:ARG:318 == 3
+			PRINTW 『皮を剥いて恥垢落としてあげるね』
+		ELSEIF TALENT:ARG:318 == 4
+			;自然発生はしない
+			PRINTW 『ふふ,誰かに改造された?』
+		ELSE
+			;0もしくはイレギュラー
+			PRINTW 『Ejaculationしないようにせいぜい頑張ってね♪』
+		ENDIF
+		
+		PRINTFORML 恥情の珠+{MON_NUM * 5}
+		PRINTFORML 屈服の珠+{MON_NUM * 15}
+		PRINTFORML 絶頂経験+{MON_NUM}
+		PRINTFORML Ejaculation経験+{MON_NUM}
+		
+		JUEL:ARG:8 += MON_NUM * 5
+		JUEL:ARG:6 += MON_NUM * 15
+		EXP:ARG:2 += MON_NUM
+		EXP:ARG:3 += MON_NUM
+	ENDIF
+	
+	WAIT
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 『すっかりその気になっちゃったのね』
+		DATAFORM 『いらっしゃい......ふふ,また来たんだ』
+		DATAFORM 『もう,忘れられないでしょ』
+		DATAFORM 『悦びに病みつき......なのね%UNICODE(0x2661) *1%』
+		DATAFORM 『子猫ちゃん,こっちにいらっしゃい%UNICODE(0x2661) *1%』
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 『あーら,また来たのね』
+		DATAFORM 『わざと負けてるー?　あははっ』
+		DATAFORM 『闇の世界,興味あるの?』
+		DATAFORM 『よわーい.本気でやってる?』
+		DATAFORM 勇者は魔族の女たちの言いなりになっている......
+		DATAFORM 魔族の女たちは,馴れ馴れしく勇者に近づき,勇者は目を逸らした
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『抱いてあげる%UNICODE(0x2661) *1%』
+		DATAFORM 『壊れるまで抱いてあげる』
+		DATAFORM 『知らなかったの?　闇の世界の女は男でも女でも抱くのよ』
+		DATAFORM 『男なんて要らない身体にしてあげるわ』
+		DATAFORM 『女同士だから気持ちいい所は全部知ってるのよ』
+		DATAFORM 『悦びも知らないのね』
+		DATAFORM 『魔王様にレズ奴隷にしてもらえないかなぁ』
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	IF RAND:2 == 0
+		IF RAND:2 == 0
+			PRINTFORML 『真面目なのね.こういう子は後ろに目覚めやすいのよ』
+		ELSE
+			PRINT 『こっちの穴
+			IF RAND:2 == 0
+				PRINT の方が
+			ELSE
+				PRINT でも
+			ENDIF
+			PRINTW 感じる様にしてあ-げ-る』
+		ENDIF
+
+		PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られているが,肛門を塞ぐことはできないでいた
+		IF RAND:2 == 0
+			PRINTW 『ほぐしてあげる.これからたくさん弄られるんでしょうから』
+		ELSE
+			PRINTW 『気持ちよかったら声を出してもいいのよ?』
+		ENDIF
+		PRINTFORMW %SAVESTR:ARG%の肛門のしわ一つ一つまで魔界の女は丁寧に舐めていく......
+	ELSE
+		
+	ENDIF
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML A経験+{MON_NUM * 5}
+	EXP:ARG:1 += MON_NUM * 5
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	IF RAND:3 == 0
+		PRINTL 『上手に出来たらご褒美をあげるわ』
+	ELSEIF RAND:3 == 0
+		PRINTL 『そんなんじゃ全然気持ちよくないよ』
+	ELSE
+		PRINTL 『もっと頑張りなさいな』
+	ENDIF
+	PRINTFORML %SAVESTR:ARG%はクンニを強要されている
+	PRINTL 彼女は犬のように這いつくばり,必死に女主人に奉仕していた
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTL レズ経験+1
+	EXP:ARG:40 += 1
+	WAIT
+	RETURN 0
+ENDIF
+
+
+IF RAND:5 == 0
+	PRINTW 『あなたの新しい職業はクンニ奴隷ね,元勇者様♪』
+	PRINTFORMW %SAVESTR:ARG%は全裸で犬のように這いつくばって女たちをクンニしている.{MON_NUM}人全員を満足させねば,命の保証はない
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML レズ経験+{MON_NUM}
+	EXP:ARG:40 += MON_NUM
+ELSEIF RAND:4 == 0
+	PRINTW 『やだ,こっちの太いのもいけるんじゃない?』
+	PRINTFORMW %SAVESTR:ARG%は女たちの慰みものとなり膣と肛門に張り型を挿入されている
+	PRINTFORMW 口が空けばクンニを強要され,顔面に潮を噴きつけられた
+	PRINTFORMW いつしか興奮した外野も交り合い,%SAVESTR:ARG%を中心にレズ乱交パ-ティ-が始まっていた
+	PRINTFORMW {MON_NUM}人と%SAVESTR:ARG%の肉塊は互いに快楽を貪りあい,愛液の水たまりを作っている
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML レズ経験+{MON_NUM}
+	EXP:ARG:40 += MON_NUM
+	EXP:ARG:0 += MON_NUM
+	EXP:ARG:1 += MON_NUM
+ELSEIF RAND:3 == 0
+	PRINTW 『おしっこしたくなっちゃったなぁ』
+	PRINTFORMW %SAVESTR:ARG%は嫌な予感がした
+	PRINTFORMW 『そうだ,こぼさず飲んだら見逃してあげる.もしこぼしたら...今日から女子便器に転職ね♪』
+	PRINTFORMW %SAVESTR:ARG%は股間に口を押しつけられ,顔面に放尿された
+	PRINTFORMW 無情にも口の端から次々とこぼれていく.........
+	PRINTFORMW 女たちは泣きながら尿を飲まされる%SAVESTR:ARG%を笑い,侮蔑の言葉を投げかけた
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML 恥情の珠+{MON_NUM * 10}
+	PRINTFORML 屈服の珠+{MON_NUM * 10}
+	PRINTFORML レズ経験+{MON_NUM}
+	EXP:ARG:40 += MON_NUM
+	JUEL:ARG:8 += MON_NUM * 10
+	JUEL:ARG:6 += MON_NUM * 10
+ELSEIF RAND:2 == 0
+	PRINTW 『ほら,みんなの前でオナニ-するのよ』
+	PRINTFORMW %SAVESTR:ARG%は衆人環視のなかでの自慰を強要された
+	PRINTFORMW 『ただしオカズは女ですること.なんてったって今日からレズ奴隷なんだからね,元勇者様♪』
+	PRINTFORMW %SAVESTR:ARG%の周りで女たちが怪しく交わり合う
+	PRINTFORMW 彼女は自分の性癖が歪みつつあるのを感じながら,女でイった
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%は自分の中で何かが疼くのを感じた
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML 恥情の珠+{MON_NUM * 10}
+	PRINTFORML 屈服の珠+{MON_NUM * 10}
+	PRINTL 自慰経験+1
+	PRINTL 調教自慰経験+1
+	PRINTL 絶頂経験+1
+	PRINTFORML レズ経験+{MON_NUM}
+	EXP:ARG:40 += MON_NUM
+	JUEL:ARG:8 += MON_NUM * 10
+	JUEL:ARG:6 += MON_NUM * 10
+	EXP:ARG:10 += 1
+	EXP:ARG:11 += 1
+	EXP:ARG:2 += 1
+ELSE
+	PRINTW 『一度女の子をレイプしてみたかったんだ-♪』
+	PRINTFORMW %SAVESTR:ARG%は尻を高く突き出した屈辱的な姿勢のまま,肉壺をペニスバンドで激しく突かれていた
+	PRINTFORMW 『あはっ,お姉さん女の子に襲われて興奮してるの?』
+	PRINTFORMW %SAVESTR:ARG%は女に犯されるという異常な状況の中,自分の中に何かが芽生えるのを感じた
+	
+	IF ABL:ARG:22 > 0 || TALENT:ARG:81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:ARG%の中に芽生えた感情は彼女を昂ぶらせていく......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML V exp+{MON_NUM}
+	EXP:ARG:0 += MON_NUM
+	PRINTFORML レズ経験+{MON_NUM}
+	EXP:ARG:40 += MON_NUM
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@BEAST_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『グルルルル』
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 勇者は魔獣の臭気にどこか愛おしさを感じていた
+		DATAFORM 魔獣はゆっくりと勇者に近づき,土下座した勇者にマウンティングをする......
+		DATAFORM 勇者は獣と交わることに慣れつつある自分にぞっとした
+		DATAFORM 魔獣の眼に見つめられると,勇者はただ低くうなだれ,腰を掲げるしかなかった
+		DATAFORM 勇者は獣の荒々しい交尾から,もはや逃れられない......
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 勇者は魔獣の臭気に次第に慣れてきたようだ......
+		DATAFORM 魔獣は静かに,見定めるように勇者を見ていた
+		DATAFORM 勇者は今度も魔獣と交尾をする自分を想像し,奇妙な背徳感を感じていた
+		DATAFORM 魔獣の眼は,どこか待っていたような,欲情の色に歪んでいた
+		DATAFORM 勇者は度重なる獣交を思い出し,股を湿らせていた......
+		DATAFORM 魔獣は勇者に静かに近づき,うなだれた勇者を冷たく見下ろす
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『グルルルル』
+		DATAFORM 勇者は野獣の臭気にあてられている
+		DATAFORM 勇者は獣と交わる自分がまだ信じられない
+		DATAFORM 『ガオーッ』
+		DATAFORM 勇者は獣の荒々しさに恐怖した
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW 『グォ-ッ』
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られていると分かるや,獣は後ろの穴で性欲を解消しようとしてきた
+	PRINTFORMW "あっ,うっ,いやっ......うぁ-っ"
+	PRINTFORMW %SAVESTR:ARG%の肛門を獣のペニスが蹂躙する......
+	
+	IF TALENT:ARG:314 == 2
+		;人狼
+		PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	PRINTFORMW 獣姦経験+{MON_NUM}
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	EXP:ARG:56 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTW 野獣は勇者の身体にのしかかった
+	PRINTFORMW %SAVESTR:ARG%は無理矢理性器に野獣のペニスを挿入されて,叫び声をあげた
+	PRINTW そして,彼女の中に野獣の精液が放たれた............
+	
+	IF TALENT:ARG:314 == 2
+		;人狼
+		PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTW V exp+1
+	EXP:ARG:0 += 1
+	PRINTFORMW 獣姦経験+1
+	EXP:ARG:56 += 1
+	WAIT
+	RETURN 0
+ENDIF
+
+PRINTW 野獣は代わる代わる勇者との交尾を始めた
+PRINTFORMW %SAVESTR:ARG%は野獣と交尾しているという現実を直視できず雌犬の格好のまま呆然としていた
+
+IF TALENT:ARG:314 == 2
+	;人狼
+	PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+ENDIF
+
+PRINTFORML 苦痛の珠+{MON_NUM * 10}
+PRINTFORML 恐怖の珠+{MON_NUM * 10}
+PRINTFORML V exp+{MON_NUM}
+EXP:ARG:0 += MON_NUM
+JUEL:ARG:9 += MON_NUM * 10
+JUEL:ARG:10 += MON_NUM * 10
+PRINTFORMW 獣姦経験+{MON_NUM}
+EXP:ARG:56 += MON_NUM
+RETURN 0
+
+;--------------------------------------------
+@BRAIN_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 勇者は必死に命乞いをしている
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 勇者はブレインイーターによる脳改造に,もはや抵抗はなく,媚びた顔で抱き着いた......
+		DATAFORM ブレインイーターは媚びてきた餌を前にして,奇妙な笑い声をあげた
+		DATAFORM 勇者は脳を改造される異次元の快楽に,濁った眼を期待で鈍く輝かせた......
+		DATAFORM ブレインイーターは舌なめずりをした.どうやらこの餌は,捕食の喜びを知ってしまったらしい
+		DATAFORM 勇者はこれから始まる異次元の快楽に興奮し,軽く失禁すらした
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 勇者はブレインイーターの脳改造に,慣れてきた自分を感じていた......
+		DATAFORM ブレインイーターは壊れかけた餌を前にして,不気味に笑った
+		DATAFORM 勇者は自分の脳が,もはや戻れない場所にあることを感じていた
+		DATAFORM ブレインイーターはとびきりの餌を前にして,舌なめずりをした.勇者は黙ってそれを見ている......
+		DATAFORM 勇者はブレインイーターのもたらす異次元の快楽を思い出し,歯を食いしばった......
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 勇者はブレインイーターがどういう敵か知っていたので,恐怖した
+		DATAFORM 勇者は半狂乱になってブレインイーターから逃げている
+		DATAFORM 勇者は必死に命乞いをしている
+		DATAFORM 勇者は壊れたのか,笑い始めた
+		DATAFORM 勇者は,恐怖のあまり失禁した
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW ブレインイ-タ-は勇者の頭にかぶりつくと,精神を支配し始めた
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られているが,彼にはそんなこと興味も無い
+	PRINTFORMW "あっ,あっ,あっ,あっ,あ......"
+	PRINTFORMW %SAVESTR:ARG%は目を剥き舌をだらしなく伸ばしながら,盛大に大便を漏らしている
+	PRINTFORML A経験+{MON_NUM * 10}
+	EXP:ARG:1 += MON_NUM * 10
+	WAIT
+	RETURN 0
+ENDIF
+
+
+IF MON_NUM == 1
+	PRINTL "あ...あ...あ゛-っ,あ゛-っ"
+	PRINTFORML ブレインイ-タ-の硬い触手が%SAVESTR:ARG%の頭蓋骨を貫通し,脳を啜り始めた
+	PRINTL 彼女は四肢をばらばらにうごかすと,失禁して,死んだ
+	BASE:ARG:0 = 0
+	PRINTFORML 異常経験+1
+	EXP:ARG:50 += 1
+	WAIT
+	RETURN 0
+ENDIF
+
+IF RAND:40 == 0
+	PRINTL "あ...あ...あ゛-っ,あ゛-っ"
+	PRINTFORML ブレインイ-タ-の硬い触手が%SAVESTR:ARG%の頭蓋骨を貫通し,脳を啜り始めた
+	PRINTL 彼女は四肢をばらばらにうごかすと,失禁して,死んだ
+	BASE:ARG:0 = 0
+	PRINTFORML 異常経験+1
+	EXP:ARG:50 += 1
+ELSE
+	PRINTW ブレインイ-タ-の触手が勇者を絡め取った.勇者は死に物狂いでもがくが,逃げられない
+	PRINTFORMW ブレインイ-タ-は%SAVESTR:ARG%の脳に触手を突きたて,脳髄に直に媚薬成分を流しこんだ
+	PRINTFORMW %SAVESTR:ARG%は快楽のあまり失禁し廃人になった
+	PRINTFORMW どうやら腹は減っていなかったらしい
+	PRINTFORML 異常経験+1
+	EXP:ARG:50 += 1
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@HORSE_RYOU(ARG)
+#DIM MON_NUM
+;--------------------------------------------
+
+;オトコの場合
+IF TALENT:ARG:122
+	PRINTW 『ブルルルッ』
+	RETURN 0
+ENDIF
+
+IF CFLAG:ARG:131 > 5
+	;隷属状態
+	PRINTDATAW
+		DATAFORM 勇者は馬との交尾にもはや抵抗はなく,期待した目で勃起した馬の陰茎に手を触れた......
+		DATAFORM 馬はそっと敗れた勇者の元に歩み寄ると,勃起したペニスを見せつけてきた
+		DATAFORM 勇者は無抵抗で馬と交わるようになった自分に気付き,気味の悪い笑顔を浮かべた......
+		DATAFORM 馬は荒々しく勇者にのしかかり,勇者もまたそれを受け入れていた......
+		DATAFORM 勇者は馬の荒々しさに,どこか胸のときめきを感じていた......
+	ENDDATA
+ELSEIF CFLAG:ARG:131 > 3
+	;強畏怖状態
+	PRINTDATAW
+		DATAFORM 勇者は抵抗を諦め,勃起した馬のペニスにそっと手を添えた......
+		DATAFORM 馬は抵抗をやめた勇者を見て,軽蔑するように笑った
+		DATAFORM 勇者は馬と交わる自分を思い出し,ぞっとした
+		DATAFORM 馬は大きく嘶き,勇者は怯え,武器を落とした......
+		DATAFORM 勇者は馬の荒々しさを脳に刻み付けられ,抵抗できなくなっていた......
+	ENDDATA
+ELSE
+	PRINTDATAW
+		DATAFORM 『ブルルルッ』
+		DATAFORM 勇者は馬の臭気にあてられている
+		DATAFORM 勇者は馬と交わる自分がまだ信じられない
+		DATAFORM 『ヒヒーン!』
+		DATAFORM 勇者は馬の荒々しさに恐怖した
+	ENDDATA
+ENDIF
+
+MON_NUM = E:(B + 99)
+
+IF TALENT:ARG:273
+	;処女封印
+	PRINTFORMW 馬飼いのサキュバスが魔法をかけると,馬のペニスは形をそのままにアナルの大きさに縮んだ
+	PRINTFORMW %SAVESTR:ARG%の純潔は聖なる力で守られているが,後ろを塞いでは排泄できないため肛門の封印はされていない
+	PRINTFORMW 『あんた素質あるよ,ふふ.そのうち魔法無しで飲みこんだりしたりね』
+	PRINTFORMW %SAVESTR:ARG%は肛門がこじ開けられるような感覚に耐えるしか無かった......
+	
+	IF TALENT:ARG:314 == 2
+		;人狼
+		PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML A経験+{MON_NUM}
+	PRINTFORML Semen exp+{MON_NUM}
+	PRINTFORMW 獣姦経験+{MON_NUM}
+	EXP:ARG:1 += MON_NUM
+	EXP:ARG:20 += MON_NUM
+	EXP:ARG:56 += MON_NUM
+	WAIT
+	RETURN 0
+ENDIF
+
+IF MON_NUM == 1
+	PRINTW 馬は勇者の身体にのしかかった
+	PRINTFORMW %SAVESTR:ARG%は無理矢理性器に獣のペニスを挿入されて,叫び声をあげた
+	PRINTW そして,彼女の中に馬の精液が放たれた............
+	
+	IF TALENT:ARG:314 == 2
+		;人狼
+		PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:ARG:5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTW V exp+1
+	EXP:ARG:0 += 1
+	PRINTFORMW 獣姦経験+1
+	EXP:ARG:56 += 1
+	RETURN 0
+ENDIF
+
+PRINTW 馬は代わる代わる勇者との交尾を始めた
+PRINTFORMW %SAVESTR:ARG%は馬と交尾しているという現実を直視できず四つん這いの格好のまま呆然としていた
+
+IF TALENT:ARG:314 == 2
+	;人狼
+	PRINTFORMW 人狼の%SAVESTR:ARG%はけだもの同士の交尾に少し感じてしまっているようだ......
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:ARG:5 += MON_NUM * 10
+ENDIF
+
+PRINTFORML 苦痛の珠+{MON_NUM * 10}
+PRINTFORML 恐怖の珠+{MON_NUM * 10}
+PRINTFORML V exp+{MON_NUM}
+EXP:ARG:0 += MON_NUM
+JUEL:ARG:9 += MON_NUM * 10
+JUEL:ARG:10 += MON_NUM * 10
+PRINTFORMW 獣姦経験+{MON_NUM}
+EXP:ARG:56 += MON_NUM
+RETURN 0
+
+
+
+
+
+
+
+
+
+
+;--------------------------------------------
+@PC_RYOU, ARG:0, ARG:1
+#DIM MON_NUM
+;ARG:0 = 魔王側
+;ARG:1 = 勇者側
+;ＰＣ陵辱
+;--------------------------------------------
+PRINTL  
+DRAWLINE
+PRINTL  
+
+PRINTL [0] - 陵辱を見る
+PRINTL [1] - 陵辱しない
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 2
+	GOTO INPUT_LOOP
+ENDIF
+SIF RESULT == 1
+	RETURN 0
+
+;武器チェック
+W:0 = CFLAG:(ARG:0):550
+;素手の場合ソードを装備
+IF W:0 <= 0
+	W:0 = 40
+	CFLAG:(ARG:0):550 = W:0
+ENDIF
+CALL EQUIP_DATABASE
+
+;武器分岐
+IF W:1 == 49
+	;テンタクル
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%を触手で縛り上げた
+	
+	IF TALENT:(ARG:1):273
+		;処女封印
+		PRINTFORMW %SAVESTR:(ARG:1)%の純潔は聖なる力で守られているが,後ろはそうはいかない
+		PRINTFORMW ヌメヌメと光る触手を操る%SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%の肛門を攻略し始めた......
+		
+		IF ABL:(ARG:1):22 > 0 || TALENT:(ARG:1):81
+			;レズっ気-両刀
+			PRINTFORMW %SAVESTR:(ARG:1)%の中に芽生えた感情は彼女を昂ぶらせていく......
+			PRINTFORML 欲情の珠+{MON_NUM * 10}
+			JUEL:(ARG:1):5 += MON_NUM * 10
+		ENDIF
+		
+		PRINTFORML A経験+10
+		PRINTFORML 苦痛の珠+80
+		PRINTFORML 恐怖の珠+80
+		PRINTFORML レズ経験+5
+		PRINTFORML 触手経験+1
+		EXP:(ARG:1):1 += 10
+		JUEL:(ARG:1):9 += 80
+		JUEL:(ARG:1):10 += 80
+		EXP:(ARG:0):40 += 5
+		EXP:(ARG:1):40 += 5
+		EXP:(ARG:1):55 += 1
+		WAIT
+		RETURN 0
+	ENDIF
+	
+	PRINTFORMW 身動きの取れない%SAVESTR:(ARG:1)%を空中に吊り上げると,
+	PRINTFORMW %SAVESTR:(ARG:0)%は凶悪な触手で%SAVESTR:(ARG:1)%の膣を串刺しにした......
+	
+	IF ABL:(ARG:1):22 > 0 || TALENT:(ARG:1):81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:(ARG:1)%の中に芽生えた感情は彼女を昂ぶらせていく......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:(ARG:1):5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML 苦痛の珠+80
+	PRINTFORML 恐怖の珠+80
+	PRINTFORML レズ経験+1
+	PRINTFORML V exp+10
+	PRINTFORML 触手経験+1
+	EXP:(ARG:1):0 += 10
+	EXP:(ARG:0):40 += 1
+	EXP:(ARG:1):40 += 1
+	JUEL:(ARG:1):9 += 80
+	JUEL:(ARG:1):10 += 80
+	EXP:(ARG:1):55 += 1
+	IF EXP:(ARG:1):0 > 0 && TALENT:(ARG:1):0 == 1
+		TALENT:(ARG:1):0 = 0
+		PRINTL [処女喪失]
+		;初体験の相手を記録(初期値が0のため,+1して記録)
+		CFLAG:(ARG:1):15 = NO:(ARG:0) + 1
+		CSTR:(ARG:1):3 = %SAVESTR:(ARG:0)%
+	ENDIF
+	
+	WAIT
+	RETURN 0
+	
+ENDIF
+
+IF RAND:5 == 0
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%の身体を舐めるように見つめている
+ELSEIF RAND:4 == 0
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%をどう料理しようか舌舐めずりした
+ELSEIF RAND:3 == 0
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%を愛撫している
+ELSEIF RAND:2 == 0
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%に土下座をさせている
+ELSE
+	PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%に雌犬のポ-ズをとらせている
+ENDIF
+CALL MONSTER_DATA
+
+
+
+
+IF TALENT:(ARG:1):273
+	;処女封印
+	PRINTFORMW %SAVESTR:(ARG:1)%の純潔は聖なる力で守られているが,後ろはそうはいかない
+	PRINTFORMW ディルドを取りだした%SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%の肛門を攻略し始めた......
+	
+	IF ABL:(ARG:1):22 > 0 || TALENT:(ARG:1):81
+		;レズっ気-両刀
+		PRINTFORMW %SAVESTR:(ARG:1)%の中に芽生えた感情は彼女を昂ぶらせていく......
+		PRINTFORML 欲情の珠+{MON_NUM * 10}
+		JUEL:(ARG:1):5 += MON_NUM * 10
+	ENDIF
+	
+	PRINTFORML A経験+10
+	PRINTFORML 苦痛の珠+50
+	PRINTFORML 恐怖の珠+50
+	PRINTFORML レズ経験+5
+	EXP:(ARG:1):1 += 10
+	JUEL:(ARG:1):9 += 50
+	JUEL:(ARG:1):10 += 50
+	EXP:(ARG:0):40 += 5
+	EXP:(ARG:1):40 += 5
+	WAIT
+	RETURN 0
+ENDIF
+
+REPEAT 3
+	IF RAND:7 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%はクンニを強制させた
+		PRINTFORMW %SAVESTR:(ARG:1)%は全裸で犬のように這いつくばってクンニしている
+		PRINTFORMW 舌の動きが悪いと%SAVESTR:(ARG:0)%は勇者の頭を掴んで顔面で性器を擦って楽しんだ
+		
+		IF TALENT:(ARG:1):11
+			;反抗的
+			PRINTFORMW %SAVESTR:(ARG:1)%は%SAVESTR:(ARG:0)%を反抗的な目で見上げているが,命が惜しいのか命令には従っていた
+		ELSEIF TALENT:(ARG:1):17
+			;プライド低い
+			PRINTFORMW %SAVESTR:(ARG:1)%は卑屈な顔で犬のように%SAVESTR:(ARG:0)%の秘所を舐めている
+		ENDIF
+		
+		PRINTFORML レズ経験+1
+		EXP:(ARG:0):40 += 1
+		EXP:(ARG:1):40 += 1
+	ELSEIF RAND:6 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%は手下に大小さまざまな張り型を持ってこさせた
+		PRINTFORMW %SAVESTR:(ARG:1)%は膣と肛門に張り型を挿入され%SAVESTR:(ARG:0)%に掻きまわされた
+		PRINTFORMW 汚物や愛液で汚れた張り型は,%SAVESTR:(ARG:1)%が舌で舐め取って綺麗にしなければならない
+		
+		IF TALENT:(ARG:1):12
+			;気丈
+			PRINTFORMW %SAVESTR:(ARG:1)%は歯を食いしばって恥辱に耐えていた
+		ELSEIF TALENT:(ARG:1):26
+			;悲観的
+			PRINTFORMW %SAVESTR:(ARG:1)%は目に涙を浮かべて謝罪の言葉を繰り返している
+		ENDIF
+		
+		PRINTFORML V exp+10
+		PRINTFORML A経験+10
+		PRINTFORML レズ経験+1
+		EXP:(ARG:0):40 += 1
+		EXP:(ARG:1):40 += 1
+		EXP:(ARG:1):0 += 10
+		EXP:(ARG:1):1 += 10
+		IF EXP:(ARG:1):0 > 0 && TALENT:(ARG:1):0 == 1
+			TALENT:(ARG:1):0 = 0
+			PRINTL [処女喪失]
+			CFLAG:(ARG:1):15 = 101
+		ENDIF
+	ELSEIF RAND:5 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%は雑務をしていたオ-クの小間使いたちを呼び寄せて一列に並べさせ,
+		PRINTFORMW %SAVESTR:(ARG:1)%にフェラで全員満足させるよう命令した
+		PRINTFORMW そして,全裸で四つん這いになりながら奉仕する%SAVESTR:(ARG:1)%を
+		IF TALENT:(ARG:0):121 == 1
+			PRINTFORMW 後ろからはちきれそうに勃起した自慢のペニスで乱暴に犯した
+		ELSE
+			PRINTFORMW 後ろからペニスバンドで乱暴に犯した
+		ENDIF
+		PRINTFORMW %SAVESTR:(ARG:1)%が膣の刺激で奉仕を疎かにすると,オ-クたちから容赦なく罵声が飛ぶのだった
+		PRINTFORMW 『ブヒヒッ,%SAVESTR:(ARG:0)%サマ,マタ,コウイウノタノミマスヨ...オラ!　ヤスムンジャネェ!』
+		
+		IF TALENT:(ARG:1):13
+			;素直
+			PRINTFORMW %SAVESTR:(ARG:1)%は大人しく命令に従いオ-クの不潔なペニスを舐めていった
+		ELSEIF TALENT:(ARG:1):62
+			;汚臭敏感
+			PRINTFORMW 匂いに敏感な%SAVESTR:(ARG:1)%は,オ-クの不潔なペニスに何度もえずいて罵倒された
+		ENDIF
+		
+		PRINTFORML 恥情の珠+100
+		PRINTFORML 屈服の珠+100
+		PRINTFORML レズ経験+1
+		PRINTFORML フェラ経験+10
+		PRINTFORML Semen exp+10
+		PRINTFORML V exp+10
+		EXP:(ARG:1):0 += 10
+		EXP:(ARG:0):40 += 1
+		EXP:(ARG:1):40 += 1
+		EXP:(ARG:1):20 += 10
+		EXP:(ARG:1):22 += 10
+		JUEL:(ARG:1):8 += 100
+		JUEL:(ARG:1):6 += 100
+		;ファーストキス
+		SIF CFLAG:16 == -1
+			CFLAG:16 = 995
+		IF EXP:(ARG:1):0 > 0 && TALENT:(ARG:1):0 == 1
+			TALENT:(ARG:1):0 = 0
+			PRINTL [処女喪失]
+			;初体験の相手を記録(初期値が0のため,+1して記録)
+			CFLAG:(ARG:1):15 = NO:(ARG:0) + 1
+			CSTR:(ARG:1):3 = %SAVESTR:(ARG:0)%
+		ENDIF
+
+	ELSEIF RAND:4 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%は手下たちを呼び寄せると
+		IF TALENT:(ARG:0):121 == 1
+			PRINTFORMW 自慢の逸物をガチガチに勃起させ背面座位で%SAVESTR:(ARG:1)%のアナルを犯し,
+		ELSE
+			PRINTFORMW ペニスバンドをつけて背面座位で%SAVESTR:(ARG:1)%のアナルを犯し,
+		ENDIF
+		PRINTFORMW その状態で集まった観客に公開自慰を見せることを命令した
+		
+		IF TALENT:(ARG:1):35
+			;恥じらい
+			PRINTFORMW %SAVESTR:(ARG:1)%はねっとりとした視線に顔を真っ赤にして自慰を始めた
+		ELSEIF TALENT:(ARG:1):60
+			;自慰しやすい
+			PRINTFORMW %SAVESTR:(ARG:1)%は何の抵抗もせずに自慰を始め,必死に命乞いを繰り返した
+		ENDIF
+		
+		PRINTFORML 恥情の珠+200
+		PRINTFORML 屈服の珠+200
+		PRINTL 自慰経験+1
+		PRINTL 調教自慰経験+1
+		PRINTFORML レズ経験+1
+		PRINTFORML A経験+10
+		EXP:(ARG:0):40 += 1
+		EXP:(ARG:1):40 += 1
+		EXP:(ARG:1):1 += 10
+		JUEL:(ARG:1):8 += 200
+		JUEL:(ARG:1):6 += 200
+		EXP:(ARG:1):10 += 1
+		EXP:(ARG:1):11 += 1
+	ELSEIF RAND:3 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%は%SAVESTR:(ARG:1)%の髪を掴むと
+		IF TALENT:(ARG:0):121 == 1
+			PRINTFORMW 高ぶり硬く勃起した自分のペニスを口内にねじ込み,強引にイマラチオした
+		ELSE
+			PRINTFORMW 自らのヴァギナに顔を押し付けて強引にクンニをさせた
+		ENDIF
+		
+		IF TALENT:(ARG:1):11
+			;反抗的
+			PRINTFORMW %SAVESTR:(ARG:1)%は%SAVESTR:(ARG:0)%を反抗的な目で見上げているが,命が惜しいのか命令には従っていた
+		ELSEIF TALENT:(ARG:1):17
+			;プライド低い
+			PRINTFORML %SAVESTR:(ARG:1)%は卑屈な顔で犬のように%SAVESTR:(ARG:0)%の
+			IF TALENT:(ARG:0):121 == 1
+				PRINT ペニス
+			ELSE
+				PRINT 秘所
+			ENDIF
+			PRINTFORMW を舐めている
+		ENDIF
+		
+		PRINTFORML 恥情の珠+150
+		PRINTFORML 屈服の珠+150
+		PRINTFORML レズ経験+1
+		
+		IF TALENT:(ARG:0):121 == 1
+			PRINTFORML フェラ経験+10
+			PRINTFORML Semen exp+10
+			EXP:(ARG:1):20 += 10
+			EXP:(ARG:1):22 += 10
+		ENDIF
+		
+		JUEL:(ARG:1):8 += 150
+		JUEL:(ARG:1):6 += 150
+		EXP:(ARG:0):40 += 1
+		EXP:(ARG:1):40 += 1
+	ELSEIF RAND:2 == 0
+		PRINTFORMW %SAVESTR:(ARG:0)%は縄で%SAVESTR:(ARG:1)%を縛ると
+		IF RAND:3 == 0
+			PRINTFORM 四つん這いになった%SAVESTR:(ARG:1)%の背中
+			IF RAND:2 == 0
+				PRINTFORMW を鞭で幾度も打ちつけ,
+				PRINTFORMW 背中には赤い痕が幾つも刻まれた
+			ELSE
+				PRINTFORMW へと蝋燭を垂らし
+				PRINTFORMW あまりの熱さに%SAVESTR:(ARG:1)%の身体が跳ねる度,更に新しい蝋が追加された
+			ENDIF
+			PRINTFORML 恥情の珠+200
+			PRINTFORML 屈服の珠+200
+			PRINTFORML 緊縛経験+5
+			PRINTFORML レズ経験+1
+			JUEL:(ARG:1):8 += 200
+			JUEL:(ARG:1):6 += 200
+			EXP:(ARG:1) :51 += 5
+			IF TALENT:122 == 0 && TALENT:PLAYER:122 == 0
+				EXP:(ARG:0):40 += 1
+				EXP:(ARG:1):40 += 1
+			ENDIF
+		ELSE
+			PRINTFORMW %SAVESTR:(ARG:1)%の膣と肛門に張り型を挿入し執拗に%SAVESTR:(ARG:0)%に責めたてた
+			PRINTFORMW 尻肉が赤く腫れ上がるほどに叩かれ,%SAVESTR:(ARG:0)%が飽きるまで%SAVESTR:(ARG:1)%は犯された
+			PRINTFORML V exp+10
+			PRINTFORML A経験+10
+			PRINTFORML レズ経験+10
+			PRINTL 緊縛経験+5
+			EXP:(ARG:0):40 += 10
+			EXP:(ARG:1):40 += 10
+			EXP:(ARG:1):0 += 10
+			EXP:(ARG:1):1 += 10
+			EXP:(ARG:1) :51 += 5
+			IF EXP:(ARG:1):0 > 0 && TALENT:(ARG:1):0 == 1
+				TALENT:(ARG:1):0 = 0
+				PRINTL [処女喪失]
+				CFLAG:(ARG:1):15 = 101
+			ENDIF
+		ENDIF
+		IF ABL:(ARG):21 >= 3
+			PRINTFORMW %SAVESTR:(ARG:1)%の中に芽生えた感情は彼女を昂ぶらせていく......
+			PRINTFORML 欲情の珠+{MON_NUM * 10}
+			JUEL:(ARG:1):5 += MON_NUM * 10
+		ENDIF
+	ELSE
+		PRINTFORMW %SAVESTR:(ARG:0)%はサキュバスやウィッチたちを呼び寄せレズ乱交パ-ティ-を開いた
+		PRINTFORMW それぞれ愛情ある絡みをしていたが,
+		PRINTFORMW 一人四つん這いで%SAVESTR:(ARG:0)%の人間椅子になっている%SAVESTR:(ARG:1)%だけが人間以下の扱いを受けていた
+		PRINTFORMW %SAVESTR:(ARG:1)%は後背位からペニスバンドで膣も肛門も容赦なく犯され
+		PRINTFORMW 顔はというとひっきりなしにクンニを要求されていた
+		PRINTFORMW その様子を背中に座って自慰しながら%SAVESTR:(ARG:0)%は満足げに見ていた.........
+		
+		PRINTFORML V exp+10
+		PRINTFORML A経験+10
+		PRINTFORML レズ経験+10
+		EXP:(ARG:0):40 += 10
+		EXP:(ARG:1):40 += 10
+		EXP:(ARG:1):0 += 10
+		EXP:(ARG:1):1 += 10
+		IF EXP:(ARG:1):0 > 0 && TALENT:(ARG:1):0 == 1
+			TALENT:(ARG:1):0 = 0
+			PRINTL [処女喪失]
+			CFLAG:(ARG:1):15 = 101
+		ENDIF
+	ENDIF
+	WAIT
+	PRINTL  
+REND
+
+IF ABL:(ARG:1):22 > 0 || TALENT:(ARG:1):81
+	;レズっ気-両刀
+	PRINTFORMW %SAVESTR:(ARG:1)%の中に芽生えた感情は彼女を昂ぶらせていく......
+	PRINTFORML 欲情の珠+{MON_NUM * 10}
+	JUEL:(ARG:1):5 += MON_NUM * 10
+ENDIF
+
+WAIT
+PRINTL  
+
+RETURN 0
+
+;--------------------------------
+@VICTORY_RYOUZYOKU,ARG
+#DIM MON_COUNT
+;--------------------------------
+;勇者が魔界のなんかにあてられて間違いを起こします
+;人間タイプ限定-低確率
+
+ARG = A
+
+;カルマが低くないとダメ
+SIF CFLAG:ARG:151 > -50
+	RETURN 0
+
+SIF RAND:12 == 0
+	RETURN 0
+
+
+B = RAND:3 * 100
+
+C = B + 7
+IF E:C > 0
+	LOCAL:1 = E:B
+	PRINTFORM 魔界の瘴気にあてられた勇者は
+	CALL MONSTER_NAME,LOCAL:1,0
+	PRINTFORMW をいたぶりはじめた(カルマ:-10)
+	CALL KARMA, ARG, -10
+ENDIF
+
+;まずはペニスを使った凌辱を先行実装
+
+IF E:C == 1
+	;カタコト
+;	CALL ORC_RYOU_YUSYA,ARG
+;ELSEIF E:C == 2
+	;スライム
+	CALL SLIME_RYOU_YUSYA,ARG
+;ELSEIF E:C == 3
+	;昆虫
+;	CALL INSECT_RYOU_YUSYA,ARG
+;ELSEIF E:C == 4
+	;蔦触手
+;	CALL IVY_RYOU_YUSYA,ARG
+;ELSEIF E:C == 5
+	;触手
+;	CALL SYOKUSYU_RYOU_YUSYA,ARG
+;ELSEIF E:C == 6
+	;妖精
+;	CALL FAILY_RYOU_YUSYA,ARG
+;ELSEIF E:C == 7
+	;巨人
+;	CALL GIANT_RYOU_YUSYA,ARG
+ELSEIF E:C == 8
+	;男
+;	CALL MAN_RYOU_YUSYA,ARG
+ELSEIF E:C == 9
+	;女
+	CALL GIRL_RYOU_YUSYA,ARG
+;ELSEIF E:C == 10
+	;獣
+;	CALL BEAST_RYOU_YUSYA,ARG
+;ELSEIF E:C == 11
+	;脳姦
+;	CALL BRAIN_RYOU_YUSYA,ARG
+;ELSEIF E:C == 12
+	;馬
+;	CALL HORSE_RYOU_YUSYA,ARG
+ENDIF
+PRINTL  
+
+
+RETURN 0
+
+@ORC_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@SLIME_RYOU_YUSYA(ARG)
+#DIM PLAY
+
+PLAY = RAND:10 + 5
+
+IF TALENT:ARG:121 == 1 || TALENT:ARG:122 == 1 || TALENT:ARG:326 == 1
+	PRINTFORMW %SAVESTR:ARG%はペニスの欲求に逆らわずに,粘液に自分の肉棒を突っ込み凌辱を楽しんでいる......
+	
+	PRINTFORML 欲情の珠+{PLAY * 10}
+	JUEL:ARG:5 += PLAY * 10
+	
+ELSE
+
+ENDIF
+
+RETURN 0
+
+@INSECT_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@IVY_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@SYOKUSYU_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@FAILY_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@GIANT_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@MAN_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@GIRL_RYOU_YUSYA(ARG)
+#DIM PLAY
+
+PLAY = RAND:10 + 5
+
+IF TALENT:ARG:121 == 1 || TALENT:ARG:122 == 1 || TALENT:ARG:326 == 1
+	PRINTFORMW %SAVESTR:ARG%はペニスの欲求に逆らわずに,昂ったペニスで女魔族を凌辱して楽しんでいる......
+	
+	PRINTFORML 欲情の珠+{PLAY * 10}
+	JUEL:ARG:5 += PLAY * 10
+	
+ELSE
+
+ENDIF
+
+RETURN 0
+
+@BEAST_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@BRAIN_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+@HORSE_RYOU_YUSYA(ARG)
+
+RETURN 0
+
+

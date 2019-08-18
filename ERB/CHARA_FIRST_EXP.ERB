@@ -1,0 +1,652 @@
+﻿
+@CHARA_FIRST_EXP,ARG
+#DIM FIRST_KISS
+#DIM FIRST_SEX
+#DIM MEN_OR_GIRL,2
+#DIM KISS_POINT
+
+;不明を埋めていく
+;MEN_OR_GIRL = 1 相手は男
+;MEN_OR_GIRL = 2 相手は女
+;MEN_OR_GIRL = 3 相手はふたなり
+;MEN_OR_GIRL = 4 ランダムで決めてOK
+;MEN_OR_GIRL:1 = 決定
+FIRST_KISS = CFLAG:(ARG):16
+LOCALS = %CSTR:(ARG):4%
+FIRST_SEX = CFLAG:(ARG):15
+LOCALS:1 = %CSTR:(ARG):3%
+KISS_POINT = 0
+MEN_OR_GIRL:1 = 0
+
+;オトコでなく非処女の場合,未体験ということは無い
+SIF TALENT:(ARG):122 == 0 && TALENT:(ARG):0 == 0 && FIRST_SEX == -1
+	FIRST_SEX = 0
+;性交経験-売春経験の場合,キスの可能性は残されている
+SIF ( EXP:(ARG):5 > 0 || EXP:(ARG):74 > 0 ) && FIRST_KISS == -1
+	FIRST_KISS = 0
+
+;獣姦経験あり,かつ,ごくまれに,野良犬のアナル
+IF LOCALS == ""  && FIRST_KISS == 0 && EXP:(ARG):56 > 0 && RAND:20 == 0
+	FIRST_KISS = 996
+	;非処女で初体験
+	SIF TALENT:(ARG):0 == 0 && FIRST_SEX == 0 && RAND:2 == 0
+		FIRST_SEX = 103
+ENDIF
+;獣姦経験あり,かつ,まれに,野良犬のペニス
+IF LOCALS == ""  && FIRST_KISS == 0 && EXP:(ARG):56 > 0 && RAND:10 == 0
+	FIRST_KISS = 997
+	;非処女で初体験
+	SIF TALENT:(ARG):0 == 0 && FIRST_SEX == 0 && RAND:2 == 0
+		FIRST_SEX = 103
+ENDIF
+;獣姦経験ありで野良犬の口
+IF LOCALS == ""  && FIRST_KISS == 0 && EXP:(ARG):56 > 0 && RAND:5 == 0
+	FIRST_KISS = 998
+	;非処女で初体験
+	SIF TALENT:(ARG):0 == 0 && FIRST_SEX == 0 && RAND:2 == 0
+		FIRST_SEX = 103
+ENDIF
+
+;結婚を見る
+LOCAL:3 = TALENT:(ARG):320
+;家族設定の有無
+LOCAL:4 = LOCAL:3 % 10
+
+LOCALS:2 = 
+
+;家族設定読み込み
+IF LOCAL:4 == 1
+	
+	;夫の有無
+	LOCAL:1 = LOCAL:3 % 100000
+	LOCAL:2 = LOCAL:3 % 10000000000
+	
+	SELECTCASE LOCAL:1 / 10000
+		CASE 1
+			;結婚している
+			SELECTCASE LOCAL:2 / 1000000000
+				CASE 0,4,8
+					LOCALS:2 = Husband
+					MEN_OR_GIRL = 1
+				CASE 1,5,7
+					LOCALS:2 = Futanari Wife
+					MEN_OR_GIRL = 3
+				CASEELSE
+					LOCALS:2 = Wife
+					MEN_OR_GIRL = 2
+			ENDSELECT
+		CASE 2
+			;離婚している
+			SELECTCASE LOCAL:2 / 1000000000
+				CASE 0,4,8
+					LOCALS:2 = Ex-Husband
+					MEN_OR_GIRL = 1
+				CASE 1,5,7
+					LOCALS:2 = Ex Futanari Wife
+					MEN_OR_GIRL = 3
+				CASEELSE
+					LOCALS:2 = Ex-Wife
+					MEN_OR_GIRL = 2
+			ENDSELECT
+		CASE 3
+			;重婚
+			SELECTCASE LOCAL:2 / 1000000000
+				CASE 0,4,8
+					LOCALS:2 = Husband
+					MEN_OR_GIRL = 1
+				CASE 1,5,7
+					LOCALS:2 = Futanari Wife
+					MEN_OR_GIRL = 3
+				CASEELSE
+					LOCALS:2 = Wife
+					MEN_OR_GIRL = 2
+			ENDSELECT
+		CASE 4
+			;離婚して新しい相手と結婚
+			SELECTCASE LOCAL:2 / 1000000000
+				CASE 0,4,8
+					LOCALS:2 = Ex-Husband
+					MEN_OR_GIRL = 1
+				CASE 1,5,7
+					LOCALS:2 = Ex Futanari Wife
+					MEN_OR_GIRL = 3
+				CASEELSE
+					LOCALS:2 = Ex-Wife
+					MEN_OR_GIRL = 2
+			ENDSELECT
+		CASE 5
+			;未亡人
+			SELECTCASE LOCAL:2 / 1000000000
+				CASE 0,4,8
+					LOCALS:2 = Bereaved Husband
+					MEN_OR_GIRL = 1
+				CASE 1,5,7
+					LOCALS:2 = Bereaved Futanari Wife
+					MEN_OR_GIRL = 3
+				CASEELSE
+					LOCALS:2 = Bereaved Wife
+					MEN_OR_GIRL = 2
+			ENDSELECT
+	ENDSELECT
+	
+	;兄との経験
+	LOCAL:1 = LOCAL:3 % 10000000
+	LOCAL:1 /= 1000000
+	;兄が存在-夫との経験なし-ランダムで
+	IF LOCAL:1 > 0 && LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Older Brother
+		MEN_OR_GIRL = 1
+	ENDIF
+	
+	;弟との経験
+	LOCAL:1 = LOCAL:3 % 1000000000
+	LOCAL:1 /= 100000000
+	;弟が存在-夫との経験なし-ランダムで
+	IF LOCAL:1 > 0 && LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Younger Brother
+		MEN_OR_GIRL = 1
+	;ショタコンの場合確率UP
+	ELSEIF LOCAL:1 > 0 && LOCALS:2 == "" && TALENT:(ARG):143 && RAND:5 == 0
+		LOCALS:2 = Younger Brother
+		MEN_OR_GIRL = 1
+	ENDIF
+	
+	;姉との経験
+	LOCAL:1 = LOCAL:3 % 1000000
+	LOCAL:1 /= 100000
+	;姉が存在-夫との経験なし-ランダムで
+	IF LOCAL:1 > 0 && LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Older Sister
+		MEN_OR_GIRL = 2
+	ENDIF
+	
+	;妹との経験
+	LOCAL:1 = LOCAL:3 % 100000000
+	LOCAL:1 /= 10000000
+	;妹が存在-夫との経験なし-ランダムで
+	IF LOCAL:1 > 0 && LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Younger Sister
+		MEN_OR_GIRL = 2
+	;ロリコンの場合確率UP
+	ELSEIF LOCAL:1 > 0 && LOCALS:2 == "" && TALENT:(ARG):142 && RAND:5 == 0
+		LOCALS:2 = Younger Sister
+		MEN_OR_GIRL = 2
+	ENDIF
+	
+	;父との経験
+	IF LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Father
+		MEN_OR_GIRL = 1
+	;ファザコンの場合確率UP
+	ELSEIF LOCALS:2 == "" && TALENT:(ARG):141 && RAND:10 == 0
+		LOCALS:2 = Father
+		MEN_OR_GIRL = 1
+	ENDIF
+	
+	;母との経験
+	IF LOCALS:2 == "" && RAND:20 == 0
+		LOCALS:2 = Mother
+		MEN_OR_GIRL = 2
+	;マザコンの場合確率UP
+	ELSEIF LOCALS:2 == "" && TALENT:(ARG):140 && RAND:10 == 0
+		LOCALS:2 = Mother
+		MEN_OR_GIRL = 2
+	ENDIF
+	
+ENDIF
+
+;ランダムで結婚相手がファーストキス
+IF LOCALS == ""  && FIRST_KISS == 0 && LOCAL:4 == 1 && RAND:2 == 0
+	LOCALS += LOCALS:2
+	MEN_OR_GIRL:1 = MEN_OR_GIRL
+ENDIF
+;ランダムで結婚相手が初体験
+SIF TALENT:(ARG):0 == 0 && LOCALS:1 == ""  && FIRST_SEX == 0 && LOCAL:4 == 1 && RAND:2 == 0
+	LOCALS:1 += LOCALS:2
+
+;故郷の恋人
+IF TALENT:(ARG):317 == 4
+	LOCALS:2 = Home Town Lover
+	;恋人の性別はランダム
+	MEN_OR_GIRL = 4
+ENDIF
+
+;ランダムでファーストキス
+IF LOCALS == ""  && FIRST_KISS == 0 && RAND:2 == 0
+	LOCALS += LOCALS:2
+	MEN_OR_GIRL:1 = MEN_OR_GIRL
+ENDIF
+;ランダムで初体験
+SIF TALENT:(ARG):0 == 0 && LOCALS:1 == ""  && FIRST_SEX == 0 && RAND:2 == 0
+	LOCALS:1 += LOCALS:2
+
+;キスしたかもしれない職業(オトコ編)
+IF TALENT:(ARG):122
+	SELECTCASE TALENT:(ARG):勇者になる前の生活
+	CASE 1
+		;学生
+		IF RAND:4 == 0
+			LOCALS:2 = Younger Student
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Senior Student
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Female Teacher
+		ELSE
+			LOCALS:2 = Classmate
+		ENDIF
+	CASE 3
+		;農家
+		LOCALS:2 = Female Farmer
+	CASE 4
+		;漁師
+		LOCALS:2 = Harbor Whore
+	CASE 6
+		;盗人
+		LOCALS:2 = City Whore
+	CASE 8
+		;貴族
+		IF RAND:2 == 0
+			LOCALS:2 = Private Tutor
+		ELSE
+			LOCALS:2 = Young Maid
+		ENDIF
+	CASE 15
+		;商人
+		IF RAND:3 == 0
+			LOCALS:2 = Female Boss
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Customer
+		ELSE
+			LOCALS:2 = Loyal Customer
+		ENDIF
+	CASE 18
+		;パン屋
+		LOCALS:2 = Loyal Customer
+	CASE 19
+		;軍人
+		IF RAND:4 == 0
+			LOCALS:2 = Girl From The Military
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Companion
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Superior
+		ELSE
+			LOCALS:2 = Subordinate
+		ENDIF
+	CASE 5
+		;娼婦
+		LOCALS:2 = 客の女
+		IF RAND:3 == 0
+			;ヴァギナにキスの可能性
+			KISS_POINT = 301
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	CASE 20
+		;奴隷
+		LOCALS:2 = Female Master
+		IF RAND:3 == 0
+			;ヴァギナにキスの可能性
+			KISS_POINT = 301
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	ENDSELECT
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;キスしたかもしれない職業(ふたなり編)
+ELSEIF TALENT:(ARG):121
+	SELECTCASE TALENT:(ARG):勇者になる前の生活
+	CASE 1
+		;学生
+		IF RAND:4 == 0
+			LOCALS:2 = Younger Student
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Senior Student
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Female Teacher
+		ELSE
+			LOCALS:2 = Classmate
+		ENDIF
+	CASE 3
+		;農家
+		LOCALS:2 = Female Farmer
+	CASE 4
+		;漁師
+		LOCALS:2 = Harbor Whore
+	CASE 6
+		;盗人
+		LOCALS:2 = City Whore
+	CASE 8
+		;貴族
+		IF RAND:2 == 0
+			LOCALS:2 = Private Tutor
+		ELSE
+			LOCALS:2 = Young Maid
+		ENDIF
+	CASE 15
+		;商人
+		IF RAND:3 == 0
+			LOCALS:2 = Female Boss
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Customer
+		ELSE
+			LOCALS:2 = Loyal Customer
+		ENDIF
+	CASE 18
+		;パン屋
+		LOCALS:2 = Loyal Customer
+	CASE 19
+		;軍人
+		IF RAND:4 == 0
+			LOCALS:2 = Girl From The Military
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Companion
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Superior
+		ELSE
+			LOCALS:2 = Subordinate
+		ENDIF
+	CASE 5
+		;娼婦
+		LOCALS:2 = Female Customer
+		IF RAND:3 == 0
+			;ヴァギナにキスの可能性
+			KISS_POINT = 301
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	CASE 20
+		;奴隷
+		LOCALS:2 = Female Master
+		IF RAND:3 == 0
+			;ヴァギナにキスの可能性
+			KISS_POINT = 301
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	ENDSELECT
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;キスしたかもしれない職業(女編)
+ELSE
+	SELECTCASE TALENT:(ARG):勇者になる前の生活
+	CASE 1
+		;学生
+		IF RAND:4 == 0
+			LOCALS:2 = Younger Student
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Senior Student
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Teacher
+		ELSE
+			LOCALS:2 = Classmate
+		ENDIF
+	CASE 3
+		;農家
+		LOCALS:2 = Farmer
+	CASE 4
+		;漁師
+		LOCALS:2 = Fisherman
+	CASE 6
+		;盗人
+		LOCALS:2 = Thugs
+	CASE 8
+		;貴族
+		IF RAND:20 == 0
+			LOCALS:2 = Aristocrat
+		ENDIF
+	CASE 15
+		;商人
+		IF RAND:3 == 0
+			LOCALS:2 = Boss
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Customer
+		ELSE
+			LOCALS:2 = Loyal Customer
+		ENDIF
+	CASE 18
+		;パン屋
+		LOCALS:2 = Loyal Customer
+	CASE 19
+		;軍人
+		IF RAND:4 == 0
+			LOCALS:2 = Young Man From The Military
+		ELSEIF RAND:3 == 0
+			LOCALS:2 = Companion
+		ELSEIF RAND:2 == 0
+			LOCALS:2 = Superior
+		ELSE
+			LOCALS:2 = Young Soldier
+		ENDIF
+	CASE 5
+		;娼婦
+		LOCALS:2 = Middle-Aged Male Customer
+		IF RAND:3 == 0
+			;ペニスにキスの可能性
+			KISS_POINT = 101
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	CASE 20
+		;奴隷
+		LOCALS:2 = Her Master
+		IF RAND:3 == 0
+			;ペニスにキスの可能性
+			KISS_POINT = 101
+		ELSEIF RAND:2 == 0
+			;アナルにキスの可能性
+			KISS_POINT = 401
+		ENDIF
+	ENDSELECT
+	;とりあえず男限定
+	MEN_OR_GIRL = 1
+ENDIF
+
+;ランダムで結婚相手がファーストキス
+IF LOCALS == ""  && FIRST_KISS == 0 && RAND:2 == 0
+	LOCALS += LOCALS:2
+	MEN_OR_GIRL:1 = MEN_OR_GIRL
+ENDIF
+;ランダムで初体験
+SIF TALENT:(ARG):0 == 0 && LOCALS:1 == ""  && FIRST_SEX == 0 && RAND:2 == 0
+	LOCALS:1 += LOCALS:2
+
+;不幸なキス(オトコ編)
+IF TALENT:(ARG):122
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Boy Hunting Slut
+	CASE 1
+		LOCALS:2 = Young Tutor
+	CASEELSE
+		LOCALS:2 = Mad Woman
+	ENDSELECT
+	IF RAND:10 == 0
+		;ヴァギナにキスの可能性
+		KISS_POINT = 301
+	ELSEIF RAND:9 == 0
+		;アナルにキスの可能性
+		KISS_POINT = 401
+	ENDIF
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;不幸なキス(ふたなり編)
+ELSEIF TALENT:(ARG):121
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Boy Hunting Slut
+	CASE 1
+		LOCALS:2 = Obscene Tutor
+	CASEELSE
+		LOCALS:2 = Mad Woman
+	ENDSELECT
+	IF RAND:10 == 0
+		;ヴァギナにキスの可能性
+		KISS_POINT = 301
+	ELSEIF RAND:9 == 0
+		;アナルにキスの可能性
+		KISS_POINT = 401
+	ENDIF
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;不幸なキス(女編)
+ELSE
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Thug
+	CASE 1
+		LOCALS:2 = Man From The Thieves' Guild
+	CASEELSE
+		LOCALS:2 = Rapist
+	ENDSELECT
+	IF RAND:10 == 0
+		;ペニスにキスの可能性
+		KISS_POINT = 101
+	ELSEIF RAND:9 == 0
+		;アナルにキスの可能性
+		KISS_POINT = 401
+	ENDIF
+	;とりあえず男限定
+	MEN_OR_GIRL = 1
+ENDIF
+
+;ランダムでファーストキス
+IF LOCALS == ""  && FIRST_KISS == 0 && RAND:3 == 0
+	LOCALS += LOCALS:2
+	MEN_OR_GIRL:1 = MEN_OR_GIRL
+ENDIF
+;ランダムで初体験
+SIF TALENT:(ARG):0 == 0 && LOCALS:1 == ""  && FIRST_SEX == 0 && RAND:3 == 0
+	LOCALS:1 += LOCALS:2
+
+;誰にでもあるキス(オトコ編)
+IF TALENT:(ARG):122
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Childhood Friend
+	CASE 1
+		LOCALS:2 = Girlfriend
+	CASEELSE
+		LOCALS:2 = First Love
+	ENDSELECT
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;誰にでもあるキス(ふたなり編)
+ELSEIF TALENT:(ARG):121
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Childhood Friend
+	CASE 1
+		LOCALS:2 = Girlfriend
+	CASEELSE
+		LOCALS:2 = First Love
+	ENDSELECT
+	;とりあえず女限定
+	MEN_OR_GIRL = 2
+;誰にでもあるキス(女編)
+ELSE
+	SELECTCASE RAND:3
+	CASE 0
+		LOCALS:2 = Childhood Friend
+	CASE 1
+		LOCALS:2 = Boyfriend
+	CASEELSE
+		LOCALS:2 = First Love
+	ENDSELECT
+	;とりあえず男限定
+	MEN_OR_GIRL = 1
+ENDIF
+
+;ファーストキス確定
+IF LOCALS == ""  && FIRST_KISS == 0
+	LOCALS += LOCALS:2
+	MEN_OR_GIRL:1 = MEN_OR_GIRL
+ENDIF
+;初体験確定
+SIF TALENT:(ARG):0 == 0 && FIRST_SEX == 0 && LOCALS:1 == ""
+	LOCALS:1 += LOCALS:2
+
+SIF LOCALS:1 != "" &&  FIRST_SEX == 0
+	FIRST_SEX = 100
+
+IF MEN_OR_GIRL:1 == 4
+	;ふたなりの場合
+	IF RAND:10 == 0 && TALENT:(ARG):121
+		;ふたなりの恋人
+		MEN_OR_GIRL:1 = 2
+	ELSEIF RAND:2 == 0 && TALENT:(ARG):121
+		;女の恋人
+		MEN_OR_GIRL:1 = 3
+	ELSEIF TALENT:(ARG):121
+		;男の恋人
+		MEN_OR_GIRL:1 = 1
+	;オトコの場合
+	ELSEIF RAND:20 == 0 && TALENT:(ARG):122
+		;オトコの恋人
+		MEN_OR_GIRL:1 = 1
+	ELSEIF RAND:8 == 0 && TALENT:(ARG):122
+		;ふたなりの恋人
+		MEN_OR_GIRL:1 = 3
+	ELSEIF TALENT:(ARG):122
+		;女の恋人
+		MEN_OR_GIRL:1 = 1
+	;女の場合
+	ELSEIF RAND:20 == 0
+		;女の恋人
+		MEN_OR_GIRL:1 = 2
+	ELSEIF RAND:8 == 0
+		;ふたなりの恋人
+		MEN_OR_GIRL:1 = 3
+	ELSE
+		;男の恋人
+		MEN_OR_GIRL:1 = 1
+	ENDIF
+ENDIF
+
+;予約した箇所を入れる
+SIF  LOCALS != ""  && FIRST_KISS == 0 && KISS_POINT > 0
+	FIRST_KISS = KISS_POINT
+
+;性別と矛盾していた場合,白紙
+;ペニス指定なのに女
+SIF FIRST_KISS >= 100 && FIRST_KISS < 300 && MEN_OR_GIRL:1 == 2
+	FIRST_KISS = 0
+;ヴァギナ指定なのに男
+SIF FIRST_KISS >= 300 && FIRST_KISS < 400 && MEN_OR_GIRL:1 == 1
+	FIRST_KISS = 0
+
+;ファーストキスの箇所
+IF LOCALS != ""  && FIRST_KISS == 0 && RAND:40 > 0
+	;唇
+	FIRST_KISS = 1
+ELSEIF LOCALS != ""  && FIRST_KISS == 0 && RAND:3 == 0
+	;アナル
+	FIRST_KISS = 401
+ELSEIF LOCALS != ""  && FIRST_KISS == 0 && MEN_OR_GIRL:1 == 1
+	;男でペニスの場合
+	FIRST_KISS = 101
+ELSEIF LOCALS != ""  && FIRST_KISS == 0 && MEN_OR_GIRL:1 == 2
+	;女でヴァギナの場合
+	FIRST_KISS = 301
+ELSEIF LOCALS != ""  && FIRST_KISS == 0 && MEN_OR_GIRL:1 == 3 && RAND:2 == 0
+	;ふたなりでペニスの場合
+	FIRST_KISS = 101
+ELSEIF LOCALS != ""  && FIRST_KISS == 0 && MEN_OR_GIRL:1 == 3
+	;ふたなりでヴァギナの場合
+	FIRST_KISS = 301
+ENDIF
+
+CFLAG:(ARG):16 = FIRST_KISS
+CSTR:(ARG):4 = %LOCALS%
+CFLAG:(ARG):15 = FIRST_SEX
+CSTR:(ARG):3 = %LOCALS:1%
+
+
+RETURN 0
+

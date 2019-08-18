@@ -1,0 +1,534 @@
+﻿;モンスターたちとイチャイチャ
+;とりあえずやっつけ.改変パッチも歓迎
+
+;-----------------------------------
+@MONSTER_PLAY
+;-----------------------------------
+$INPUT_LOOP
+
+CALL MONSTERPLAY_LIST
+
+SIF ITEM:22 >= 1
+	PRINT [900] 野良犬 
+PRINTL [999] もどる
+
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF ITEM:RESULT <= 0 && RESULT != 900
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 900 && ITEM:22 <= 0
+	GOTO INPUT_LOOP
+ENDIF
+
+LOCAL:0 = RESULT
+IF LOCAL:0 != 900
+	CALL MONSTER_DATA, LOCAL:0, 5
+	LOCAL:1 = E:507
+ENDIF
+
+A = 0
+Y = RAND:5 + 3
+
+IF LOCAL:0 == 900
+	CALL MONSTER_PLAY_DOG
+ELSEIF LOCAL:1 == 1
+	CALL ORC_MONSTER_PLAY
+ELSEIF LOCAL:1 == 2
+	CALL SLIME_MONSTER_PLAY
+ELSEIF LOCAL:1 == 3
+	CALL INSECT_MONSTER_PLAY
+ELSEIF LOCAL:1 == 4
+	CALL IVY_MONSTER_PLAY
+ELSEIF LOCAL:1 == 5
+	CALL SYOKUSYU_MONSTER_PLAY
+ELSEIF LOCAL:1 == 6
+	CALL FAILY_MONSTER_PLAY
+ELSEIF LOCAL:1 == 7
+	CALL GIANT_MONSTER_PLAY
+ELSEIF LOCAL:1 == 8
+	CALL MAN_MONSTER_PLAY
+ELSEIF LOCAL:1 == 9
+	CALL GIRL_MONSTER_PLAY
+ELSEIF LOCAL:1 == 10
+	CALL BEAST_MONSTER_PLAY
+ELSEIF LOCAL:1 == 11
+	CALL BRAIN_MONSTER_PLAY
+ELSEIF LOCAL:1 == 12
+	CALL HORSE_MONSTER_PLAY
+ENDIF
+
+IF TALENT:A:0 == 1 && EXP:A:0 > 0
+	PRINTW [処女喪失]
+	TALENT:A:0 = 0
+ENDIF
+
+
+
+BEGIN TURNEND
+RETURN 1
+
+;-------------------------------------
+@MONSTERPLAY_LIST
+;-------------------------------------
+
+PRINTL モンスタ-を選んでください
+
+LOCAL:1 = 0
+FOR LOCAL:0, 100, 200
+	IF ITEM:(LOCAL:0) >= 1
+		PRINTFORM [{LOCAL:0}] %ITEMNAME:(LOCAL:0)%　　
+		LOCAL:1 += 1
+	ENDIF
+	
+	IF LOCAL:1 >= 3
+		PRINTL  
+		LOCAL:1 = 0
+	ENDIF
+NEXT
+
+SIF LOCAL:1 != 0
+	PRINTL  
+
+RETURN 0
+
+;-----------------------------------------
+@MONSTER_PLAY_DOG
+;-----------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたはいぬにおやつをあげてやった
+	RETURN 0
+ENDIF
+
+
+PRINTW 『クゥ-ン,クゥ-ン』
+
+PRINTFORMW 甘い声をあげて%SAVESTR:A%に懐く野良犬をあやしながら,%SAVESTR:A%は四つん這いになり野良犬の膨らんできたペニスを秘所にあてがった
+PRINTFORML V exp+{Y}
+EXP:A:0 += Y
+PRINTFORMW 獣姦経験+{Y}
+EXP:A:56 += Y
+CFLAG:A:106 += Y
+
+RETURN 0
+
+
+;--------------------------------------------
+@ORC_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW 『マオウサマ...カンベンシテクレ...』
+	RETURN 0
+ENDIF
+
+X = RAND:5
+IF X == 0
+	PRINTW 『マ...マオウサマトせっくすデキルナンテ...!』
+ELSEIF X == 1
+	PRINTW 『カンゲキダ...』
+ELSEIF X == 2
+	PRINTW 『イインデスカ...オデナンカデ?』
+ELSEIF X == 3
+	PRINTW 『ウウ...マオウサマァ...』
+ELSE
+	PRINTW 『ブヒヒッ,マオウサマ...』
+ENDIF
+
+
+X = RAND:2
+IF X == 0
+	PRINTW 『マオウサマガ...オデノチンポヲ...!』
+	PRINTFORMW %SAVESTR:A%は全裸で亜人たちのペニスに奉仕した.濃い精液が%SAVESTR:A%の口に注がれる...
+	PRINTFORML フェラ経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:A:22 += Y
+	EXP:A:20 += Y
+ELSEIF X == 1
+	PRINTW 『ミンナ,マオウサマノオナグサミダ...!』
+	PRINTFORMW %SAVESTR:A%は,膣,口,肛門,穴という穴に亜人たちのペニスを入れられ,精液を注ぎこまれた
+	PRINTW 彼女の虚ろな目は薄暗いダンジョンの天井を向いたまま,焦点を結ばなかった
+	PRINTFORMW {Y}人分の溜まりに溜まった精液で化粧された顔と性器を見て,亜人たちはさらに興奮している
+	PRINTFORML V exp+{Y}
+	PRINTFORML A経験+{Y}
+	PRINTFORML フェラ経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:A:0 += Y
+	EXP:A:1 += Y
+	EXP:A:22 += Y
+	EXP:A:20 += Y
+	CFLAG:A:107 += Y
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SLIME_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたは粘液に両足を突っ込んで存分に冷え冷え感を味わった
+	RETURN 0
+ENDIF
+
+PRINTW 怪しく粘液は蠢動している.........
+
+X = RAND:2
+IF X == 0
+	PRINTFORMW %SAVESTR:A%は粘液風呂を楽しんだ
+	PRINTFORMW ...ヌルヌルだ!
+	PRINTFORML 恥情の珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+	JUEL:A:8 += Y * 10
+ELSEIF X == 1
+	PRINTFORMW %SAVESTR:A%は粘液風呂を楽しんだ
+	PRINTFORMW %SAVESTR:A%は肛門から逆流する大量の粘液で身体の中が綺麗になるのを感じる
+	PRINTFORML A経験+{Y}
+	PRINTFORML 恥情の珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+	JUEL:A:8 += Y * 10
+	EXP:A:1 += Y
+ELSEIF X == 2
+	
+ELSE
+	
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@INSECT_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたは昆虫観察を存分に楽しんだ
+	RETURN 0
+ENDIF
+
+PRINTW 節足動物の甲殻が軋んでいる...
+
+
+X = RAND:2
+IF X == 0
+	PRINTW 『ギチギチギチ......』
+	PRINTFORMW %SAVESTR:A%は産卵管を口でしゃぶってあげた
+	PRINTFORML 習得の珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:7 += Y * 10
+	JUEL:A:5 += Y * 10
+ELSEIF X == 1
+	PRINTW 『ギ-ギ-ギ-』
+	PRINTFORMW %SAVESTR:A%は肛門に産卵管をねじ込まれ,卵を産みつけられた
+	PRINTFORMW %SAVESTR:A%は四つん這いになって産卵を受け入れている
+	PRINTFORMW {Y}匹が代わる代わる彼女に覆いかぶさり,尻や背中まで卵だらけにさせられた
+	PRINTFORML A経験+{Y}
+	EXP:A:1 += Y
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@IVY_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたは植物観察を存分に楽しんだ
+	RETURN 0
+ENDIF
+
+PRINTW 『シュルシュル...』
+
+
+X = RAND:2
+IF X == 0
+	PRINTW 蔦が締め付けてくる!
+	PRINTFORMW 加減を知らない蔦に%SAVESTR:A%はもがき苦しんだが,すぐに解放され,彼女は荒い息をついている
+	PRINTFORML 苦痛の珠+{Y * 10}
+	PRINTFORML 恐怖の珠+{Y * 10}
+	JUEL:A:9 += Y * 10
+	JUEL:A:10 += Y * 10
+ELSEIF X == 1
+	PRINTW 蔦が肛門に根を下ろした
+	PRINTFORMW %SAVESTR:A%は肛門を蹂躙され喉が裂けるほどの絶叫を上げた
+	PRINTW 蔦は養分を吸収すると,肛門から一気に根を引き抜く
+	PRINTFORML A経験+{Y}
+	PRINTFORML 苦痛の珠+{Y * 10}
+	PRINTFORML 恐怖の珠+{Y * 10}
+	JUEL:A:9 += Y * 10
+	JUEL:A:10 += Y * 10
+	EXP:A:1 += Y
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@SYOKUSYU_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW 触手はうねうね動いている...
+	RETURN 0
+ENDIF
+
+PRINTW 怪しく触手は蠢動している.........
+
+
+X = RAND:4
+IF X == 0
+	PRINTFORMW %SAVESTR:A%は触手の粘液の出る先端を口に含んで吸った
+	PRINTFORMW すぐに大量の体液が迸り,むせる.やがて彼女の意識は混濁してくる.........
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+ELSEIF X == 1
+	PRINTFORMW 触手を%SAVESTR:A%は肛門にあてがい中へと導く
+	PRINTFORMW 肛門は触手を飲みこみ,腸内で体液を撒き散らす
+	PRINTW やがて筋肉が弛緩して,だらしなく肛門から大量の濁った体液を垂れ流した
+	PRINTFORML A経験+{Y}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+	EXP:A:1 += Y
+ELSEIF X == 2
+	PRINTFORMW %SAVESTR:A%は性器に触手を受け入れた
+	PRINTFORMW 太い触手がねじ込まれ,媚薬成分を膣壁に塗り込む
+	PRINTFORML V exp+{Y}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+	EXP:A:0 += Y
+	CFLAG:A:107 += Y
+ELSEIF X == 3
+	PRINTFORMW %SAVESTR:A%は,口も膣も肛門も触手の入る所はすべて犯され大量の体液を流しこまれた
+	PRINTFORMW 媚薬成分に%SAVESTR:A%は陶酔している...
+	PRINTFORML A経験+{Y}
+	PRINTFORML V exp+{Y}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:5 += Y * 10
+	EXP:A:0 += Y
+	EXP:A:1 += Y
+	CFLAG:A:107 += Y
+ENDIF
+PRINTFORMW 触手経験+{Y}
+EXP:A:55 += Y
+RETURN 0
+
+;--------------------------------------------
+@FAILY_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:A:122 == 1
+	PRINTW 『あたちちいさいよ?それでえもいいの?』
+ELSE
+	PRINTW 『まお-さま!えっち!』
+ENDIF
+
+IF TALENT:A:122 == 1 || TALENT:A:121 == 1
+	PRINTW 『まお-さまのおちんちんあったか-い』
+	PRINTFORMW %SAVESTR:A%のペニスを妖精が全身を使ってしごいている
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:0 += Y * 10
+	JUEL:A:5 += Y * 10
+ELSE
+	PRINTW 『なめちゃえ-!』
+	PRINTFORMW %SAVESTR:A%は,クリトリスと両乳首を妖精たちにフェラされた
+	PRINTW 彼女は妖精たちの舌さばきに悶えている
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:0 += Y * 10
+	JUEL:A:5 += Y * 10
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@GIANT_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW 『マオウサマ...カンベンシテクレ...』
+	RETURN 0
+ENDIF
+
+PRINTW 『マオウサマ　コワレルゾ　イイノカ?』
+
+X = 0
+IF X == 0
+	PRINTFORMW 『マオウサマガ　オナホ　ミタイニッ　!!』
+	PRINTFORMW %SAVESTR:A%は胴を掴まれ巨人の巨大なペニスをしごくための道具,オナホとなっていた
+	PRINTFORMW 『ウウッ　マオウサマ　キモチイイデスッ』
+	PRINTFORMW 次の瞬間,腹が膨らむほどの大量の精液がぶちまけられた...
+	PRINTFORML V exp+{Y}
+	PRINTFORML Semen exp+{Y}
+	PRINTFORML V拡張経験+{Y}
+	EXP:A:0 += Y
+	EXP:A:20 += Y
+	EXP:A:53 += Y
+	CFLAG:A:107 += Y
+ELSEIF X == 1
+ELSEIF X == 2
+ELSEIF X == 3
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@MAN_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW 『魔王様冗談きついよ......』
+	RETURN 0
+ENDIF
+
+PRINTW 『い,いいんですか!?魔王様...信じられない...』
+
+X = RAND:2
+IF X == 0
+	PRINTW 『ううっ...魔王様...気持ちいいです...』
+	PRINTFORMW %SAVESTR:A%は全裸で男たちのペニスに奉仕した.%SAVESTR:A%の舌さばきに男たちは悶えている
+	PRINTFORML フェラ経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:A:22 += Y
+	EXP:A:20 += Y
+ELSEIF X == 1
+	PRINTW 『魔王様が...俺たちに尻を...!』
+	PRINTFORMW %SAVESTR:A%は壁に手をつき男たちに尻を突き出して誘惑した
+	PRINTFORMW 男たちは我先にとペニスを勃起させ%SAVESTR:A%を犯した
+	PRINTFORMW %SAVESTR:A%は喘ぎ声を上げてこの慰みを楽しんでいる
+	PRINTFORML V exp+{Y}
+	PRINTFORML A経験+{Y}
+	PRINTFORML Semen exp+{Y}
+	EXP:A:0 += Y
+	EXP:A:1 += Y
+	EXP:A:20 += Y
+	CFLAG:A:107 += Y
+ELSEIF X == 2
+	
+ELSEIF X == 3
+	
+ELSE
+	
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@GIRL_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:A:122 == 1
+	PRINTW 『あ-ら魔王様,アタシ達と遊びたいの?』
+ELSE
+	PRINTW 『魔王様...そっちの趣味もあるんだぁ』
+ENDIF
+
+IF TALENT:A:122 == 1
+	PRINTW 『魔王様...よかったら毎晩でも私たちはご奉仕しますよ...?』
+	PRINTFORMW %SAVESTR:A%のペニスを求めて女魔族たちがキャッキャと群がっている
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	JUEL:A:0 += Y * 10
+	JUEL:A:5 += Y * 10
+ELSE
+	PRINTW 『あ-ん,魔王様ぁ,アタシを奴隷にして-♪』
+	PRINTFORM %SAVESTR:A%は
+	IF TALENT:A:121 == 1
+		PRINT ペニス
+	ELSE
+		PRINT ディルド
+	ENDIF
+	PRINTFORMW で女魔族たちを攻めている
+	PRINTW 女同士だがまんざらでもないようだ
+	PRINTFORML 快Cの珠+{Y * 10}
+	PRINTFORML 欲情の珠+{Y * 10}
+	PRINTFORML レズ経験+{Y}
+	JUEL:A:0 += Y * 10
+	JUEL:A:5 += Y * 10
+	EXP:A:40 += Y
+ENDIF
+
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@BEAST_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたは腹を見せて懐く魔獣の毛並みを存分にモフった
+	RETURN 0
+ENDIF
+
+PRINTW 『クゥ-ン,クゥ-ン』
+
+PRINTFORMW 甘い声をあげて%SAVESTR:A%に懐く野獣をあやしながら,%SAVESTR:A%は四つん這いになり野獣の膨らんできたペニスを秘所にあてがった
+PRINTFORML V exp+{Y}
+EXP:A:0 += Y
+PRINTFORMW 獣姦経験+{Y}
+EXP:A:56 += Y
+CFLAG:A:107 += Y
+RETURN 0
+
+;--------------------------------------------
+@BRAIN_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW 『マオウサマ...カンベンシテクレ...』
+	RETURN 0
+ENDIF
+
+PRINTW 『マオウサマ...カンベンシテクレ...』
+RETURN 0
+
+
+X = RAND:40
+IF X == 0
+	PRINTL "あ...あ...あ゛-っ,あ゛-っ"
+	PRINTFORML ブレインイ-タ-の硬い触手が%SAVESTR:A%の頭蓋骨を貫通し,脳を啜り始めた
+	PRINTL 彼女は四肢をばらばらにうごかすと,失禁して,死んだ
+	BASE:A:0 = 0
+	PRINTFORML 異常経験+1
+	EXP:A:50 += 1
+ELSE
+	PRINTW ブレインイ-タ-の触手が勇者を絡め取った.勇者は死に物狂いでもがくが,逃げられない
+	PRINTFORMW ブレインイ-タ-は%SAVESTR:A%の脳に触手を突きたて,脳髄に直に媚薬成分を流しこんだ
+	PRINTFORMW %SAVESTR:A%は快楽のあまり失禁し廃人になった
+	PRINTFORMW どうやら腹は減っていなかったらしい
+	PRINTFORML 異常経験+1
+	EXP:A:50 += 1
+ENDIF
+WAIT
+RETURN 0
+
+;--------------------------------------------
+@HORSE_MONSTER_PLAY
+;--------------------------------------------
+
+IF TALENT:MASTER:122 == 1
+	PRINTW あなたは乗馬を存分に楽しんだ
+	RETURN 0
+ENDIF
+
+PRINTW 『ヒヒ-ン!』
+
+PRINTFORMW %SAVESTR:A%は息を荒げてあなたにのしかかろうとする馬をいなしながら,脚の間に四つん這いになって潜り込んだ
+PRINTFORMW 馬の巨大なペニスはさすがの%SAVESTR:A%でもかなり大きい
+PRINTFORML 苦痛の珠+{Y * 10}
+PRINTFORML 恐怖の珠+{Y * 10}
+PRINTFORML V exp+{Y}
+EXP:A:0 += Y
+JUEL:A:9 += Y * 10
+JUEL:A:10 += Y * 10
+CFLAG:A:107 += Y
+PRINTFORMW 獣姦経験+{Y}
+EXP:A:56 += Y
+RETURN 0
+
+
+
+
+

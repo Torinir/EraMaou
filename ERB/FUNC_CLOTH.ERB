@@ -1,0 +1,824 @@
+﻿;eraIM@Sから改変導入しました(eramaou)
+;結構改造しました
+
+;=================================================
+;衣装関連の関数群
+;=================================================
+;-------------------------------------------------
+;使用一時フラグ
+;TFLAG:45 =
+;調教中に下着-着衣下が穿けない状態になっている
+;(&1:パンツ &2:調教後に下着処分 &4:着衣下 &8:調教後に着衣処分 &16:特別コス &32:調教後に特別コス処分)
+;-------------------------------------------------
+;使用キャラフラグ
+;CFLAG;40 = 着衣状態(&1:パンツ &2:ブラジャー &4:上着上 &8:上着下-スカートタイプ &:16上着下-ズボンタイプ &64:特別コス)
+;CFLAG:41 = 上着のタイプ
+;CFLAG:42 = 特別コスチュームのタイプ
+;CFLAG:43 = パンツの状態(-2:廃棄 -1:没収 0:通常 1以上:洗濯中)
+;CFLAG:44 = ブラジャーの状態(-2:廃棄 -1:没収 0:通常 1以上:洗濯中)
+;CFLAG:45 = 上着上の状態(-2:廃棄 -1:没収 0:通常 1以上:洗濯中)
+;CFLAG:46 = 上着下の状態(-2:廃棄 -1:没収 0:通常 1以上:洗濯中)
+;CFLAG:47 = 特別コスチュームの状態(-1:没収 0:通常 1以上:洗濯中)
+
+;-------------------------------------------------
+;よく参照するシチュ早見表
+;CFLAG:40 & 3  == False;:何も下着を着けていない True:何か下着を付けている
+;CFLAG:40 & 6  == False:上半身裸 True:上半身に何か着ている
+;CFLAG:40 & 17 == False:性器を直に触れる状態 True:性器を触れない状態
+;CFLAG:40 & 24 == False:上着の下部分を付けていない True:上着の下部分を付けている
+;CFLAG:40 & 25 == False:下半身裸 True:下半身に何か着ている
+;CFLAG:40 & 28 == False:上着を上も下も一切着ていない True:何か上着を着ている
+;=================================================
+;-------------------------------------------------
+;使用中の着衣表示
+;-------------------------------------------------
+@PRINT_CLOTHTYPE
+;着衣設定を使ってない場合
+IF FLAG:37 == 0 || CFLAG:41 == 0
+	PRINT Naked
+	RETURN 1
+ENDIF
+
+;特別コス:スライムの場合の処理
+IF CFLAG:42 == 11 && (CFLAG:40 & 64)
+	PRINT スライムに包まれた姿
+	RETURN 1
+ENDIF
+
+;基本コスチューム処理
+CALL PRINT_CLOTHTYPE_MAIN
+
+;特別コスチューム処理
+IF CFLAG:42
+	PRINT に
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINT 姿
+ENDIF
+
+RETURN 1
+
+;基本コスチューム
+@PRINT_CLOTHTYPE_MAIN
+;ふんどしの場合
+IF CFLAG:41 == 192 && (CFLAG:40 & 16)
+	PRINT ふんどし一丁
+	RETURN 1
+;体操着とブルマで半脱ぎの場合の処理
+ELSEIF CFLAG:41 == 109
+	IF (CFLAG:40 & 4) && (CFLAG:40 & 24) == 0
+		PRINT 体操着の上だけで
+		IF (CFLAG:40 & 1)
+			PRINTFORM パンツ丸見え
+		ELSE
+			PRINT 下半身裸
+		ENDIF
+		RETURN 1
+	ELSEIF (CFLAG:40 & 4) == 0 && (CFLAG:40 & 24)
+		IF (CFLAG:40 & 2)
+			PRINT ブルマとブラジャ-姿
+		ELSE
+			PRINT ブルマ一枚
+		ENDIF
+		RETURN 1
+	ENDIF
+ENDIF
+;全身タイプで半脱ぎの場合の処理
+IF CFLAG:41 >= 201 && CFLAG:41 <= 300
+	IF (CFLAG:40 & 4) && (CFLAG:40 & 24) == 0
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT の下が破れて,
+		IF (CFLAG:40 & 1)
+			PRINTFORM パンツ丸見え
+		ELSE
+			PRINT 下半身裸
+		ENDIF
+		RETURN 1
+	ELSEIF (CFLAG:40 & 4) == 0 && (CFLAG:40 & 24)
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT の胸元が裂けて,
+		IF (CFLAG:40 & 2)
+			PRINT 上はブラジャ-だけ
+		ELSE
+			IF TALENT:122 == 0 && TALENT:116 == 0 && (TALENT:109 == 0 || TALENT:132 == 0)
+				PRINT 乳房むきだし
+			ELSE
+				PRINT 上半身裸
+			ENDIF
+		ENDIF
+		RETURN 1
+	ENDIF
+ENDIF
+;通常の衣服
+IF (CFLAG:40 & 28)
+	IF (CFLAG:40 & 4) && (CFLAG:40 & 24) == 0
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT 上だけ
+		IF (CFLAG:40 & 1)
+			PRINT で下はパンツ一枚
+		ELSE
+			PRINT で下半身裸
+		ENDIF
+	ELSEIF (CFLAG:40 & 4) == 0 && (CFLAG:40 & 24)
+		IF (CFLAG:40 & 2)
+			PRINT ブラジャ-に
+		ELSE
+			IF TALENT:122 == 0 && TALENT:116 == 0 && (TALENT:109 == 0 || TALENT:132 == 0)
+				PRINT 乳房むきだしに
+			ELSE
+				PRINT 上半身裸に
+			ENDIF
+		ENDIF
+		CALL PRINT_CLOTHTYPE_MAIN2
+		IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+			PRINT のスカ-ト姿
+		ELSE
+			PRINT 下だけの姿
+		ENDIF
+	ELSE
+		CALL PRINT_CLOTHTYPE_MAIN2
+		SIF (CFLAG:40 & 64) == 0
+			PRINT 姿
+	ENDIF
+ELSEIF (CFLAG:40 & 1) && (CFLAG:40 & 2)
+	PRINT 下着
+	SIF (CFLAG:40 & 64) == 0
+		PRINT 姿
+ELSEIF (CFLAG:40 & 1)
+	PRINTFORM パンツ一枚
+ELSEIF (CFLAG:40 & 2)
+	PRINT ブラ一枚で下半身丸出し
+ELSE
+	PRINT 全裸
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;着衣フラグの初期化
+;-------------------------------------------------
+@WEARING_CLOTH_ALL
+;標準衣装が設定されてない場合は戻る
+SIF CFLAG:41 == 0 && CFLAG:42 == 0
+	RETURN 0
+
+;一旦全裸に
+CFLAG:40 = 0
+
+;全裸以外の場合の標準コス処理
+IF CFLAG:41 != 0
+	;パンツ装着
+	CFLAG:40 |= 1
+	;絶壁,未熟,幼稚+貧乳の場合を除きブラ装着
+	SIF TALENT:116 == 0 && TALENT:135 == 0 && (TALENT:132 == 0 || TALENT:109 == 0)
+		CFLAG:40 |= 2
+	;和服-バニースーツ用ノーブラ化処理
+	SIF (CFLAG:40 & 2) && (CFLAG:41 == 202 || CFLAG:41 == 254)
+		CFLAG:40 -= 2
+	;全裸の上にまとうタイプ(191～200or241～250or291～300)なら全裸にする
+	SIF (CFLAG:41 >= 191 && CFLAG:41 <= 200)
+		CFLAG:40 = 0
+	SIF (CFLAG:41 >= 241 && CFLAG:41 <= 250)
+		CFLAG:40 = 0
+	SIF (CFLAG:41 >= 291 && CFLAG:41 <= 300)
+		CFLAG:40 = 0
+	;島の娘の服用ノーブラ-ノーパン処理
+	SIF CFLAG:41 == 29
+		CFLAG:40 = 0
+	;オムツ着用時のノーパン処理
+	SIF (CFLAG:40 & 1) && CFLAG:42 == 69
+		CFLAG:40 -= 1
+	
+	;下がスカートタイプのツーピース
+	IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+		CFLAG:40 |= 4
+		CFLAG:40 |= 8
+	;下がズボンタイプのツーピース
+	ELSEIF CFLAG:41 >= 101 && CFLAG:41 <= 200
+		CFLAG:40 |= 4
+		CFLAG:40 |= 16
+	;下がスカートタイプの全身衣装
+	ELSEIF CFLAG:41 >= 201 && CFLAG:41 <= 250
+		CFLAG:40 |= 4
+		CFLAG:40 |= 8
+	;下がズボンタイプの全身衣装
+	ELSEIF CFLAG:41 >= 251 && CFLAG:41 <= 300
+		CFLAG:40 |= 4
+		CFLAG:40 |= 16
+	ENDIF
+
+	;ふんどし
+	SIF CFLAG:41 == 192
+		CFLAG:40 = 16
+
+ENDIF
+
+;特別コスの装着
+SIF CFLAG:42
+	CFLAG:40 |= 64
+
+RETURN 1
+
+;-------------------------------------------------
+;着用可能な衣装の全装着
+;-------------------------------------------------
+@WEARING_CLOTH_ABLE
+CALL WEARING_CLOTH_ALL
+SIF CFLAG:43 != 0
+	CFLAG:40 -= (CFLAG:40 & 1)
+SIF CFLAG:44 != 0
+	CFLAG:40 -= (CFLAG:40 & 2)
+SIF CFLAG:45 != 0
+	CFLAG:40 -= (CFLAG:40 & 4)
+SIF CFLAG:46 != 0
+	CFLAG:40 -= (CFLAG:40 & 8)
+SIF CFLAG:46 != 0
+	CFLAG:40 -= (CFLAG:40 & 16)
+SIF CFLAG:47 != 0
+	CFLAG:40 -= (CFLAG:40 & 64)
+
+;-------------------------------------------------
+;調教後の衣類の処理
+;-------------------------------------------------
+@AFTERTRAIN_CLOTH
+;汚れた衣類の始末
+S = 0
+;特別コス
+IF CFLAG:42 && (TFLAG:45 & 32)
+	PRINTFORM (%SAVESTR:TARGET%の
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINTL は廃棄処分にされました)
+	CFLAG:42 = 0
+	TFLAG:45 -= 32
+	S = 1
+	SIF CFLAG:40 & 64
+		CFLAG:40 -= 64
+ELSEIF CFLAG:42 == 69 && (TFLAG:45 & 16) && CFLAG:47 == 0 && MONEY >= 50
+	;オムツの場合の特殊処理
+	$INPUT_LOOP_01
+	PRINTFORML 50ポイントで%SAVESTR:TARGET%のオムツを交換してやりますか?
+	PRINTL  [0] - はい
+	PRINTL  [1] - いいえ
+	INPUT
+	IF RESULT == 0
+		PRINTFORM (%SAVESTR:TARGET%に新しいオムツをはかせてやりました)
+		MONEY -= 50
+		CFLAG:47 = 0
+		TFLAG:45 -= 16
+		IF TALENT:135 == 0
+			PRINTL 
+			PRINTFORM %PALAMNAME:8% gems + 500
+			JUEL:8 += 500
+		ENDIF
+		WAIT
+		S = 1
+	ELSEIF RESULT == 1
+		PRINTFORMW (%SAVESTR:TARGET%のオムツを洗濯に出しました)
+		CFLAG:47 = 2
+		TFLAG:45 -= 16
+		S = 1
+		SIF CFLAG:40 & 64
+			CFLAG:40 -= 64
+	ELSE
+		GOTO INPUT_LOOP_01
+	ENDIF
+ELSEIF CFLAG:42 && (TFLAG:45 & 16) && CFLAG:47 == 0
+	PRINTFORM (%SAVESTR:TARGET%の
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINTW を洗濯に出しました)
+	CFLAG:47 = 5
+	;オムツの場合は洗濯速度は下着並
+	SIF CFLAG:42 == 69
+		CFLAG:47 = 2
+	TFLAG:45 -= 16
+	S = 1
+	SIF CFLAG:40 & 64
+		CFLAG:40 -= 64
+ENDIF
+;上着下
+IF CFLAG:41 && (TFLAG:45 & 8)
+	PRINTFORM (%SAVESTR:TARGET%が着ていた
+	CALL PRINT_CLOTHTYPE_MAIN2
+	IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+		PRINT のスカ-ト
+	ELSEIF CFLAG:41 <= 200
+		PRINT 下
+	ENDIF
+	PRINTW は廃棄処分にされました)
+	IF CFLAG:41 >= 201
+		CFLAG:41 = 0
+		SIF CFLAG:40 & 4
+			CFLAG:40 -= 4
+		SIF CFLAG:40 & 8
+			CFLAG:40 -= 8
+		SIF CFLAG:40 & 16
+			CFLAG:40 -= 16
+	ELSE
+		CFLAG:46 = -2
+		SIF CFLAG:40 & 8
+			CFLAG:40 -= 8
+		SIF CFLAG:40 & 16
+			CFLAG:40 -= 16
+	ENDIF
+	TFLAG:45 -= 8
+	S = 1
+ELSEIF CFLAG:41 && (TFLAG:45 & 4) && CFLAG:46 == 0
+	PRINTFORM (%SAVESTR:TARGET%が着ていた
+	CALL PRINT_CLOTHTYPE_MAIN2
+	IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+		PRINT のスカ-ト
+	ELSEIF CFLAG:41 <= 200
+		PRINT 下
+	ENDIF
+	PRINTW を洗濯に出しました)
+	IF CFLAG:41 >= 201
+		CFLAG:45 = 3
+		CFLAG:46 = 3
+		SIF CFLAG:40 & 4
+			CFLAG:40 -= 4
+		SIF CFLAG:40 & 8
+			CFLAG:40 -= 8
+		SIF CFLAG:40 & 16
+			CFLAG:40 -= 16
+	ELSE
+		CFLAG:46 = 3
+		SIF CFLAG:40 & 8
+			CFLAG:40 -= 8
+		SIF CFLAG:40 & 16
+			CFLAG:40 -= 16
+	ENDIF
+	TFLAG:45 -= 4
+	S = 1
+ENDIF
+;パンツ
+IF (TFLAG:45 & 2)
+	PRINTFORMW (%SAVESTR:TARGET%の下着は廃棄処分にされました)
+	CFLAG:43 = -2
+	SIF CFLAG:40 & 1
+		CFLAG:40 -= 1
+	TFLAG:45 -= 2
+	S = 1
+ELSEIF (TFLAG:45 & 1) && CFLAG:43 == 0
+	PRINTFORMW (%SAVESTR:TARGET%の下着を洗濯に出しました)
+	CFLAG:43 = 2
+	SIF CFLAG:40 & 1
+		CFLAG:40 -= 1
+	TFLAG:45 -= 1
+	S = 1
+ENDIF
+
+;上下ともダメになった衣装は削除
+IF CFLAG:41
+	SIF CFLAG:45 < 0 && CFLAG:46 < 0
+		CFLAG:41 = 0
+	;ふんどし用処理
+	SIF CFLAG:41 == 192 && CFLAG:46 < 0
+		CFLAG:41 = 0
+ENDIF
+;ダメになった特別コスは削除
+IF CFLAG:42
+	SIF CFLAG:47 < 0
+		CFLAG:42 = 0
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;衣類の再着衣
+;-------------------------------------------------
+@RE_CLOTHED
+;従順+露出癖3以上なら,主人に脱がされた状態を維持
+;それ以外なら着られる衣類は全部身に着ける
+IF ABL:10 + ABL:17 < 3
+	C = CFLAG:40
+	CALL WEARING_CLOTH_ABLE
+	IF CFLAG:40 > C
+		PRINTFORML (%SAVESTR:TARGET%は,脱がされていた衣装を再び身に付けました)
+		WAIT
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;汚れた衣類の洗濯
+;-------------------------------------------------
+@WASHING_CLOTH
+S = 0
+REPEAT CHARANUM
+	TARGET = COUNT
+	;全身衣装の場合,洗濯の進行状況は下半身部分にあわせる
+	SIF CFLAG:41 >= 200 && CFLAG:45 > 0 && CFLAG:46 > 0
+		CFLAG:45 = CFLAG:46
+	;下着の洗濯
+	IF CFLAG:43 > 0
+		CFLAG:43 -= 1
+		IF CFLAG:43 == 0
+			PRINTFORML (%SAVESTR:TARGET%の下着が洗濯から戻ってきました)
+			S = 1
+		ENDIF
+	ENDIF
+	;通常コスの洗濯
+	IF CFLAG:46 > 0
+		CFLAG:46 -= 1
+		IF CFLAG:46 == 0 && CFLAG:41
+			PRINTFORM (%SAVESTR:TARGET%の
+			CALL PRINT_CLOTHTYPE_MAIN2
+			PRINTFORML が洗濯から戻ってきました)
+			S = 1
+			SIF CFLAG:41 >= 200 && CFLAG:45 >= 0
+				CFLAG:45 = 0
+		ENDIF
+	ENDIF
+	;特別コスの洗濯
+	IF CFLAG:47 > 0
+		CFLAG:47 -= 1
+		IF CFLAG:47 == 0 && CFLAG:42
+			PRINTFORM (%SAVESTR:TARGET%の
+			CALL PRINT_CLOTHTYPE_SPECIAL
+			PRINTFORML が洗濯から戻ってきました)
+			S = 1
+		ENDIF
+	ENDIF
+
+	;パンツのはき古し進行もここで
+	SIF (CFLAG:40 & 1)
+		CFLAG:48 += 1
+
+REND
+IF S
+	WAIT
+	DRAWLINE
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;調教中のおもらし処理(小)
+;-------------------------------------------------
+@SOILING_CLOTH_NO1
+;着衣設定でなければそのまま終了
+SIF FLAG:37 == 0
+	RETURN 0
+
+;着衣中に放尿した場合,着衣は一時的に使えなくなる
+IF (CFLAG:40 & 64) && (CFLAG:42 <= 50 || CFLAG:42 == 69)
+	PRINTFORM 《%SAVESTR:TARGET%の
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINTFORML はおしっこまみれになった》
+	TFLAG:45 |= 16
+	;オムツ着用中なら他の衣類は無事
+	SIF CFLAG:42 == 69
+		RETURN 1
+ENDIF
+IF (CFLAG:40 & 8) || (CFLAG:40 & 16)
+	PRINTFORM 《%SAVESTR:TARGET%が着ている
+	CALL PRINT_CLOTHTYPE_MAIN2
+	IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+		PRINT のスカ-ト
+	ELSEIF CFLAG:41 <= 200
+		PRINT 下
+	ENDIF
+	PRINTFORML はおしっこまみれになった》
+	TFLAG:45 |= 4
+ENDIF
+IF (CFLAG:40 & 1)
+	PRINTFORML 《%SAVESTR:TARGET%の下着はおしっこまみれになった》
+	TFLAG:45 |= 1
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;調教中のおもらし処理(大)
+;-------------------------------------------------
+@SOILING_CLOTH_NO2
+;着衣設定でなければそのまま終了
+SIF FLAG:37 == 0
+	RETURN 0
+
+;着衣中に脱糞した場合,着衣は廃棄処分になる
+IF (CFLAG:40 & 64) && (CFLAG:42 <= 50 || CFLAG:42 == 69)
+	PRINTFORM 《%SAVESTR:TARGET%の
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINTL は汚物まみれになった
+	TFLAG:45 |= 16
+	TFLAG:45 |= 32
+	;オムツ着用中なら他の衣類は無事
+	SIF CFLAG:42 == 69
+		RETURN 1
+ENDIF
+IF (CFLAG:40 & 8) || (CFLAG:40 & 16)
+	PRINTFORM 《%SAVESTR:TARGET%が着ている
+	CALL PRINT_CLOTHTYPE_MAIN2
+	IF CFLAG:41 >= 1 && CFLAG:41 <= 100
+		PRINT のスカ-ト
+	ELSEIF CFLAG:41 <= 200
+		PRINT 下
+	ENDIF
+	PRINTL は汚物まみれになった》
+	TFLAG:45 |= 4
+	TFLAG:45 |= 8
+ENDIF
+IF (CFLAG:40 & 1)
+	PRINTFORML 《%SAVESTR:TARGET%の下着は汚物まみれになった》
+	TFLAG:45 |= 1
+	TFLAG:45 |= 2
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;衣装の定義
+;-------------------------------------------------
+@PRINT_CLOTHTYPE_MAIN2
+
+IF CFLAG:41 == 0
+	PRINT Naked
+;股間を覆わないのツーピース(1～100)
+ELSEIF CFLAG:41 == 1
+	PRINT Casual Wear
+ELSEIF CFLAG:41 == 2
+	PRINT Breast & Skirt Armor
+ELSEIF CFLAG:41 == 3
+	PRINT Chainmail
+ELSEIF CFLAG:41 == 4
+	PRINT Leather & Skirt Armor
+ELSEIF CFLAG:41 == 5
+	PRINT スキン＆スカ-トア-マ-
+ELSEIF CFLAG:41 == 6
+	PRINT Cuirass & Skirt
+ELSEIF CFLAG:41 == 7
+	PRINT Barbed Armor & Skirt
+ELSEIF CFLAG:41 == 8
+	PRINT Nipple Pasties & Mini Skirt Armor
+ELSEIF CFLAG:41 == 9
+	PRINT Cuirass & See-Through Skirt
+ELSEIF CFLAG:41 == 17
+	PRINT High School Uniform
+ELSEIF CFLAG:41 == 18
+	PRINT Middle School Uniform
+ELSEIF CFLAG:41 == 19
+	PRINT Sailor Outfit
+ELSEIF CFLAG:41 == 21
+	PRINT Suit
+ELSEIF CFLAG:41 == 22
+	PRINT Children's Clothing
+ELSEIF CFLAG:41 == 23
+	PRINT ブランド服
+ELSEIF CFLAG:41 == 24
+	PRINT Nurse Outfit
+ELSEIF CFLAG:41 == 25
+	PRINT Women's Military Uniform
+ELSEIF CFLAG:41 == 26
+	PRINT Waitress' Uniform
+ELSEIF CFLAG:41 == 27
+	PRINT コンビニの制服
+ELSEIF CFLAG:41 == 28
+	PRINT 事務員の制服
+ELSEIF CFLAG:41 == 29
+	PRINT 島の娘の服
+ELSEIF CFLAG:41 == 30
+	PRINT ステ-ジ衣装
+ELSEIF CFLAG:41 == 31
+	PRINT Blazer
+ELSEIF CFLAG:41 == 32
+	PRINT 喪服
+ELSEIF CFLAG:41 == 33
+	PRINT Cheerleader Outfit
+ELSEIF CFLAG:41 == 34
+	PRINT Tennis-Wear
+ELSEIF CFLAG:41 == 35
+	PRINT Women's Police Uniform
+;股間を覆うタイプのツーピース(101～200)
+ELSEIF CFLAG:41 == 101
+	PRINT Casual Wear
+ELSEIF CFLAG:41 == 102
+	PRINT 狩衣
+ELSEIF CFLAG:41 == 103
+	PRINT Adventurer Clothes
+ELSEIF CFLAG:41 == 104
+	PRINT Shrine Maiden Outfit
+ELSEIF CFLAG:41 == 105
+	PRINT Knight Armor
+ELSEIF CFLAG:41 == 106
+	PRINT Military Uniform
+ELSEIF CFLAG:41 == 108
+	PRINT Breast & Spats Armor
+ELSEIF CFLAG:41 == 109
+	PRINT Gym Clothes & Bloomers
+ELSEIF CFLAG:41 == 110
+	PRINT Ninja Outfit
+ELSEIF CFLAG:41 == 111
+	PRINT キュイラス＆かぼちゃパンツ
+ELSEIF CFLAG:41 == 112
+	PRINT 乗馬服
+ELSEIF CFLAG:41 == 113
+	PRINT Adventurer Clothes & Thong
+ELSEIF CFLAG:41 == 114
+	PRINT Open Chest Shrine Maiden Costume
+ELSEIF CFLAG:41 == 115
+	PRINT High-Exposure Ninja Outfit
+ELSEIF CFLAG:41 == 116
+	PRINT Cuirass & Thong
+ELSEIF CFLAG:41 == 122
+	PRINT 子供服
+ELSEIF CFLAG:41 == 131
+	PRINT Pajamas
+;股間を覆うタイプで全裸で付けるツーピース(191～200)
+ELSEIF CFLAG:41 == 191
+	PRINT Micro Bikini
+ELSEIF CFLAG:41 == 192
+	PRINT ふんどし
+ELSEIF CFLAG:41 == 193
+	PRINT Bikini Armor
+ELSEIF CFLAG:41 == 194
+	PRINT Sexy Lingerie
+ELSEIF CFLAG:41 == 195
+	PRINT Succubus Bikini
+ELSEIF CFLAG:41 == 196
+	PRINT Two-piece Swimsuit
+;股間を覆わないタイプの全身衣装(201～240)
+ELSEIF CFLAG:41 == 201
+	PRINT Dress
+ELSEIF CFLAG:41 == 202
+	PRINT Japanese Clothes
+ELSEIF CFLAG:41 == 203
+	PRINT Whore Dress
+ELSEIF CFLAG:41 == 204
+	PRINT Yukata
+ELSEIF CFLAG:41 == 205
+	PRINT Maternity Dress
+ELSEIF CFLAG:41 == 206
+	PRINT Robe
+ELSEIF CFLAG:41 == 207
+	PRINT Shinto Priest
+ELSEIF CFLAG:41 == 208
+	PRINT Evening Gown
+ELSEIF CFLAG:41 == 209
+	PRINT Maid Clothes
+ELSEIF CFLAG:41 == 210
+	PRINT Whore Dress With Hanging Condoms
+ELSEIF CFLAG:41 == 211
+	PRINT High-Exposure Shinto Priest Outfit
+ELSEIF CFLAG:41 == 212
+	PRINT Tight Armor With Exposed Nipples & Crotch
+ELSEIF CFLAG:41 == 213
+	PRINT Saint Clothes With Hanging Condoms
+ELSEIF CFLAG:41 == 214
+	PRINT Cheongsam
+ELSEIF CFLAG:41 == 221
+	PRINT Kindergartener's Clothing
+ELSEIF CFLAG:41 == 222
+	PRINT Infant's Dress
+ELSEIF CFLAG:41 == 240
+	PRINT Wedding Dress
+;股間を覆わないタイプで全裸で付ける全身衣装(241～250)
+ELSEIF CFLAG:41 == 241
+	PRINT Bondage
+;股間を覆うタイプでの全身衣装(251～290)
+ELSEIF CFLAG:41 == 251
+	PRINT Tight Armor
+ELSEIF CFLAG:41 == 252
+	PRINT Overalls
+ELSEIF CFLAG:41 == 253
+	PRINT Chaos Armor
+ELSEIF CFLAG:41 == 254
+	PRINT Bunny Suit
+;股間を覆うタイプで全裸で付ける全身衣装(291～300)
+ELSEIF CFLAG:41 == 291
+	PRINT School Swimsuit
+ELSEIF CFLAG:41 == 292
+	PRINT レオタ-ドア-マ-
+ELSEIF CFLAG:41 == 293
+	PRINT スリングショット
+ELSEIF CFLAG:41 == 294
+	PRINT デビルレオタ-ド
+ELSEIF CFLAG:41 == 295
+	PRINT One-Piece Swimsuit
+;その他
+ELSEIF CFLAG:41 == -1
+	PRINT 下着姿
+ELSE
+	PRINT 服
+ENDIF
+
+
+;特別コス
+@PRINT_CLOTHTYPE_SPECIAL
+;通常コスの上にまとうタイプ(1～50)
+IF CFLAG:42 == 1
+	PRINT Apron
+ELSEIF CFLAG:42 == 2
+	PRINT Coat
+ELSEIF CFLAG:42 == 3
+	PRINT White Robe
+ELSEIF CFLAG:42 == 4
+	PRINT Men's Shirt
+ELSEIF CFLAG:42 == 10
+	PRINT Plain Colored Vest
+ELSEIF CFLAG:42 == 11
+	PRINT Slime
+ELSEIF CFLAG:42 == 12
+	PRINT Cloak
+ELSEIF CFLAG:42 == 13
+	PRINT Gown
+;体にまとわず濡らせないタイプ(51～65)
+ELSEIF CFLAG:42 == 51
+	PRINT ボンボン
+ELSEIF CFLAG:42 == 52
+	PRINT Bandana
+ELSEIF CFLAG:42 == 53
+	PRINT Nurse Cap
+ELSEIF CFLAG:42 == 54
+	PRINT Policewoman's Hat
+ELSEIF CFLAG:42 == 55
+	PRINT Cowbow Hat
+ELSEIF CFLAG:42 == 56
+	PRINT Indian Hat
+ELSEIF CFLAG:42 == 57
+	PRINT Wristband
+ELSEIF CFLAG:42 == 58
+	PRINT Good-Luck Bracelet
+ELSEIF CFLAG:42 == 59
+	PRINT Long Gloves
+ELSEIF CFLAG:42 == 60
+	PRINT Rank Insignia
+ELSEIF CFLAG:42 == 61
+	PRINT Nametag
+ELSEIF CFLAG:42 == 62
+	PRINT Bow Tie
+;パンツ代わりに付けるタイプ(69)
+ELSEIF CFLAG:42 == 69
+	PRINT オムツ
+;体にまとわず濡れても平気なタイプ(71～100)
+ELSEIF CFLAG:42 == 71
+	PRINT Dog Collar
+ELSEIF CFLAG:42 == 72
+	PRINT Tortoise Shell Bondage
+ELSEIF CFLAG:42 == 73
+	PRINT Cow Bell & Nose Ring
+ELSEIF CFLAG:42 == 74
+	PRINT Handcuffs
+ELSEIF CFLAG:42 == 75
+	PRINT Shackles
+ELSEIF CFLAG:42 == 76
+	PRINT Pillory
+ELSEIF CFLAG:42 == 77
+	PRINT Graffiti
+ELSEIF CFLAG:42 == 78
+	PRINT Magic Tattoo
+ELSEIF CFLAG:42 == 79
+	PRINT Chastity Belt
+ELSEIF CFLAG:42 == 80
+	PRINT Rope Marks
+ELSEIF CFLAG:42 == 81
+	PRINT Tiara
+ELSEIF CFLAG:42 == 82
+	PRINT Ornate Hairpin
+ELSEIF CFLAG:42 == 83
+	PRINT Glasses
+ELSEIF CFLAG:42 == 84
+	PRINT Sunglasses
+ELSEIF CFLAG:42 == 85
+	PRINT Amulet
+ELSEIF CFLAG:42 == 86
+	PRINT Silver Bracelet
+ELSEIF CFLAG:42 == 87
+	PRINT Silver Pendant
+ELSEIF CFLAG:42 == 88
+	PRINT Pearl Necklace
+ELSEIF CFLAG:42 == 89
+	PRINT Tear-Drop Necklace
+ELSEIF CFLAG:42 == 90
+	PRINT Choker
+ELSEIF CFLAG:42 == 91
+	PRINT Circlet
+ELSEIF CFLAG:42 == 92
+	PRINT Ring
+
+;※下二つは作製中...
+ELSEIF CFLAG:42 == 98
+;※現在簡易版
+	PRINT Secret Urethral Catheter
+ELSEIF CFLAG:42 == 99
+	PRINT Secret Urethral Catheter Attached To Chastity Belt
+ENDIF
+
+RETURN 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1275 @@
+﻿;=================================================
+;仕立て屋
+;eraIM@Sから導入しました(eramaou)
+;ZはTARGETを保存してるため使用禁止
+;=================================================
+@TAILOR_MAIN
+;購入した品物の種類(1～9:通常衣類 2:学生服 3:子供服 10:下着 11:替えオムツ 20:装備品 )
+A = 0
+;選んだ服の種類
+R = 0
+;服の価格
+C = 0
+;着せ替えるのに必要な従順Lv
+S = 0
+;着衣時の服の損傷フラグ
+F = 0
+
+$INPUT_LOOP_01
+
+DRAWLINE
+PRINTL Stylist
+PRINTL 《They are an attendant who can order any outfit or equipment》
+DRAWLINE
+PRINT Day: 
+PRINTV DAY+1
+IF TIME == 0
+	PRINTL  Morning
+ELSE
+	PRINTL  Afternoon
+ENDIF
+
+PRINTFORML Wealth: {MONEY} pts.
+DRAWLINE
+PRINTL Whose outfit would you like to have tailored?　
+DRAWLINE
+CALL LIFE_LIST_TAILOR
+PRINTL ..............................................................................
+PRINTL  [999] - Return
+
+INPUT
+
+IF RESULT == 999
+	A = 0
+	C = 0
+	R = 0
+	RETURN 0
+ELSEIF RESULT < 1 || RESULT >= CHARANUM
+	GOTO INPUT_LOOP_01
+;臨死中のキャラは排除
+ELSEIF BASE:RESULT:0 < 1
+	GOTO INPUT_LOOP_01
+;調教中以外は排除
+ELSEIF CFLAG:RESULT:1 != 0
+	GOTO INPUT_LOOP_01
+ENDIF
+
+TARGET = RESULT
+
+$INPUT_LOOP_02
+A = 0
+C = 0
+R = 0
+S = 0
+
+DRAWLINE
+PRINTFORML Weath: {MONEY} pts.
+PRINTFORM %SAVESTR:TARGET% is currently wearing 
+CALL PRINT_CLOTHTYPE_MAIN2
+PRINT .
+
+PRINTFORML  What kind of clothes would you like to buy for them?
+DRAWLINE
+
+PRINTL  [0] - Casual Wear(100 pts.)
+PRINTL  [1] - General Clothing(1000 pts.)
+PRINTL  [2] - Other
+PRINTL  [3] - Replacement Underwear(5pts.)
+SIF CFLAG:42 == 69 && ((CFLAG:40 & 64) == 0 || CFLAG:47 > 0)
+	PRINTL  [4] - Replacement Diaper(50 pts.)
+SIF CFLAG:42 == 79 && (CFLAG:40 & 64) && CFLAG:49 == 0 && TALENT:0
+	PRINTL  [5] - Discard The Key To Their Chastity Belt
+;PRINTL  [6] - Sell Current Clothes
+PRINTL  [7] - Magical Equipment
+PRINTL  [8] - Weapons
+DRAWLINE
+PRINTL  [999] - Return
+
+INPUT
+
+IF RESULT == 0
+	CALL TAILOR_CASUAL
+ELSEIF RESULT == 1
+	CALL TAILOR_NORMAL
+ELSEIF RESULT == 2
+	CALL TAILOR_ACCESSORY
+ELSEIF RESULT == 3
+	CALL TAILOR_UNDERWARE
+ELSEIF RESULT == 4 && CFLAG:42 == 69
+	CALL TAILOR_DIAPER
+ELSEIF RESULT == 5 && CFLAG:42 == 79 && (CFLAG:40 & 64) && CFLAG:49 == 0 && TALENT:0 && CFLAG:71 == 0
+	CALL CHASTITY_KEY
+ELSEIF RESULT == 7
+	CALL EQUIP_MAGIC_ITEM
+ELSEIF RESULT == 8
+	CALL EQUIP_MAGIC_WEAPON
+ELSEIF RESULT == 999
+	GOTO INPUT_LOOP_01
+ELSE
+	GOTO INPUT_LOOP_02
+ENDIF
+
+IF A == 0
+	GOTO INPUT_LOOP_02
+
+ELSEIF A == 20 && CFLAG:49
+	PRINTFORMW No other equipment can be attached unless the chastity belt is removed.
+	GOTO INPUT_LOOP_02
+ELSEIF MONEY < C
+	PRINTW Not Enough Money
+	GOTO INPUT_LOOP_02
+ELSEIF ABL:10 < S
+	PRINTFORMW %SAVESTR:TARGET% Refused To Wear It
+	GOTO INPUT_LOOP_02
+ENDIF
+
+;[大柄]キャラに子供服を買ってやった場合
+IF TALENT:99 && A == 3
+	$INPUT_LOOP_03
+	PRINTFORML %SAVESTR:TARGET% is unlikely to wear it willingly...
+	PRINTFORML  [0] - Force %SAVESTR:TARGET% To Wear It
+	PRINTFORML  [1] - Give Up
+	INPUT
+	IF RESULT == 0
+		PRINTFORML In the process of forcing %SAVESTR:TARGET% to wear the outfit, the lower half becomes torn.
+		WAIT
+		;下半身が破れたフラグ
+		F = 2
+	ELSEIF RESULT == 1
+		GOTO INPUT_LOOP_02
+	ELSE
+		GOTO INPUT_LOOP_03
+	ENDIF
+;[小型体型]でない[巨乳][爆乳][超乳]キャラに子供服を買ってやった場合
+ELSEIF (TALENT:100 == 0 && (TALENT:114 || TALENT:110 || TALENT:119)) && A == 3
+	$INPUT_LOOP_04
+	PRINTFORML %SAVESTR:TARGET% is unlikely to wear it willingly...
+	PRINTFORML  [0] - Force %SAVESTR:TARGET% To Wear It
+	PRINTFORML  [1] - Give Up
+	INPUT
+	IF RESULT == 0
+		PRINTFORML In the process of forcing %SAVESTR:TARGET% to wear the outfit, the upper half becomes torn.
+		WAIT
+		;上半身が破れたフラグ
+		F = 1
+	ELSEIF RESULT == 1
+		GOTO INPUT_LOOP_02
+	ELSE
+		GOTO INPUT_LOOP_04
+	ENDIF
+ENDIF
+
+IF A <= 9 
+	PRINTFORM %SAVESTR:TARGET% changed their outfit from 
+	IF CFLAG:41 && (CFLAG:45 == 0 || CFLAG:46 == 0)
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINTFORM  to 
+	ENDIF
+	
+	CFLAG:41 = R
+	CFLAG:45 = 0
+	CFLAG:46 = 0
+	
+	CALL PRINT_CLOTHTYPE_MAIN2
+	PRINTFORML .
+
+
+ELSEIF A == 10
+	PRINTFORML You purchased new underwear for %SAVESTR:TARGET%.
+	IF CFLAG:43 >= 0 && CFLAG:48 >= 6
+		WAIT
+		M = 50 * CFLAG:48
+		;自慰狂い
+		SIF TALENT:74
+			TIMES M , 1.50
+		;謎の魅力
+		SIF TALENT:92
+			TIMES M , 2.00
+		;人気者
+		SIF TALENT:126
+			TIMES M , 1.50
+		PRINTFORML %SAVESTR:TARGET%'s underwear was sold for {M}pts.
+		MONEY += M
+	ENDIF
+
+	IF CFLAG:41 == 0
+		CFLAG:41 = 1
+		CFLAG:45 = -3
+		CFLAG:46 = -3
+	ENDIF
+
+	CFLAG:40 = 3
+	CFLAG:43 = 0
+	CFLAG:44 = 0
+	CFLAG:48 = 0
+ELSEIF A == 11
+	PRINTFORML 部屋の隅を借りて,%SAVESTR:TARGET%にオムツをはかせてやりました.
+	CFLAG:47 = 0
+ELSEIF A == 20
+	IF CFLAG:42 && CFLAG:47 == 0
+		PRINTFORM %SAVESTR:TARGET% removed their 
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINTFORM  and
+	ELSE
+		PRINTFORM %SAVESTR:TARGET%
+	ENDIF
+	
+	CFLAG:42 = R
+	CFLAG:47 = 0
+	
+	PRINTFORML  is now wearing 
+	CALL PRINT_CLOTHTYPE_SPECIAL
+	PRINTFORML .
+
+
+;	※尿道カテーテルある装備をつけた場合.
+	IF CFLAG:42 == 99 || CFLAG:42 == 98
+		PRINTFORML 装着の際,馴染みの無い尿道カテ-テルの挿入に,
+		PRINTFORML %SAVESTR:TARGET%は思わず声を上げてしまい顔を赤らめている.
+	ENDIF
+
+
+
+ENDIF
+
+IF F == 1
+	PRINT 買ったばかりの
+	CALL PRINT_CLOTHTYPE_MAIN2
+	PRINTFORML は上半身が破れて,
+	PRINTFORML %SAVESTR:TARGET%のおっぱいが丸見えになっています......
+	CFLAG:44 = 0 - 3
+	CFLAG:45 = 0 - 3
+ELSEIF F == 2
+	PRINT 買ったばかりの
+	CALL PRINT_CLOTHTYPE_MAIN2
+	PRINTFORML は下半身が破れて,
+	PRINTFORML %SAVESTR:TARGET%のお尻が丸見えになっています......
+	CFLAG:46 = 0 - 3
+ENDIF
+
+CALL WEARING_CLOTH_ABLE
+
+TARGET = - 1
+MONEY -= C
+
+WAIT
+
+RESTART
+
+;-------------------------------------------------
+;普段着
+;-------------------------------------------------
+@TAILOR_CASUAL
+A = 1
+C = 100
+F = 0
+
+IF MONEY < C
+	PRINTW Not Enough Money
+	A = 0
+	RETURN 0
+ENDIF
+
+$INPUT_LOOP_01
+
+PRINTL □ Casual Wear
+PRINTFORML Wealth: {MONEY} pts.
+DRAWLINE
+
+PRINTL  [1] - Casual Wear: Skirt-Type
+PRINTL  [2] - Casual Wear: Pants-Type
+DRAWLINE
+PRINTL  [999] - Return
+
+INPUT
+
+IF RESULT == 1
+	R = 1
+	S = 0
+	SIF TALENT:122
+		S = 3
+ELSEIF RESULT == 2
+	R = 101
+	S = 0
+ELSEIF RESULT == 999
+	A = 0
+	C = 0
+	R = 0
+	S = 0
+	RETURN 0
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+RETURN 1
+
+RETURN 1
+
+;-------------------------------------------------
+;一般的な装備
+;-------------------------------------------------
+@TAILOR_NORMAL
+A = 1
+C = 1000
+F = 0
+;ページ
+P = 0
+
+IF MONEY < C
+	PRINTW Not Enough Money
+	A = 0
+	RETURN 0
+ENDIF
+
+$INPUT_LOOP_01
+
+PRINTL □ General Clothing
+PRINTFORML Wealth: {MONEY} pts.
+DRAWLINE
+
+IF P == 0
+	PRINTL  [1] - Breast & Skirt Armor
+	PRINTL  [2] - Children's Clothing (Primary School)
+	PRINTL  [3] - Chainmail
+	PRINTL  [4] - Leather & Skirt Armor
+	PRINTL  [5] - Breast & Spats Armor
+	PRINTL  [6] - Shinto Priest
+	PRINTL  [7] - キュイラス＆かぼちゃパンツ
+	PRINTL  [8] - Robe
+	PRINTL  [9] - Pajamas
+ELSEIF P == 1
+	PRINTL  [10] - Dress
+	PRINTL  [11] - Ninja Outfit
+	PRINTL  [12] - Whore Dress
+	PRINTL  [13] - Shrine Maiden Outfit
+	PRINTL  [14] - Maternity Dress
+	PRINTL  [15] - Tights Armor
+	PRINTL  [16] - Bunny Suit
+	PRINTL  [17] - Skin & Skirt Armor
+	PRINTL  [18] - Cuirass & Skirt
+	PRINTL  [19] - Barbed Armor & Skirt
+ELSEIF P == 2
+	PRINTL  [20] - Maid Clothes
+	PRINTL  [21] - Adventurer Clothes
+	PRINTL  [22] - Knight Armor
+	PRINTL  [23] - Chaos Armor
+	PRINTL  [24] - Leotard Armor
+	PRINTL  [25] - Bikini Armor
+	PRINTL  [26] - Sexy Lingerie
+	PRINTL  [27] - Succubus Bikini
+	PRINTL  [28] - Devil Leotard
+	PRINTL  [29] - Bondage
+ELSEIF P == 3
+	PRINTL  [30] - Saint Clothes With Hanging Condoms
+	PRINTL  [31] - Adventurer Clothes & Thong
+	PRINTL  [32] - Nipple Pasties & Mini Skirt Armor
+	PRINTL  [33] - Cuirass & See-Through Skirt
+	PRINTL  [34] - Open Chest Shrine Maiden Costume
+	PRINTL  [35] - High-Exposure Ninja Outfit
+	PRINTL  [36] - Cuirass & Thong
+	PRINTL  [37] - Whore Dress With Hanging Condoms
+	PRINTL  [38] - High-Exposure Shinto Priest Outfit
+	PRINTL  [39] - Tight Armor With Exposed Nipples & Crotch
+ELSEIF P == 4
+	PRINTL  [40] - One-piece Swimsuit
+	PRINTL  [41] - Two-piece Swimsuit
+	PRINTL  [42] - China Dress
+ENDIF
+DRAWLINE
+PRINT [997] Next　　
+PRINT [998] Back　　
+PRINTL  [999] - Return
+
+INPUT
+
+IF RESULT == 1
+	R = 2
+	S = 0
+ELSEIF RESULT == 2
+	A = 3
+	R = 22
+	S = 5
+	SIF TALENT:132 || TALENT:135 || TALENT:131
+		S = 0
+	SIF TALENT:122 && S < 3
+		S = 3
+ELSEIF RESULT == 3
+	R = 3
+	S = 0
+ELSEIF RESULT == 4
+	R = 4
+	S = 0
+ELSEIF RESULT == 5
+	R = 108
+	S = 0
+ELSEIF RESULT == 6
+	R = 207
+	S = 0
+ELSEIF RESULT == 7
+	R = 111
+	S = 0
+ELSEIF RESULT == 8
+	R = 206
+	S = 3
+ELSEIF RESULT == 9
+	R = 131
+	S = 0
+ELSEIF RESULT == 10
+	R = 201
+	S = 0
+	SIF TALENT:122
+		S = 3
+ELSEIF RESULT == 11
+	R = 110
+	S = 0
+ELSEIF RESULT == 12
+	R = 203
+	S = 1
+	SIF TALENT:122
+		S = 3
+ELSEIF RESULT == 13
+	R = 104
+	S = 0
+ELSEIF RESULT == 14
+	R = 205
+	S = 4
+	SIF TALENT:153
+		S = 1
+ELSEIF RESULT == 15
+	R = 251
+	S = 0
+ELSEIF RESULT == 16
+	R = 254
+	S = 3
+ELSEIF RESULT == 17
+	R = 5
+	S = 0
+ELSEIF RESULT == 18
+	R = 6
+	S = 0
+ELSEIF RESULT == 19
+	R = 7
+	S = 2
+ELSEIF RESULT == 20
+	R = 209
+	S = 0
+ELSEIF RESULT == 21
+	R = 103
+	S = 0
+ELSEIF RESULT == 22
+	R = 105
+	S = 0
+ELSEIF RESULT == 23
+	R = 253
+	S = 3
+ELSEIF RESULT == 24
+	R = 292
+	S = 0
+ELSEIF RESULT == 25
+	R = 193
+	S = 0
+ELSEIF RESULT == 26
+	R = 194
+	S = 3
+ELSEIF RESULT == 27
+	R = 195
+	S = 3
+ELSEIF RESULT == 28
+	R = 294
+	S = 3
+ELSEIF RESULT == 29
+	R = 241
+	S = 3
+ELSEIF RESULT == 30
+	R = 213
+	S = 3
+ELSEIF RESULT == 31
+	R = 113
+	S = 3
+ELSEIF RESULT == 32
+	R = 8
+	S = 3
+ELSEIF RESULT == 33
+	R = 9
+	S = 3
+ELSEIF RESULT == 34
+	R = 114
+	S = 3
+ELSEIF RESULT == 35
+	R = 115
+	S = 3
+ELSEIF RESULT == 36
+	R = 116
+	S = 3
+ELSEIF RESULT == 37
+	R = 210
+	S = 3
+ELSEIF RESULT == 38
+	R = 211
+	S = 3
+ELSEIF RESULT == 39
+	R = 212
+	S = 3
+ELSEIF RESULT == 40
+	R = 295
+	S = 1
+ELSEIF RESULT == 41
+	R = 196
+	S = 1
+ELSEIF RESULT == 42
+	R = 214
+	S = 0
+ELSEIF RESULT == 997
+	P += 1
+	P %= 5
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT == 998
+	P += 4
+	P %= 5
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT == 999
+	A = 0
+	C = 0
+	R = 0
+	S = 0
+	T = 0
+	P = 0
+	RETURN 0
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+RETURN 1
+
+
+;-------------------------------------------------
+;装備品
+;-------------------------------------------------
+@TAILOR_ACCESSORY
+A = 20
+F = 0
+;現在ページ
+LOCAL:0 = 0
+;商品数
+LOCAL:1 = 40
+
+$INPUT_LOOP_01
+
+PRINTFORML □Equipment ({(LOCAL:0)+1,2}/{(LOCAL:1/10)+1,2}ペ-ジ)
+PRINTFORML Wealth: {MONEY} pts.
+DRAWLINE
+
+IF LOCAL:0 == 0
+	PRINTL  [1] - Apron(10000 pts.)
+	PRINTL  [2] - Coat(10000 pts.)
+	PRINTL  [3] - White Robe(10000 pts.)
+	PRINTL  [4] - Men's Shirt(10000 pts.)
+	PRINTL  [5] - Plain Colored Vest(10000 pts.)
+	PRINTL  [6] - Cloak(10000 pts.)
+	PRINTL  [7] - Tiara(10000 pts.)
+	PRINTL  [8] - Bandana(10000 pts.)
+	PRINTL  [9] - Nurse Cap(10000 pts.)
+ELSEIF LOCAL:0 == 1
+	PRINTL  [10] - Policewoman's Cap(10000 pts.)
+	PRINTL  [11] - Cowbow Hat(10000 pts.)
+	PRINTL  [12] - Indian Hat(10000 pts.)
+	PRINTL  [13] - Ornate Hairpin(10000 pts.)
+	PRINTL  [14] - Glasses(10000 pts.)
+	PRINTL  [15] - Sunglasses(10000 pts.)
+	PRINTL  [16] - Silver Pendant(10000 pts.)
+	PRINTL  [17] - Pearl Necklace(10000 pts.)
+	PRINTL  [18] - Tear-Drop Necklace(10000 pts.)
+	PRINTL  [19] - Rank Insignia(10000 pts.)
+ELSEIF LOCAL:0 == 2
+	PRINTL  [20] - Nametag(10000 pts.)
+	PRINTL  [21] - Choker(10000 pts.)
+	PRINTL  [22] - Bow Tie(10000 pts.)
+	PRINTL  [23] - Silver Bracelet(10000 pts.)
+	PRINTL  [24] - Amulet(10000 pts.)
+	PRINTL  [25] - Bonbon(10000 pts.)
+	PRINTL  [26] - Wristband(10000 pts.)
+	PRINTL  [27] - Good-Luck Bracelet(10000 pts.)
+	PRINTL  [28] - Long Gloves(10000 pts.)
+	PRINTL  [29] - Dog Collar(10000 pts.)
+ELSEIF LOCAL:0 == 3
+	PRINTL  [30] - Tortoise Shell Bondage(10000 pts.)
+	PRINTL  [31] - Cow Bell & Nose Ring(10000 pts.)
+	PRINTL  [32] - Handcuffs(10000 pts.)
+	PRINTL  [33] - Shackles(10000 pts.)
+	PRINTL  [34] - Pillory(10000 pts.)
+	PRINTL  [35] - Graffiti(100 pts.)
+	PRINTL  [36] - Rope Marks(100 pts.)
+	PRINTL  [37] - Magic Tattoo(500 pts.)
+	PRINTL  [38] - Diaper(100 pts.)
+	PRINTL  [39] - Chastity Belt(100 pts.)
+ELSEIF LOCAL:0 == 4
+	PRINTL  [40] - Gown(10000 pts.)
+	PRINTL  [41] - Circlet(10000 pts.)
+	PRINTL  [42] - Ring(100000 pts.)
+	PRINTL  [43] - Secret Urethral Catheter(3000 pts.)
+ENDIF
+DRAWLINE
+
+PRINT [997] Next　　
+PRINT [998] Back　　
+PRINTL  [999] - Return
+
+INPUT
+
+IF RESULT == 997
+	LOCAL:0 += 1
+	IF LOCAL:0 > (LOCAL:1)/10
+		LOCAL:0 = 0
+	ENDIF
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT == 998
+	LOCAL:0 -= 1
+	IF LOCAL:0 < 0
+		LOCAL:0 = (LOCAL:1)/10
+	ENDIF
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT == 1
+	R = 1
+	C = 10000
+	S = 0
+ELSEIF RESULT == 2
+	R = 2
+	C = 10000
+	S = 0
+ELSEIF RESULT == 3
+	R = 3
+	C = 10000
+	S = 0
+ELSEIF RESULT == 4
+	R = 4
+	C = 10000
+	S = 1
+ELSEIF RESULT == 5
+	R = 10
+	C = 10000
+	S = 0
+ELSEIF RESULT == 6
+	R = 12
+	C = 10000
+	S = 1
+ELSEIF RESULT == 7
+	R = 81
+	C = 10000
+	S = 0
+ELSEIF RESULT == 8
+	R = 52
+	C = 10000
+	S = 0
+ELSEIF RESULT == 9
+	R = 53
+	C = 10000
+	S = 2 - TALENT:63
+	SIF TALENT:122 && S < 3
+		S = 3
+ELSEIF RESULT == 10
+	R = 54
+	C = 10000
+	S = 0
+ELSEIF RESULT == 11
+	R = 55
+	C = 10000
+	S = 0
+ELSEIF RESULT == 12
+	R = 56
+	C = 10000
+	S = 0
+ELSEIF RESULT == 13
+	R = 82
+	C = 10000
+	S = 0
+ELSEIF RESULT == 14
+	R = 83
+	C = 10000
+	S = 0
+ELSEIF RESULT == 15
+	R = 84
+	C = 10000
+	S = 0
+ELSEIF RESULT == 16
+	R = 87
+	C = 10000
+	S = 0
+ELSEIF RESULT == 17
+	R = 88
+	C = 10000
+	S = 0
+ELSEIF RESULT == 18
+	R = 89
+	C = 10000
+	S = 0
+ELSEIF RESULT == 19
+	R = 60
+	C = 10000
+	S = 0
+ELSEIF RESULT == 20
+	R = 61
+	C = 10000
+	S = 0
+ELSEIF RESULT == 21
+	R = 90
+	C = 10000
+	S = 0
+ELSEIF RESULT == 22
+	R = 62
+	C = 10000
+	S = 0
+ELSEIF RESULT == 23
+	R = 86
+	C = 10000
+	S = 0
+ELSEIF RESULT == 24
+	R = 85
+	C = 10000
+	S = 0
+ELSEIF RESULT == 25
+	R = 51
+	C = 10000
+	S = 0
+ELSEIF RESULT == 26
+	R = 57
+	C = 10000
+	S = 0
+ELSEIF RESULT == 27
+	R = 58
+	C = 10000
+	S = 0
+ELSEIF RESULT == 28
+	R = 59
+	C = 10000
+	S = 0
+ELSEIF RESULT == 29
+	R = 71
+	C = 10000
+	S = 10 - ABL:21
+	SIF TALENT:124 && S > 5
+		S = 5
+	SIF TALENT:136 || S < 3
+		S = 3
+ELSEIF RESULT == 30
+	R = 72
+	C = 10000
+	S = 8 - ABL:21
+	SIF TALENT:88 || S < 3
+		S = 3
+ELSEIF RESULT == 31
+	R = 73
+	C = 10000
+	S = 6
+	SIF (TALENT:110 || TALENT:114) && TALENT:130
+		S = 3
+ELSEIF RESULT == 32
+	R = 74
+	C = 10000
+	S = 10 - ABL:21
+	SIF TALENT:124 && S > 5
+		S = 5
+	SIF TALENT:136 || S < 3
+		S = 3
+ELSEIF RESULT == 33
+	R = 75
+	C = 10000
+	S = 10 - ABL:21
+	SIF TALENT:124 && S > 5
+		S = 5
+	SIF TALENT:136 || S < 3
+		S = 3
+ELSEIF RESULT == 34
+	R = 76
+	C = 10000
+	S = 10 - ABL:21
+	SIF TALENT:124 && S > 5
+		S = 5
+	SIF TALENT:136 || S < 3
+		S = 3
+ELSEIF RESULT == 35
+	R = 77
+	C = 100
+	S = 8 - ABL:21
+	SIF TALENT:88 || S < 3
+		S = 3
+ELSEIF RESULT == 36
+	R = 80
+	C = 100
+	S = 8 - ABL:21
+	SIF TALENT:88 || S < 3
+		S = 3
+ELSEIF RESULT == 37
+	R = 78
+	C = 500
+	S = 5
+ELSEIF RESULT == 38
+	R = 69
+	C = 100
+	S = 6
+	SIF TALENT:57
+		S = 1
+ELSEIF RESULT == 39
+	R = 79
+	C = 100
+	S = 0
+	SIF TALENT:122
+		S = 99
+ELSEIF RESULT == 40
+	R = 13
+	C = 10000
+	S = 0
+ELSEIF RESULT == 41
+	R = 91
+	C = 10000
+	S = 0
+ELSEIF RESULT == 42
+	R = 92
+	C = 100000
+	S = 6
+	SIF TALENT:85
+		S = 1
+ELSEIF RESULT == 43
+;※神秘の尿道カテーテル
+	R = 98
+	C = 3000
+	S = 3
+ELSEIF RESULT == 999
+	A = 0
+	C = 0
+	R = 0
+	S = 0
+	T = 0
+	RETURN 0
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;下着
+;-------------------------------------------------
+@TAILOR_UNDERWARE
+A = 10
+C = 5
+F = 0
+S = 0
+
+IF MONEY < C
+	PRINTW お金が足りません
+	A = 0
+	C = 0
+	R = 0
+	T = 0
+	RETURN 0
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;替えオムツ
+;-------------------------------------------------
+@TAILOR_DIAPER
+A = 11
+C = 50
+F = 0
+
+IF MONEY < C
+	PRINTW お金が足りません
+	A = 0
+	C = 0
+	R = 0
+	T = 0
+	RETURN 0
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;貞操帯のカギを捨てる
+;-------------------------------------------------
+@CHASTITY_KEY
+A = 0
+
+PRINTFORML %SAVESTR:TARGET%の貞操帯のカギを捨ててしまえば,
+PRINTFORML もはや%CALLNAME:MASTER%にも貞操帯を外すことはできなくなります.
+PRINTFORML 捨ててしまったカギは,もう二度と戻ってこないかもしれません
+$INPUT_LOOP_01
+PRINTL  
+PRINTFORML 本当に,%SAVESTR:TARGET%の貞操帯のカギを捨てますか?
+PRINTFORML  [0] - はい
+PRINTFORML  [1] - いいえ
+INPUT
+IF RESULT == 0
+	PRINTFORML 呆然と見守る%SAVESTR:TARGET%の目の前で,
+	PRINTFORMW %CALLNAME:MASTER%は貞操帯のカギをダンジョンの各階に繋がるポ-タルへと投げ捨てた
+	PRINTFORML カギがどこへ落ちたかは,もう誰にもわからなくなった
+	WAIT
+	CFLAG:49 = 1
+ELSEIF RESULT != 1
+	GOTO INPUT_LOOP_01
+ENDIF
+
+RETURN 1
+
+
+;-------------------------------------------------
+;仕立屋用メンバーリスト
+;-------------------------------------------------
+@LIFE_LIST_TAILOR
+REPEAT CHARANUM
+	;主人公は排除
+	SIF COUNT == 0
+		CONTINUE
+	;臨死中のキャラは排除
+	SIF BASE:COUNT:0 < 1
+		CONTINUE
+	;調教中以外は排除
+	SIF CFLAG:COUNT:1 != 0
+		CONTINUE
+	TARGET = COUNT
+	PRINTFORM  [{COUNT}] %SAVESTR:COUNT% 
+	IF CFLAG:41 && (CFLAG:45 >= 0 || CFLAG:46 >= 0)
+		PRINT / 
+		CALL PRINT_CLOTHTYPE_MAIN2
+		PRINT 着用 
+	ELSEIF CFLAG:41 && (CFLAG:43 >= 0 || CFLAG:44 >= 0)
+		PRINT / 下着着用 
+	ELSE
+		PRINT / 全裸 
+	ENDIF
+	IF CFLAG:42 && CFLAG:47 >= 0
+		PRINT / 
+		CALL PRINT_CLOTHTYPE_SPECIAL
+		PRINT 装備 
+	ENDIF
+	IF CFLAG:550 > 0
+		PRINT / [
+		W:0 = CFLAG:550
+		CALL PRINT_EQUIPTYPE_WEAPON
+		PRINT ] 
+	ENDIF
+	IF CFLAG:551 > 0
+		PRINT / [
+		W:0 = CFLAG:551
+		CALL PRINT_EQUIPTYPE_RING
+		PRINT ] 
+	ENDIF
+	IF CFLAG:552 > 0
+		PRINT / [
+		W:0 = CFLAG:552
+		CALL PRINT_EQUIPTYPE_RING
+		PRINT ] 
+	ENDIF
+	PRINTL 
+REND
+
+;---------------------------------------------
+@EQUIP_MAGIC_ITEM
+#DIM EQUIPTYPE
+;---------------------------------------------
+;魔法装備品の装備
+;EQUIPTYPE = 装備品の種別(0=新規 1=強化)
+
+$INPUT_LOOP_01
+
+W:0 = CFLAG:TARGET:551
+PRINTFORM  [1] - 装飾A　:
+IF W:0 <= -1
+	PRINTL 無し
+ELSE
+	CALL PRINT_EQUIPTYPE_RING
+	PRINTL  
+ENDIF
+
+W:0 = CFLAG:TARGET:552
+PRINTFORM  [2] - 装飾B　:
+IF W:0 <= -1
+	PRINTL 無し
+ELSE
+	CALL PRINT_EQUIPTYPE_RING
+	PRINTL  
+ENDIF
+
+PRINTL  [999] - 戻る
+
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT == 1
+	Y:0 = 551
+ELSEIF RESULT == 2
+	Y:0 = 552
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+$INPUT_LOOP_02
+
+REPEAT 20
+	X = COUNT + 300
+	SIF ITEM:X > 0
+		PRINTFORML  [{X}] - %ITEMNAME:X% ({ITEM:X})
+REND
+
+IF CFLAG:0:9 >= 30
+	PRINTL  [997] - 装備強化する
+ELSE
+	SETCOLOR 80,80,80
+	PRINTL  [---] - 未解放(30レベルで装備強化可能に)
+	RESETCOLOR
+ENDIF
+PRINTL  [998] - 外す
+PRINTL  [999] - 戻る
+
+INPUT
+
+EQUIPTYPE = 0
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT == 997 && CFLAG:0:9 >= 30
+	EQUIPTYPE = 1
+ELSEIF RESULT == 998
+	W:0 = CFLAG:TARGET:Y
+	CALL EQUIP_GET
+	CFLAG:TARGET:Y = -1
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT >= 300
+	Y:1 = RESULT
+ELSE
+	GOTO INPUT_LOOP_02
+ENDIF
+
+IF EQUIPTYPE == 1
+	PRINTFORML 現在の装備を装備強化しますか?　+1ごとに10000ptかかり最大値は+10です
+ELSE
+	PRINTFORML %ITEMNAME:RESULT%を装備しますか?　装備品レベルを入力してください.+1ごとに10000ptかかり最大値は+10です
+ENDIF
+
+$INPUT_LOOP_03
+
+X = MONEY / 10000
+SIF X > 10
+	X = 10
+
+PRINTFORML [0] [1] [2] [4] [6] [8] [{X}]
+PRINTL [999] - 装備しない
+
+INPUT
+
+IF RESULT == 999
+	GOTO INPUT_LOOP_01
+ELSEIF X >= 0 && X <= 10
+	Y:2 = RESULT
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+IF MONEY < (RESULT * 10000)
+	PRINTW 資金が足りない!!
+	GOTO INPUT_LOOP_01
+ENDIF
+
+W:0 = CFLAG:TARGET:Y
+
+;強化の場合
+IF EQUIPTYPE == 1
+	;強度を求める
+	W:2 = W:0 % 100000
+	W:2 /= 1000
+	
+	;強化
+	W:2 += Y:2
+	
+	;オーバーの場合
+	SIF W:2 > 10
+		Y:2 += 10 - W:2
+	
+	;実際の値に加算強化
+	W:0 += 1000 * Y:2
+	
+	;支払い
+	MONEY -= (Y:2 * 10000)
+	CFLAG:TARGET:Y = W:0
+	GOTO INPUT_LOOP_01
+ENDIF
+
+CALL EQUIP_GET
+
+;装備で一個減らす
+X = Y:1
+ITEM:X -= 1
+
+MONEY -= (Y:2 * 10000)
+
+;ITEMナンバーから識別番号へ
+W:8 = Y:1
+CALL GET_EQUIP_NUM
+W:0 += Y:2 * 1000
+CFLAG:TARGET:Y = W:0
+GOTO INPUT_LOOP_01
+
+
+;---------------------------------------------
+@EQUIP_MAGIC_WEAPON
+#DIM EQUIPTYPE
+;---------------------------------------------
+;武器の装備
+;EQUIPTYPE = 装備品の種別(0=新規 1=強化)
+
+$INPUT_LOOP_01
+
+W:0 = CFLAG:TARGET:550
+
+PRINTFORM 武器　:
+IF W:0 <= -1
+	PRINTL 素手
+ELSE
+	CALL PRINT_EQUIPTYPE_WEAPON
+	PRINTL  
+ENDIF
+
+PRINTL  [340] - ソ-ド
+
+REPEAT 19
+	X = COUNT + 341
+	SIF ITEM:X > 0 && X != 349
+		PRINTFORML  [{X}] - %ITEMNAME:X% ({ITEM:X})
+REND
+
+SIF ITEM:90 > 0
+	PRINTFORML  [990] - テンタクル
+
+IF CFLAG:0:9 >= 30
+	PRINTL  [997] - 装備強化する
+ELSE
+	SETCOLOR 80,80,80
+	PRINTL  [---] - 未解放(30レベルで装備強化可能に)
+	RESETCOLOR
+ENDIF
+PRINTL  [998] - 外す
+PRINTL  [999] - 戻る
+
+INPUT
+
+EQUIPTYPE = 0
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT == 990
+	Y:1 = 349
+	RESULT = 349
+ELSEIF RESULT == 997 && W:0 <= -1
+	PRINTFORML 素手は強化できません
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT == 997 && CFLAG:0:9 >= 30
+	EQUIPTYPE = 1
+ELSEIF RESULT == 998
+	W:0 = CFLAG:TARGET:550
+	CALL EQUIP_GET
+	CFLAG:TARGET:550 = -1
+	GOTO INPUT_LOOP_01
+ELSEIF RESULT >= 300
+	Y:1 = RESULT
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+IF EQUIPTYPE == 1
+	PRINTFORML 現在の装備を装備強化しますか?　+1ごとに10000ptかかり最大値は+10です
+ELSE
+	PRINTFORML %ITEMNAME:RESULT%を装備しますか?　装備品レベルを入力してください.+1ごとに10000ptかかり最大値は+10です
+ENDIF
+
+$INPUT_LOOP_03
+
+X = MONEY / 10000
+SIF X > 10
+	X = 10
+
+PRINTFORML [0] [1] [2] [4] [6] [8] [{X}]
+PRINTL [999] - 装備しない
+
+INPUT
+
+IF RESULT == 999
+	GOTO INPUT_LOOP_01
+ELSEIF X >= 0 && X <= 10
+	Y:2 = RESULT
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+IF MONEY < (RESULT * 10000)
+	PRINTW 資金が足りない!!
+	GOTO INPUT_LOOP_01
+ENDIF
+
+;強化の場合
+IF EQUIPTYPE == 1
+	W:0 = CFLAG:TARGET:550
+	;強度を求める
+	W:2 = W:0 % 100000
+	W:2 /= 1000
+	
+	;強化
+	W:2 += Y:2
+	
+	;オーバーの場合
+	SIF W:2 > 10
+		Y:2 += 10 - W:2
+	
+	;実際の値に加算強化
+	W:0 += 1000 * Y:2
+	
+	;支払い
+	MONEY -= (Y:2 * 10000)
+	CFLAG:TARGET:550 = W:0
+	GOTO INPUT_LOOP_01
+ENDIF
+
+PRINTFORMW 接頭語エンチャントを設定できます
+PRINTL [0] - 無し
+PRINTL [1] - ジャイアント
+PRINTL [2] - ポイズン
+PRINTL [3] - デス
+PRINTL [4] - スラッシュ
+PRINTL [5] - ファイア
+PRINTL [6] - アイス
+PRINTL [7] - サンダ-
+PRINTL [8] - マジカル
+PRINTL [9] - ダ-ク
+
+PRINTL  [999] - 戻る
+
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF RESULT >= 0 && RESULT < 10
+	Y:3 = RESULT
+ELSE
+	GOTO INPUT_LOOP_01
+ENDIF
+
+W:0 = CFLAG:TARGET:550
+CALL EQUIP_GET
+
+;装備で一個減らす
+X = Y:1
+ITEM:X -= 1
+
+MONEY -= (Y:2 * 10000)
+
+;ITEMナンバーから識別番号へ
+W:8 = Y:1
+CALL GET_EQUIP_NUM
+W:0 += Y:2 * 1000
+W:0 += Y:3 * 100000
+CFLAG:TARGET:550 = W:0
+GOTO INPUT_LOOP_01
+
+
+

@@ -1,0 +1,844 @@
+﻿;------------------------------------------
+@BANISHMENT
+#DIM LV
+#DIMS MATURO
+#DIM FAMILY,3
+;ZはTARGETを保存してるため使用禁止
+;------------------------------------------
+;追放系コマンド
+
+SIF A == 0
+	RETURN 0
+B = A
+
+FAMILY = CFLAG:A:605
+FAMILY:1 = FAMILY % 10
+CALL SEARCH_FAMILY, A
+FAMILY:2 = RESULT
+
+PRINTW ただ追放するだけでは面白味がないか...
+PRINTL 
+PRINTL [0] そのまま追放する
+SIF TALENT:A:122
+	SETCOLOR (GETDEFCOLOR() - 0x444444)
+PRINTL [1] 男体化の呪いをかける
+SIF TALENT:A:122
+		RESETCOLOR
+PRINTL [2] これまでの記憶を消去する
+PRINTL [3] 小動物に変身させて野に放つ
+PRINTL [4] あえて勇者になる前の生活に戻してやる
+PRINTL  
+PRINTL [100] やめる
+
+$INPUT_LOOP
+INPUT
+IF RESULT < 0
+	GOTO INPUT_LOOP
+ELSEIF RESULT >= 5 && RESULT != 100
+	GOTO INPUT_LOOP
+ENDIF
+
+SELECTCASE RESULT
+	CASE 1
+		IF TALENT:A:122
+			PRINTFORMW %SAVESTR:A%は既に男の身体だ.別の方法にしよう.
+			GOTO INPUT_LOOP
+		ENDIF
+ENDSELECT
+
+IF RESULT == 100
+	TARGET = FLAG:1
+	RETURN 0
+ENDIF
+
+TARGET = A
+TFLAG:510 = RESULT
+
+CALL BANISHMENT_KOUJO
+
+IF TFLAG:510 == 0
+	PRINTFORML %SAVESTR:A%にすべての力を封じる焼印を押し,
+	PRINTW ダンジョンの外へと追放した
+	IF TALENT:A:85
+		PRINTFORMW %SAVESTR:A%はなぜ追放されたのか分からぬまま,愛しいあなたの名前を何度も何度も呟く.
+		PRINTFORMW %SAVESTR:A%は深い悲しみに押し潰れそうになりながら森の奥へと消えていった............
+	ELSEIF TALENT:A:85 && TALENT:A:153
+		PRINTFORMW %SAVESTR:A%はなぜ追放されたのか分からぬまま,愛しいあなたの名前を何度も何度も呟く.
+		PRINTFORMW %SAVESTR:A%は身重の身体のまま,深い悲しみに押し潰れそうになりながら森の奥へと消えていった............
+	ELSEIF TALENT:A:153
+		PRINTFORMW 身重の身体のまま追い出された%SAVESTR:A%は森の奥へと消えていった.........
+	ENDIF
+	
+	;末路分岐
+	IF TALENT:A:244 || TALENT:A:245 || TALENT:A:246 || TALENT:A:247
+		;悪魔素質
+		PRINTFORMW %SAVESTR:A%は悪魔の姿をしていたため近くの村人によって捕獲され,一生を見世物として過ごした.
+		MATURO = 見世物
+	ELSEIF TALENT:A:204
+		;肉便器
+		PRINTFORML 肉便器の%SAVESTR:A%は,全身を落書きで化粧して,連絡先と実名を書いた紙を見せながら,
+		PRINTFORMW 今日も水晶球の前で淫靡なポ-ズを取って腰を振る......
+		;動画の内容
+		IF TALENT:A:75 || TALENT:A:76 || TALENT:A:31
+			;淫乱-セックス狂-貞操無頓着
+			PRINTFORMW %SAVESTR:A%は連絡先を見てやってきた男と誰とでも寝る変態乱交女として有名になっていた
+			MATURO = 公開乱交女
+		ELSEIF ABL:A:39 > 0 || TALENT:A:317 == 12
+			;獣姦中毒-かわいい動物が好き
+			PRINTFORMW %SAVESTR:A%は獣姦動画ばかり撮る変態女として有名になっていた
+			MATURO = 公開獣姦女
+		ELSEIF TALENT:A:121 && TALENT:A:318 == 1
+			;ふたなり巨根
+			PRINTFORML ふたなりの%SAVESTR:A%は娼婦を家に呼び込んで
+			PRINTFORMW 自慢の巨根で犯すという水晶球動画で有名になっていた
+			MATURO = 公開ふたなり風俗女
+		ELSEIF TALENT:A:121 && TALENT:A:318 == 2
+			;ふたなり短小包茎
+			PRINTFORML ふたなりの%SAVESTR:A%はポルノを見ながら
+			PRINTFORMW みじめな短小包茎を必死にシコってEjaculationするという水晶球動画で有名になっていた
+			MATURO = 公開ふたなりオナニー女
+		ELSEIF TALENT:A:121
+			;その他のふたなり
+			PRINTFORML ふたなりの%SAVESTR:A%は交際中の彼女を家に呼び込んで
+			PRINTFORMW 種付けセックスをするという水晶球動画で有名になっていた
+			MATURO = 公開ふたなりセックス女
+		ELSEIF ABL:A:22 > 0
+			;レズっ気
+			PRINTFORMW %SAVESTR:A%は娼婦を家に呼び込んで絡み合う姿を撮るという変態レズ女として有名になっていた
+			MATURO = 公開レズ風俗女
+		ELSEIF TALENT:A:104 || TALENT:A:232
+			;V敏感-淫壺
+			PRINTFORMW %SAVESTR:A%は膣に巨大なドラゴンのディルドを挿入するという水晶球動画で有名になっていた
+			MATURO = 公開膣拡張女
+		ELSEIF TALENT:A:106 || TALENT:A:233
+			;A敏感-淫肛
+			PRINTFORMW %SAVESTR:A%はアナルに巨大なトロ-ルのディルドを挿入するという水晶球動画で有名になっていた
+			MATURO = 公開アナル拡張
+		ELSEIF TALENT:A:102 || TALENT:A:230
+			;C敏感-淫核
+			PRINTFORMW %SAVESTR:A%はクリトリスを極端に肥大化させるという水晶球動画で有名になっていた
+			MATURO = 公開クリ肥大女
+		ELSEIF TALENT:A:108 || TALENT:A:231
+			;B敏感-淫乳
+			PRINTFORMW %SAVESTR:A%は乳首を極端に肥大化させるという水晶球動画で有名になっていた
+			MATURO = 公開乳首開発女
+		ELSEIF ABL:A:17 > 0
+			;露出癖
+			PRINTFORMW %SAVESTR:A%は野外露出ばかり撮る露出狂として有名になっていた
+			MATURO = 公開野外露出女
+		ELSEIF ABL:A:21 > 0
+			;マゾっ気
+			PRINTFORMW %SAVESTR:A%はマゾ奴隷として調教されていく姿が裏で話題になっていた
+			MATURO = 公開マゾ調教女
+		ELSEIF TALENT:A:60 || TALENT:A:74
+			;自慰しやすい-自慰狂い
+			PRINTFORMW %SAVESTR:A%は自慰をして激しく絶頂するオナニ-猿として有名になっていた
+			MATURO = 公開自慰女
+		ELSEIF TALENT:A:317 == 13
+			;綺麗な装飾品が好き
+			PRINTFORML %SAVESTR:A%は乳首や淫核,ラビアにつけられた大量のピアスを晒す
+			PRINTFORMW 肉体改造マニアとして有名になっていた
+			MATURO = 公開ピアス改造女
+		ELSEIF TALENT:A:57
+			;おもらし癖
+			PRINTFORMW %SAVESTR:A%は野外や人の気配のない場所で放尿する水晶球動画で有名になっていた
+			MATURO = 公開野外放尿女
+		ELSEIF TALENT:A:48
+			;近視
+			PRINTFORMW %SAVESTR:A%はマニアックな眼鏡女優として有名になっていた
+			MATURO = 公開眼鏡セックス女
+		ELSEIF TALENT:A:314 == 1
+			;エルフ
+			PRINTFORMW %SAVESTR:A%は醜いオ-クとセックスするのが好きな変態エルフとして有名になっていた
+			MATURO = 公開変態エルフ女
+		ELSEIF TALENT:A:0
+			;処女
+			PRINTFORMW %SAVESTR:A%は処女のまま限界までアナルを拡張するという変態尻穴便器として有名になっていた
+			MATURO = 公開処女アナル開発女
+		ELSE
+			PRINTFORMW %SAVESTR:A%は街でも有名な痴女として有名になっていた
+			MATURO = 公開変態女
+		ENDIF
+		;見てくれてありがとう
+		IF TALENT:A:317 == 4 || TALENT:317 == 11
+			;故郷の恋人-憧れの人が好き
+			PRINTFORML %SAVESTR:A%の消息を探していたある男はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の変わり果てた姿に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 1
+			;元学生
+			PRINTFORML 学生だった%SAVESTR:A%に片思いしていたある少年はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の淫乱な姿に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 8
+			;元貴族
+			PRINTFORML 高貴な貴族の%SAVESTR:A%に憧れていたある男はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の痴態に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 12
+			;元聖女
+			PRINTFORML 神聖な聖女の%SAVESTR:A%に憧れていたある少年はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の変態行為に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 15
+			;元商人
+			PRINTFORML 店屋の看板娘だった%SAVESTR:A%を知る青年はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の下品で清楚の欠片もない姿に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 18
+			;元パン屋
+			PRINTFORML パン屋の看板娘だった%SAVESTR:A%を知る青年はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%の下品で清楚の欠片もない姿に泣きながら自慰したという
+		ELSEIF TALENT:A:315 == 19
+			;元軍人
+			PRINTFORML 頼れる上司だった%SAVESTR:A%の元部下はその水晶球を手に入れ,
+			PRINTFORMW %SAVESTR:A%のカリスマの欠片もない姿に泣きながら自慰したという
+		ENDIF
+	
+	;深く依存系
+	ELSEIF TALENT:A:46
+		;薬物中毒
+		PRINTFORMW %SAVESTR:A%は薬物に犯されていたため,薬欲しさに股を開く娼婦になったらしい......
+		MATURO = 薬物中毒の娼婦
+	ELSEIF TALENT:A:316 == 3 || TALENT:316 == 18
+		;啓示を受けて-夢に見たから
+		PRINTFORML 信じていたものに裏切られた%SAVESTR:A%は新興宗教にのめりこんでしまったようだ
+		PRINTFORMW 信者同士の乱交パ-ティに参加し,自分の幸せを見つけたらしい......
+		MATURO = 新興宗教の信者
+	
+	;過去の業に引きずられた系
+	ELSEIF TALENT:A:317 == 4 || TALENT:317 == 11
+		;故郷の恋人-憧れの人が好き
+		PRINTFORML %SAVESTR:A%は長い旅の末故郷に辿りついたが,
+		PRINTFORMW 自分の愛するひとが知らない女と結ばれたことを知って,ひっそりと闇に消えた......
+		MATURO = 行方不明
+	ELSEIF TALENT:A:316 == 7
+		;故郷を救うために勇者になったのに......
+		PRINTFORML 故郷を救えなかった%SAVESTR:A%は,すでに滅びオ-クの集落となった場所で,
+		PRINTFORML 集落の広場に晒され奴隷となった元村人の慰安用として公衆便器になっていた
+		PRINTFORMW その首には謝罪の言葉が刻まれたプレ-トが下げられている......
+		MATURO = 慰安用肉便器
+	ELSEIF TALENT:A:315 == 8
+		;元貴族
+		PRINTFORML 元貴族の%SAVESTR:A%は,生まれ故郷で自分の家が没落したことを知る
+		;姉がいるか
+		LOCAL = TALENT:A:320 % 1000000
+		LOCAL /= 100000
+		;妹がいるか
+		LOCAL:1 = TALENT:A:320 % 100000000
+		LOCAL:1 /= 10000000
+		IF LOCAL > 0 && LOCAL:1 > 0
+			;姉妹がいる
+			PRINTFORML 美しい美貌で有名だった%SAVESTR:A%の姉妹は,いまや売春宿で身体を売る生活だ
+		ELSEIF LOCAL > 0
+			;姉がいる
+			PRINTFORML 美しい美貌で有名だった%SAVESTR:A%の姉は,いまや売春宿で身体を売る生活だ
+		ELSEIF LOCAL:1 > 0
+			;妹がいる
+			PRINTFORML 美しい美貌で有名だった%SAVESTR:A%の妹は,いまや売春宿で身体を売る生活だ
+		ENDIF
+		PRINTFORMW 売春婦となった%SAVESTR:A%は,かつて下に見ていた市民に低級市民としての奉仕を続けていた......
+		MATURO = 高級娼婦
+	ELSEIF TALENT:A:316 == 2
+		;お金が必要だったのに......
+		PRINTFORML 金が必要だったため勇者になった%SAVESTR:A%は,さらに大きな負債を抱えてしまった
+		PRINTFORML それから,報酬目当てに女としての尊厳を捨てるような仕事ばかり続けている
+		PRINTFORMW 変態性癖を持った大富豪に今日も呼ばれ,命令とあれば大便さえ食べなくてはいけない......
+		MATURO = 娼婦
+	ELSEIF TALENT:A:317 == 8
+		;家族が好き
+		;姉がいるか
+		LOCAL = TALENT:A:320 % 1000000
+		LOCAL /= 100000
+		;兄がいるか
+		LOCAL:1 = TALENT:A:320 % 10000000
+		LOCAL:1 /= 1000000
+		;妹がいるか
+		LOCAL:2 = TALENT:A:320 % 100000000
+		LOCAL:2 /= 10000000
+		;弟がいるか
+		LOCAL:3 = TALENT:A:320 % 1000000000
+		LOCAL:3 /= 100000000
+		IF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			;兄弟姉妹
+			PRINT 自分の兄弟姉妹
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄も姉も妹も
+		ELSEIF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄も姉も弟も
+		ELSEIF LOCAL > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 姉も妹も弟も
+		ELSEIF LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 兄も妹も弟も
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0
+			PRINT 兄と姉
+		ELSEIF  LOCAL > 0 && LOCAL:2 > 0
+			PRINT 姉と妹
+		ELSEIF LOCAL > 0 && LOCAL:3 > 0
+			PRINT 姉と弟
+		ELSEIF  LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄と妹
+		ELSEIF LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄と弟
+		ELSEIF LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 妹と弟
+		ELSEIF  LOCAL > 0
+			PRINT 姉
+		ELSEIF  LOCAL:1 > 0
+			PRINT 兄
+		ELSEIF LOCAL:2
+			PRINT 妹
+		ELSEIF LOCAL:3 > 0
+			PRINT 弟
+		ELSE
+			PRINT 父と母
+		ENDIF
+		PRINTFORML が好きだった%SAVESTR:A%は,生まれ故郷で自分の家が離散したことを知る
+		PRINTFORM %SAVESTR:A%の
+		IF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			;兄弟姉妹
+			PRINT 兄弟姉妹
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄も姉も妹も
+		ELSEIF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄も姉も弟も
+		ELSEIF LOCAL > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 姉も妹も弟も
+		ELSEIF LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 兄も妹も弟も
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0
+			PRINT 兄と姉
+		ELSEIF  LOCAL > 0 && LOCAL:2 > 0
+			PRINT 姉と妹
+		ELSEIF LOCAL > 0 && LOCAL:3 > 0
+			PRINT 姉と弟
+		ELSEIF  LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄と妹
+		ELSEIF LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄と弟
+		ELSEIF LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 妹と弟
+		ELSEIF  LOCAL > 0
+			PRINT 姉
+		ELSEIF  LOCAL:1 > 0
+			PRINT 兄
+		ELSEIF LOCAL:2
+			PRINT 妹
+		ELSEIF LOCAL:3 > 0
+			PRINT 弟
+		ELSE
+			PRINT 父と母
+		ENDIF
+		PRINT は,借金を返すため
+		IF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			;兄弟姉妹
+			PRINT 家族近親相姦物の
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 家族近親相姦物の
+		ELSEIF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 家族近親相姦物の
+		ELSEIF LOCAL > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 家族近親相姦物の
+		ELSEIF LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 家族近親相姦物の
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0
+			PRINT 兄姉近親相姦物の
+		ELSEIF  LOCAL > 0 && LOCAL:2 > 0
+			PRINT 姉妹近親レズ物の
+		ELSEIF LOCAL > 0 && LOCAL:3 > 0
+			PRINT 姉弟近親相姦物の
+		ELSEIF  LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄妹近親相姦物の
+		ELSEIF LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄弟近親相姦物の
+		ELSEIF LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 妹弟近親相姦物の
+		ELSEIF  LOCAL > 0
+			PRINT オ-クとセックスする
+		ELSEIF  LOCAL:1 > 0
+			PRINT サキュバスに絞られる
+		ELSEIF LOCAL:2
+			PRINT 変態M女調教物の
+		ELSEIF LOCAL:3 > 0
+			PRINT サキュバスに絞られる
+		ELSE
+			PRINT 熟年夫婦物の
+		ENDIF
+		PRINTL 水晶球動画に出演していた
+		PRINTFORM 自らもポルノ女優となった%SAVESTR:A%は,
+		IF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			;兄弟姉妹
+			PRINT 兄弟姉妹に交わってセックスし
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄の前で姉妹と一緒に尻を並べ
+		ELSEIF LOCAL > 0 && LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄姉の交わる前で弟のペニスを咥え
+		ELSEIF LOCAL > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 姉妹と一緒に弟を犯し
+		ELSEIF LOCAL:1 > 0 && LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 妹弟が交わる隣で兄とセックスし
+		ELSEIF  LOCAL > 0 && LOCAL:1 > 0
+			PRINT 兄の前で姉と尻を並べ
+		ELSEIF  LOCAL > 0 && LOCAL:2 > 0
+			PRINT 姉妹と共にレズ奴隷となり
+		ELSEIF LOCAL > 0 && LOCAL:3 > 0
+			PRINT 姉と共に弟を犯し
+		ELSEIF  LOCAL:1 > 0 && LOCAL:2 > 0
+			PRINT 兄の前で妹と尻を並べ
+		ELSEIF LOCAL:1 > 0 && LOCAL:3 > 0
+			PRINT 兄弟に挟まれて犯されながら
+		ELSEIF LOCAL:2 > 0 && LOCAL:3 > 0
+			PRINT 妹と共に弟を犯し
+		ELSEIF  LOCAL > 0
+			PRINT 姉と絡み合いながら
+		ELSEIF  LOCAL:1 > 0
+			PRINT 兄と交わりながら
+		ELSEIF LOCAL:2
+			PRINT 妹と絡み合いながら
+		ELSEIF LOCAL:3 > 0
+			PRINT 弟を犯しながら
+		ELSE
+			PRINT 父の前で母と尻を並べ
+		ENDIF
+		PRINTW 壊れかけの家族を感じていた
+		MATURO = ポルノ女優
+		
+	;性癖のせいで変態痴女に系
+	ELSEIF ABL:A:39 > 0
+		;獣姦中毒
+		PRINTFORMW %SAVESTR:A%は草むらで野良犬と交尾している姿が目撃されたという......
+		MATURO = 変態獣姦女
+	ELSEIF ABL:A:32 > 0
+		;精液中毒
+		PRINTFORML 公衆便所の落書きに%SAVESTR:A%の名前と連絡先が書かれているらしい
+		PRINTFORMW "ザ-メン,飲みたいです.連絡待ってます"
+		MATURO = ヤリマン女
+	ELSEIF ABL:A:17 > 0
+		;露出癖
+		PRINTFORMW %SAVESTR:A%は夜道で全裸になって自慰をするという街の有名な痴女になっていた
+		MATURO = 露出狂
+	ELSEIF ABL:A:21 > 0
+		;マゾっ気
+		PRINTFORMW %SAVESTR:A%は街の盗賊団の情婦になって,マゾ豚奴隷として舞台に立っているらしい
+		MATURO = マゾ豚奴隷
+	ELSEIF TALENT:A:60 || TALENT:A:74
+		;自慰しやすい-自慰狂い
+		PRINTFORML 街で働くようになった%SAVESTR:A%は,すっかり自慰の虜になったようだ
+		PRINTFORMW 官能小説や卑猥なおもちゃを買いあさり,今日も淫核が擦り切れるほど盛っているという......
+		MATURO = オナニー猿
+	
+	;変わった体質
+	ELSEIF TALENT:A:121 && TALENT:A:318 == 2
+		;ふたなり短小包茎
+		PRINTFORML ふたなりの%SAVESTR:A%は短小包茎だったため女を満足させられず,
+		PRINTFORMW 水晶球動画でポルノを見ながらペニスがもたらす女への欲望を発散させているらしい......
+		MATURO = ふたなりポルノマニア
+	ELSEIF TALENT:A:121
+		;その他のふたなり
+		PRINTFORML ふたなりの%SAVESTR:A%は,昼は街で働き,夜は稼いだ金で安い娼館に足を運んで
+		PRINTFORMW ペニスから湧きあがる性欲を発散させる生活を送っているらしい......
+		MATURO = ふたなり風俗マニア
+	ELSEIF TALENT:A:273
+		;処女封印
+		PRINTFORML 処女封印を解く費用を持たない%SAVESTR:A%は,アナル専門の娼婦となった
+		PRINTFORMW 肛門を売るたび,貯金をする%SAVESTR:A%.その僅かな稼ぎさえ,娼館に吸いあげられていく......
+		MATURO = アナル専用風俗嬢
+	
+	;夢を叶えた系
+	ELSEIF TALENT:A:317 == 3
+		;歌が好き
+		PRINTFORML 歌が好きだった%SAVESTR:A%は,歌手としてデビュ-したらしい
+		PRINTFORMW 売れなくなってきた%SAVESTR:A%は,最近ではきわどい裸婦画のモデルとしても働いているという......
+		MATURO = 売れない歌手
+	ELSEIF TALENT:A:317 == 6
+		;踊りが好き
+		PRINTFORML 踊りが好きだった%SAVESTR:A%は,踊り子としてデビュ-したらしい
+		PRINTFORMW 売れなくなってきた%SAVESTR:A%は,最近では紐同然の衣装を着て踊っているという......
+		MATURO = 売れない踊り子
+	ELSEIF TALENT:A:317 == 7
+		;絵が好き
+		PRINTFORML 絵が好きだった%SAVESTR:A%は,画家になって自分の裸体を絵にして売っているらしい
+		PRINTFORMW 売れなくなってきた%SAVESTR:A%は,最近では男女の絡みや過激なモチ-フに手を出しているという......
+		MATURO = 売れない画家
+	ELSEIF TALENT:A:317 == 18
+		;小説が好き
+		PRINTFORML 小説が好きだった%SAVESTR:A%は,官能小説家としてデビュ-したらしい
+		PRINTFORMW 売れなくなってきた%SAVESTR:A%の作風は,最近では下品な変態性癖を書くものに変わってきたという......
+		MATURO = マニアックな官能小説家
+		
+	;どこにも転ばず仕方なく系
+	ELSEIF TALENT:A:315 == 5
+		;元娼婦
+		PRINTFORMW %SAVESTR:A%は昔と何も変わらない,街角に立つひとりの娼婦に戻っていた
+		MATURO = 娼婦
+	ELSEIF TALENT:A:315 == 7
+		;元物乞い
+		PRINTFORMW %SAVESTR:A%は昔と何も変わらない,街角に座るひとりの物乞いに戻っていた
+		MATURO = 物乞い
+	ELSEIF TALENT:A:315 == 9
+		;元貧民
+		PRINTFORMW %SAVESTR:A%は昔と何も変わらない,あばら家に住まうひとりの貧民に戻っていた
+		MATURO = 貧民
+	ELSE
+		PRINTFORMW その後の%SAVESTR:A%の行方を知るものはいない......
+		MATURO = 行方不明
+	ENDIF
+	
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+
+ELSEIF TFLAG:510 == 1
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押し,彼女の身体に不可逆の男体化の呪いをかけた
+	PRINTFORMW %NAME:MASTER%は男体化の影響で体力を消耗した%SAVESTR:A%を,ダンジョンの外へと追放した
+	PRINTW いずれ自分が"女"だった事は忘れ,"男"として生きてゆくのだ
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	MATURO = 男
+	
+ELSEIF TFLAG:510 == 2
+	PRINTFORMW %SAVESTR:A%にすべての力を封じる焼印を押し,彼女の今までの人生の記憶を全て消去した
+	PRINTFORMW %NAME:MASTER%は記憶を失い茫然自失となっている%SAVESTR:A%を,ダンジョンの外へと追放した
+	PRINTW 彼女は自分が何者なのかを思い出せぬまま,当ても無く彷徨い続けるだろう...
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+	MATURO = 記憶喪失者
+	
+ELSEIF TFLAG:510 == 3
+	PRINTFORMW %NAME:MASTER%は%SAVESTR:A%にすべての力を封じる焼印を押し,
+	PRINTFORMW 加えて%SAVESTR:A%の"ヒト"としての記憶すべてを封じた.その後%NAME:MASTER%は
+	PRINT 彼女を一匹の
+		IF RAND:8 == 0
+				;ポニー的な
+				PRINT 子馬
+				MATURO = 子馬
+		ELSEIF RAND:8 == 1
+				;ごすずん!
+				PRINT 子犬
+				MATURO = 子犬
+		ELSEIF RAND:8 == 2
+				;フライングまうまう
+				PRINT 小鳥
+				MATURO = 小鳥
+		ELSEIF RAND:8 == 3
+				;お...おま...
+				PRINT 兎
+				MATURO = 兎
+		ELSEIF RAND:8 == 4
+				;あぁ迷える子羊ってそういう...
+				PRINT 子羊
+				MATURO = 子羊
+		ELSEIF RAND:8 == 5
+				;こゃーん
+				PRINT 子狐
+				MATURO = 子狐
+		ELSE
+				;ぬっぬっぬ
+				PRINT 子猫
+				MATURO = 子猫
+		ENDIF
+	PRINTW に変えた.
+	PRINTFORMW %NAME:MASTER%は小動物となった%SAVESTR:A%をダンジョンの外へと追放した.
+	PRINTFORMW 彼女は,自身が"ヒト"であったことを思い出すことはもうないだろう...
+	PRINTL  
+	PRINTL 手に入れた勇者の力は勲章の形で残った
+	PRINTW 勲章経験+1
+	EXP:0:81 += 1
+
+ELSEIF TFLAG:510 == 4
+	PRINTFORMW %NAME:MASTER%は%SAVESTR:A%にすべての力を封じる焼印を押し,
+	PRINTFORMW 勇者になる前の生活に戻してやった
+	
+	MATURO = 
+	SELECTCASE TALENT:(A):勇者になる前の生活
+	CASE 0
+		;不明
+		PRINTFORMW その後の%SAVESTR:A%を知る者はいない......
+		MATURO = 行方不明
+	CASE 1
+		;学生
+		IF TALENT:A:204
+			;肉便器
+			PRINTFORM 肉便器の%SAVESTR:A%は学校でも有名なヤリマンになっていた.
+			MATURO += "ヤリマン"
+		ENDIF
+		IF TALENT:A:48
+			;近視
+			PRINTFORM 地味な眼鏡は勉強ができるように見える.
+			MATURO += "眼鏡"
+		ENDIF
+		IF TALENT:A:180
+			;娼婦
+			PRINTFORM 学校外では売春をして金を稼いでいるらしい.
+			MATURO += "売春"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は学生生活を満喫しているようだ.
+		MATURO += "学生"
+	CASE 2
+		;修道女
+		IF ABL:A:13 > 0 || TALENT:A:52
+			;奉仕技術1以上,または舌使い
+			PRINTFORM %SAVESTR:A%は若い少年神官のペニスを陰でしゃぶって悶える姿を楽しんでいるという.
+			MATURO += "フェラ豚"
+		ENDIF
+		IF ABL:A:3 > 0 || TALENT:A:106
+			;A感覚1以上,またはA敏感
+			PRINTFORM %SAVESTR:A%はアナルでの背徳行為にのめり込み,アナル売春を陰でやっているらしい.
+			MATURO += "アナル売春"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は神殿でよろしくやっているようだ.
+		MATURO += "シスター"
+	CASE 3
+		;農家
+		IF TALENT:A:13
+			;素直
+			PRINTFORM 素直な%SAVESTR:A%は農家に嫁ぎ,畑仕事を頑張っているらしい.
+			MATURO += "畑仕事の"
+		ENDIF
+		IF EXP:A:56 >= 5
+			;獣姦経験5以上
+			PRINTFORM %SAVESTR:A%は交尾の経験が忘れられず,農耕用の家畜と盛ることを覚えてしまったようだ.
+			MATURO += "獣姦"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は農村でよろしくやっているようだ.
+		MATURO += "農婦"
+	CASE 4
+		;漁師
+		IF TALENT:A:13
+			;素直
+			PRINTFORM 素直な%SAVESTR:A%は網を繕うのが上手になったらしい.
+			MATURO += "仕事上手な"
+		ENDIF
+		IF EXP:A:74 >= 5
+			;売春経験5以上
+			PRINTFORM %SAVESTR:A%はたまにやってくる貿易船の船員に股を開いて金を稼いでいるらしい.
+			MATURO += "売春"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は漁港でよろしくやっているようだ.
+		MATURO += "漁師"
+	CASE 5
+		;娼婦
+		IF ABL:A:21 > 0
+			;マゾっ気1以上
+			PRINTFORM Ｍ女の%SAVESTR:A%はその手の店で人気だという.
+			MATURO += "マゾ豚"
+		ENDIF
+		IF ABL:A:17 > 0 || TALENT:A:28
+			;露出癖1以上,または目立ちたがり
+			PRINTFORM %SAVESTR:A%は大通りで堂々と売春セックスに興じ,逆に見物料をとって稼いでいるようだ.
+			MATURO += "露出"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%はスラム街でよろしくやっているようだ.
+		MATURO += "娼婦"
+	CASE 6
+		;盗人
+		IF ABL:A:22 > 0 || TALENT:A:81 || TALENT:A:82
+			;レズっ気1以上,または両刀,または男嫌い
+			PRINTFORM %SAVESTR:A%は若い女を誘拐し,売春宿に沈める仕事もしているようだ.その前に必ず味見をするという.
+			MATURO += "レズ誘拐"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%はスラム街でよろしくやっているようだ.
+		MATURO += "盗賊"
+	CASE 7
+		;物乞い
+		IF TALENT:A:180
+			;娼婦
+			PRINTFORM %SAVESTR:A%はパンのためには何でもする安い娼婦になったようだ.
+			MATURO += "売春"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%はスラム街でよろしくやっているようだ.
+		MATURO += "物乞い女"
+	CASE 8
+		;貴族
+		MATURO = 貴族の
+		PRINTFORM 貴族の家に戻った%SAVESTR:A%は一族の忌み子となった.
+		IF ABL:A:11 > 0 || TALENT:A:102 || TALENT:A:60
+			;欲望1以上,またはC敏感,または自慰しやすい
+			PRINTFORM %SAVESTR:A%は甘い情欲が止まらなくなり自室で猿のようにオナニ-しているようだ.
+			MATURO += "自慰狂い"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は貴族の社交界でよろしくやっているようだ.
+		MATURO += "お嬢様"
+	CASE 9
+		;貧民
+		IF EXP:A:70 >= 5
+			;被写経験5以上
+			PRINTFORM 水晶球動画が流出していた%SAVESTR:A%は,自宅に男が押し寄せてヤリ部屋になってしまったようだ.
+			MATURO += "ヤリマン"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は貧民街でよろしくやっているようだ.
+		MATURO += "貧乏女"
+	CASE 10
+		;墓守
+		IF ABL:A:17 > 0 || TALENT:A:28
+			;露出癖1以上,または目立ちたがり
+			PRINTFORM %SAVESTR:A%は誰もいない墓地で全裸にコ-トで徘徊し,スリルを楽しんでいるようだ.
+			MATURO += "露出"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は墓地でよろしくやっているようだ.
+		MATURO += "墓守女"
+	CASE 11
+		;巫女
+		IF ABL:A:3 > 0 || TALENT:A:106
+			;A感覚1以上,またはA敏感
+			PRINTFORM %SAVESTR:A%はアナルでの背徳行為にのめり込み,アナル売春を陰でやっているらしい.
+			MATURO += "アナル売春"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は神殿でよろしくやっているようだ.
+		MATURO += "巫女"
+	CASE 12
+		;聖女
+		IF ABL:A:13 > 0 || TALENT:A:52
+			;奉仕技術1以上,または舌使い
+			PRINTFORM %SAVESTR:A%は若い少年神官のペニスを陰でしゃぶって悶える姿を楽しんでいるという.
+			MATURO += "フェラ豚"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は神殿でよろしくやっているようだ.
+		MATURO += "聖女"
+	CASE 13
+		;予言者
+		IF ABL:A:13 > 0 || TALENT:A:52
+			;奉仕技術1以上,または舌使い
+			PRINTFORM %SAVESTR:A%は若い少年神官のペニスを陰でしゃぶって悶える姿を楽しんでいるという.
+			MATURO += "フェラ豚"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は神殿でよろしくやっているようだ.
+		MATURO += "予言者"
+	CASE 14
+		;占い師
+		IF ABL:A:11 > 0 || TALENT:A:36
+			;欲望1以上,または恥薄い
+			PRINTFORM %SAVESTR:A%は占い結果にセクハラ要素を交えて,客を赤面させているようだ.
+			MATURO += "セクハラ"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は街角でよろしくやっているようだ.
+		MATURO += "占い師"
+	CASE 15
+		;商人
+		IF TALENT:A:204
+			;肉便器
+			PRINTFORM 肉便器の%SAVESTR:A%は店の裏でいかがわしい副業を始めたようだ.
+			MATURO += "ヤリマン"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は商店でよろしくやっているようだ.
+		MATURO += "看板娘"
+	CASE 16
+		;薬草取り
+		IF ABL:A:17 > 0 || TALENT:A:28
+			;露出癖1以上,または目立ちたがり
+			PRINTFORM %SAVESTR:A%は森の中で裸になり,森林浴を楽しむ趣味に目覚めたようだ.
+			MATURO += "露出"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は寂れた村でよろしくやっているようだ.
+		MATURO += "村娘"
+	CASE 17
+		;隠者
+		IF ABL:A:17 > 0 || TALENT:A:28
+			;露出癖1以上,または目立ちたがり
+			PRINTFORM %SAVESTR:A%は水晶球を使って撮った動画を密かに売っているようだ.
+			MATURO += "素人動画"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は館の奥でよろしくやっているようだ.
+		MATURO += "箱入り娘"
+	CASE 18
+		;パン屋
+		MATURO = パン屋の
+		IF TALENT:A:204
+			;肉便器
+			PRINTFORM 肉便器の%SAVESTR:A%は店の裏でいかがわしい副業を始めたようだ.
+			MATURO += "ヤリマン"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%はパン屋でよろしくやっているようだ.
+		MATURO += "看板娘"
+	CASE 19
+		;軍人
+		IF EXP:A:70 >= 5
+			;被写経験5以上
+			PRINTFORM 軍隊ではすでに%SAVESTR:A%の水晶球動画が流出しており,陰で噂は尽きないという.
+			MATURO += "恥辱の"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は軍隊でよろしくやっているようだ.
+		MATURO += "女将校"
+	CASE 20
+		;奴隷
+		IF TALENT:A:143 || TALENT:A:13
+			;ショタコンまたは素直
+			PRINTFORM %SAVESTR:A%は優しい少年の奴隷主に買われて大事にされているという.
+			MATURO += "少年専用"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は奴隷主人の元でよろしくやっているようだ.
+		MATURO += "奴隷"
+	CASE 21
+		;主婦
+		IF EXP:A:56 >= 5
+			;獣姦経験5以上
+			PRINTFORM %SAVESTR:A%は最近ペットに犬を買ったらしい.%SAVESTR:A%は情欲で鈍く輝いていた.
+			MATURO += "獣姦"
+		ENDIF
+		PRINTFORML そんなこんなで%SAVESTR:A%は夫の元でよろしくやっているようだ.
+		MATURO += "主婦"
+	CASEELSE
+		PRINTFORMW その後の%SAVESTR:A%を知る者はいない......
+		MATURO = 行方不明
+	ENDSELECT
+	
+	PRINTFORMW ......%MATURO%END
+	
+ENDIF
+
+SIF FAMILY:2 >= 0
+	CSTR:(FAMILY:2):5 = %MATURO%
+
+A = TARGET
+
+;武器解除
+W:0 = CFLAG:A:550
+CALL EQUIP_GET
+CFLAG:A:550 = -1
+;指輪解除
+W:0 = CFLAG:A:551
+CALL EQUIP_GET
+CFLAG:A:551 = -1
+;指輪解除
+W:0 = CFLAG:A:552
+CALL EQUIP_GET
+CFLAG:A:552 = -1
+
+LV = CFLAG:A:9
+
+X = NO:A + 199
+FLAG:X = 1
+
+;前回の助手-調教対象だった場合はフラグを空に
+SIF FLAG:1 == TARGET
+	FLAG:1 = -1
+SIF FLAG:2 == TARGET
+	FLAG:2 = -1
+
+;前回の助手-調教対象より前だった場合はフラグを減算
+SIF FLAG:1 > TARGET
+	FLAG:1 -= 1
+SIF FLAG:2 > TARGET
+	FLAG:2 -= 1
+
+TARGET = FLAG:1
+ASSI = FLAG:2
+
+CALL PARTY_CHAR_DEL, A
+
+DELCHARA A
+
+CALL NAME_RESET
+
+
+FLAG:80 += 1
+
+LV += 1
+LV *= 50
+
+EXP:0:80 += LV
+PRINTFORMW 《封印した勇者の力を吸収しあなたは{LV}の経験値を得た!》
+
+TARGET = -1
+RETURN 0
+

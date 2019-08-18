@@ -1,0 +1,21 @@
+﻿;--------------------------------
+@SELL_FIGHTMONEY
+;--------------------------------
+;コロシアム収入
+
+;観戦したまま終わった場合チケットを減らす
+SIF TEQUIP:55
+	ITEM:35 -= 1
+
+;闘姫補正
+SIF TALENT:188
+	TIMES TFLAG:402 , 1.50
+
+SIF TFLAG:402 > 0
+	PRINTFORMW You got {TFLAG:402} points from colliseum's revenues
+MONEY += TFLAG:402
+TFLAG:402 = 0
+
+
+
+

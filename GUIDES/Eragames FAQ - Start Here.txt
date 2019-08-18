@@ -1,0 +1,98 @@
+Frequently Asked Questions And Other General Information
+
+This general purpose FAQ should cover the most common questions we receive about eragames. It is being added to every game, and is not game-specific.
+
+
+Is This Game Fully Translated?
+Extremely unlikely.
+
+Too Much Of This Game Is In Japanese And I Barely Speak English As It Is, How Do I Play This?
+Follow this guide to setup Translation Aggregator, which provides automated machine translations.
+https://gitgud.io/eragames/how-to-git-eragames/wikis/Using-Translation-Aggregator
+
+When Will The Translations Be Finished?
+Most of these games are still actively developed by the Japanese, and we only have a few people available on our end. It's difficult enough just trying to keep pace with them, but even if by some miracle we did, you'd still be looking at many years based on our current progress.
+
+When Will [Some Character/Section of the Game] Be Translated?
+Absolutely no one knows, nor can we provide a time estimate. Even if the translator gave you an estimate, he'd probably be off by at least a year.
+
+Why Are People Adding [Various Content] To The Game When So Much Remains Untranslated?
+The translation group has neither structure nor coordination. Everyone works on whatever they want, for better or worse.
+
+Is There A Guide/Walkthrough For This Game?
+Unless you see another text file named Guide in this directory, you're probably out of luck.
+
+I'm Trying To Use [Some Bullshit], But The Text Hooker Isn't Working.
+Emuera (the game client) has been modified to copy text to the clipboard, which can then be picked up by software such as Translation Aggregator. In some games, you may need to enable the clipboard function via the Help > Settings > Clipboard menu from within the game. While you are free to use whatever software you want, Translation Aggregator (Linked earlier) should cover the majority of your needs.
+
+How Do I Use Git?
+To use git properly, see the following guide:
+https://gitgud.io/eragames/how-to-git-eragames/wikis/Working-With-Git-And-Eragames
+Setting up a git client also lets you receive updates without re-downloading the entire game (old saves may not be compatible).
+
+Which Branch Do I Use?
+Most repositories use the following pattern. See below for those that don't.
+Master - An extremely outdated branch from around a year ago. However it has the most complete translation.
+Japanese - An up-to-date version of the game, completely in Japanese.
+Contributors/[anything] - Someone working on translating the up-to-date Japanese branch. The game is fully updated but it is considerably less translated than the master branch. When the translation roughly equals the existing one in the master branch, it will overwrite that branch.
+
+Exceptions to the above pattern:
+TohoK - The master branch is both the most up to date and most translated branch.
+Maou - The master branch is both the most up to date and most translated branch.
+TW - The master branch is the most up to date branch, and is seeing ongoing translation. However, the master-old branch is more thoroughly translated despite being a year out of date.
+
+What Is The 'Overhaul' Mentioned In The Repositories?
+TL;DR - Repositories had no management a year ago, most of them became an unmaintainable mess. The overhaul involves updating the Japanese branches, starting a translation from scratch using the latest Japanese version, properly tagging releases, and replacing the outdated Master branch once translation has reached a point where the updated game is playable again.
+
+How Do I Update The Game?
+If new commits have been pushed to the game repository, download/clone/pull the updated branch; either through your git client (ideal) or the GitGud webui (far less than ideal). Do not drag the new game files into the old version's directory; this will likely break everything. While save game compatibility is never guaranteed, you can attempt to keep your save game by dragging the sav directory from the old version's directory to the new version's directory. If it works, great. If not, start over.
+
+What Are The Most Popular Eragames?
+EratohoK, EratohoTW, EraMegaten.
+
+Which Eragames Have The Most Complete Translations?
+EraTYPE-MOON, EratohoK, EratohoTW, EraMegaten.
+
+Which Games Have Cheat Menus?
+TohoK - Settings > Click the stars on the left of the menu.
+TW - Greyed-out 'secret menu' on the morning waking-up screen. This is a custom addon and may not be available in every branch yet.
+SQN - From the main menu, click on the bottom of the game window and enter 88224646 to access the debug/cheat menu.
+Kancolle - Same as SQN.
+YM AE M - From the main menu, click on the bottom of the game window and enter 3054635427 to access the debug/cheat menu.
+
+I've Encountered A Game-Crashing Bug, Now What?
+Hit Ctrl-C followed by Ctrl-END from within the game. This should open Notepad and take you to the bottom of the file where the crash dialog can be found. Highlight and copy the crash information (some of the text above it might be useful in providing context). You can submit the bug report in a number of ways: On Discord, In the thread (directly), In the thread (via a link to a pastebin you tossed everything into), or through the Issues page on the game's repository. Be sure to mention which game the crash ocurred in, and which branch you downloaded the game from. Optionally, save files are usually helpful. Screenshots of the error are not particularly useful unless you're just pointing out a typo or similar.
+
+The Game Files I Downloaded Have Extremely Long Names That Seem To Be Chinese And Nothing Works.
+An encoding error that some people experience when downloading the games from the GitGud Webui. If this happens to you, you'll need to setup a proper git client. See the link elsewhere in this guide.
+
+The Game Doesn't Crash But Something Is Horribly Wrong, What Do I Do?
+1. Japanese locale. You can try all of the emulators and workarounds you want, but it's going to come back to this eventually. No, this will not change your actual system language.
+2. We have no quality control and sometimes push literal garbage to the repositories. Go to the Commits section of the game's repository on GitGud, click on a commit prior to the most recent, click the Browse Files button at the top and download the game as you would normally from that page. It will download the game as it was at the time of that commit; hopefully before we introduced the bug.
+3. Some shit just doesn't work right, and that's the way the Japanese have coded it for now.
+
+Can I Play Eragames On Mac, Linux, AIX, Etc?
+Not without a bit of work. One anon managed to get emuera working in Wine, and there is a linux bash script in the root directory for playing on Linux. It has only been tested on Ubuntu, and only by that one anon so far.
+
+What Happened To The Mega Links And Pastebin Of Mega Links?
+The mega links and outdated copies of the pastebin ended up being shared on other boards, halfchan, forums, and Reddit. The result was a bunch of people playing year-old builds and coming to the thread/discord to report bugs that had long since been fixed. When people download from the git repositories, they are always receiving the most up to date version of the game. In an ideal world, translators will also be tagging stable builds from within the repository.
+
+I Have A Really Important Question But I Want Everyone To Ignore Me, How Can I Best Accomplish This?
+Don't mention which of the 30+ eragames your question is related to.
+
+Restarting the Game Takes Forever, Can I Speed This Up?
+Yes. Hit Ctrl-T to return to the title screen. It's nearly identical to a full restart, except that it will not (re)load any additional or changed files. On older versions of Emuera, you might have to use File > Return To Title Screen instead of the keybinding.
+
+EraMegaten Is Using 4GB Of RAM, Is Something Wrong?
+No. It's a combination of some of the worst coding imaginable and way too many templated dialog files.
+
+What Is The Debug Mode And How Do I Use It?
+A dev tool that is only relevant to players because the commands it accepts can be used to cheat (eg; add money, exp, etc). Using it requires some familiarity with Eralang, and the specific commands often differ from one game to the next. If you're unfamiliar with Eralang, your best option is to ask what command(s) you should enter to accomplish a specific goal in a certain game.
+
+I'm Retarded Enough To Want To Try Making My Own Eragame, Where Do I Start?
+Here is the Japanese Emuera Wiki. It covers everything about the language we call Eralang. No, there is no English equivalent.
+https://osdn.net/projects/emuera/wiki/FrontPage
+
+I Have Too Many Images On My Computer To Organize Properly And Would Like Something Similar To A Local Booru, What Can I Use?
+Hydrus Network.
+

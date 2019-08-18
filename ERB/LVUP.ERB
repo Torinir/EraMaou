@@ -1,0 +1,62 @@
+﻿;----------------------------------
+@LVUP, ARG:0
+;----------------------------------
+;ARG:0はキャラNo
+
+LOCAL:0 = CFLAG:(ARG:0):9 * 10 + 10
+
+$LVUP_REPEAT
+IF EXP:(ARG:0):80 >= LOCAL:0
+	EXP:(ARG:0):80 -= LOCAL:0
+	CALL ST_UP, ARG:0
+	LOCAL:0 = CFLAG:(ARG:0):9 * 10 + 10
+	SIF EXP:(ARG:0):80 >= LOCAL:0
+		GOTO LVUP_REPEAT
+	PRINTFORML *%SAVESTR:(ARG:0)% levelled up! Now LV{CFLAG:(ARG:0):9}*
+	IF TALENT:(ARG:0):291 && CFLAG:(ARG:0):9 >= 30
+		PRINTFORML %SAVESTR:(ARG:0)% became more mature and really grew up as a hero......
+		PRINTFORML %SAVESTR:(ARG:0)% lost [Amateur]
+		TALENT:(ARG:0):291 = 0
+	ENDIF
+ENDIF
+
+RETURN 0
+
+@ST_UP, ARG:0
+CFLAG:(ARG:0):9 += 1
+CFLAG:(ARG:0):13 += 1
+CFLAG:(ARG:0):14 += 1
+;ランダムでさらに強く
+LOCAL:0 = RAND:2
+IF LOCAL:0 == 0
+	CFLAG:(ARG:0):13 += 1
+ELSEIF LOCAL:0 == 1
+	CFLAG:(ARG:0):14 += 1
+ENDIF
+IF DAY >= 100
+	CFLAG:(ARG:0):13 += RAND:3
+	CFLAG:(ARG:0):14 += RAND:3
+ENDIF
+IF TALENT:(ARG:0):240 == 1
+	CFLAG:(ARG:0):13 += RAND:3
+	CFLAG:(ARG:0):14 += RAND:3
+ENDIF
+IF TALENT:(ARG:0):248 == 1
+	CFLAG:(ARG:0):13 += RAND:2
+	CFLAG:(ARG:0):14 += RAND:2
+ENDIF
+
+;ドラゴン戦闘補正
+IF TALENT:(ARG:0):314 == 5
+	CFLAG:(ARG:0):13 += RAND:2
+	CFLAG:(ARG:0):14 += RAND:2
+ENDIF
+
+;ドワーフ防御補正
+SIF TALENT:(ARG:0):314 == 11
+	CFLAG:(ARG:0):14 += RAND:2
+
+MAXBASE:(ARG:0):0 += 10
+MAXBASE:(ARG:0):1 += 10
+
+RETURN 0

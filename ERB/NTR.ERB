@@ -1,0 +1,361 @@
+﻿;NTR関係
+;CFLAG:1=9 の場合,あなたの手を離れている
+;奴隷が勇者に敗北するとたまに本国に連れてかれる
+
+;-----------------------------------------
+@NTR_VIDEO
+;-----------------------------------------
+;狂王様からのメッセージをお読みください
+;キャラ指定はTARGET
+
+;TARGET確認
+SIF TARGET < 0 && TARGET > CHARANUM
+	RETURN 0
+;NTR確認
+SIF CFLAG:1 != 9
+	RETURN 0
+
+PRINTL  
+
+;ランダムでNTR状態が解除され侵攻してくる
+;妊娠中は侵攻しない
+IF RAND:6 == 0 && TALENT:153 == 0
+	PRINTFORML 狂王は%SAVESTR:TARGET%に魔王を封印するよう命じた
+	PRINTFORMW %SAVESTR:TARGET%がダンジョンへ旅立ちました
+	CFLAG:1 = 2
+	
+	;侵入階層-侵攻度-侵攻中-再起ポイント設定
+	CFLAG:501 = 1
+	CFLAG:502 = 0
+	CFLAG:1 = 2
+	CFLAG:508 = 3
+	;カルマがいくらか回復
+	SIF CFLAG:151 < -50
+		CFLAG:151 = -50
+	;好感度も低く
+	CFLAG:2 = 20
+	
+	RETURN 0
+ENDIF
+
+CALL NTR_PLAY
+
+;珠によっては素質が成長する可能性がある
+
+;V感覚の珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+CALL DECIDE_ABLUP2
+IF I == 0 && RESULT == 1
+	ABL:2 += 1
+	JUEL:1 -= A
+	PRINTFORML %ABLNAME:2%のレベルが{ABL:2}になりました
+ENDIF
+
+;A感覚の珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+CALL DECIDE_ABLUP3
+IF I == 0 && RESULT == 1
+	ABL:3 += 1
+	JUEL:2 -= A
+	PRINTFORML %ABLNAME:3%のレベルが{ABL:3}になりました
+ENDIF
+
+;欲情の珠による可否(I=0:可,I&1:珠不足,I&2:経験不足)
+I = 0
+;異常経験が必要か
+E = 0
+CALL DECIDE_ABLUP11
+IF I == 0 && RESULT == 1
+	ABL:11 += 1
+	JUEL:5 -= A
+	PRINTFORML %ABLNAME:11%のレベルが{ABL:11}になりました
+ENDIF
+
+RETURN 0
+
+
+;------------------------------------------
+@NTR_PLAY
+;------------------------------------------
+;プレイ内容はP指定.口上用に
+;形式はビデオレター.水晶球的なもので送られてくる
+
+PRINTW 狂王から水晶球が届いた
+PRINTFORM 水晶球には%SAVESTR:TARGET%
+
+P = 0
+IF TALENT:0 == 1 && RAND:20 == 0
+	;処女喪失
+	PRINTW の処女喪失シ-ンが映されていた...
+	P = 1
+
+	CALL NTR_KOUJO
+
+	PRINTL V exp+3
+	EXP:0 += 3
+	PRINTFORML %PALAMNAME:1%の珠+{3*200}
+	PRINTFORMW %PALAMNAME:5%の珠+{3*250}
+	JUEL:1 += 3*200
+	JUEL:5 += 3*250
+	PRINTFORMW [処女喪失]
+	TALENT:0 = 0
+	TALENT:280 = 1
+	CFLAG:15 = 105
+	CSTR:(RAND:8 + 10) = 狂王の紋章
+	PRINTFORMW %SAVESTR:TARGET%は完全に狂王の物となってしまった
+	RETURN 0
+ELSEIF TALENT:0 == 1
+	;処女アナルプレイ
+	PRINTL がアナルに
+	IF FLAG:500 == 0 || FLAG:500 == 2
+		PRINT 狂王の巨根
+	ELSE
+		PRINT 極太のディルド
+	ENDIF
+	PRINTW を飲みこんでよがっている姿が映っていた...
+	P = 2
+
+	CALL NTR_KOUJO
+
+	IF FLAG:500 == 1
+		PRINTL A経験+10
+		PRINTFORML %EXPNAME:40%+10
+		EXP:1 += 10
+		EXP:40 += 5
+		PRINTFORML %PALAMNAME:2%の珠+{10*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{10*250}
+		JUEL:2 += 10*200
+		JUEL:5 += 10*250
+	ELSE
+		PRINTL A経験+10
+		PRINTL Semen exp+10
+		EXP:1 += 10
+		EXP:20 += 10
+		PRINTFORML %PALAMNAME:2%の珠+{10*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{10*250}
+		JUEL:2 += 10*200
+		JUEL:5 += 10*250
+	ENDIF
+	RETURN 0
+ENDIF
+
+IF RAND:10 == 0 && ABL:39 > 0
+	;獣姦ショー
+	PRINTL が観客に囲まれた舞台の上で
+	PRINTW 犬と交尾している姿が映されていた...
+	P = 3
+
+	CALL NTR_KOUJO
+
+	PRINTL V exp+20
+	PRINTL Semen exp+20
+	PRINTL 獣姦経験+20
+	EXP:0 += 20
+	EXP:20 += 20
+	EXP:56 += 20
+	PRINTFORML %PALAMNAME:1%の珠+{20*200}
+	PRINTFORMW %PALAMNAME:5%の珠+{20*250}
+	JUEL:1 += 20*200
+	JUEL:5 += 20*250
+	;妊娠フラグオン
+	SIF FLAG:5 & 4
+		CFLAG:106 = 10
+	RETURN 0
+ENDIF
+
+
+P = RAND:4 + 4
+
+IF P == 4
+	;Vプレイ
+	IF FLAG:500 == 0 || FLAG:500 == 2
+		PRINT が狂王の巨根
+	ELSE
+		PRINT が極太のディルド
+	ENDIF
+	PRINTL を性器に咥えこんでいる姿が映っていた...
+	PRINTFORMW %SAVESTR:TARGET%は狂王と抱きしめあいKissを交わしている...
+	PRINTW 一瞬ちらりとこちらを見たが,また夢中になって腰を振っていた
+
+	CALL NTR_KOUJO
+
+	IF FLAG:500 == 1
+		PRINTL V exp+5
+		PRINTFORML %EXPNAME:40%+5
+		EXP:0 += 5
+		EXP:40 += 5
+		PRINTFORML %PALAMNAME:1%の珠+{5*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{5*250}
+		JUEL:1 += 5*200
+		JUEL:5 += 5*250
+	ELSE
+		PRINTL V exp+5
+		PRINTL Semen exp+5
+		EXP:0 += 5
+		EXP:20 += 5
+		PRINTFORML %PALAMNAME:1%の珠+{5*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{5*250}
+		JUEL:1 += 5*200
+		JUEL:5 += 5*250
+		;妊娠フラグオン
+		SIF FLAG:5 & 4
+			CFLAG:108 = 10
+	ENDIF
+	
+	;ファーストキス
+		SIF CFLAG:16 == -1
+			CFLAG:16 = 993
+	
+ELSEIF P == 5
+	;VA乱交プレイ
+	IF FLAG:500 == 0
+		PRINT はたくさんの男たちに囲まれ
+	ELSE
+		PRINT はペニバンをつけた女たちに囲まれ
+	ENDIF
+	PRINTL 両方の穴を犯されている姿が映っていた......
+	PRINTFORML %SAVESTR:TARGET%は狂王に完全に忠誠を誓っているようで
+	PRINTW 嫌がるようすも見せず嬌声をあげていた...
+
+	CALL NTR_KOUJO
+
+	IF FLAG:500 == 1
+		PRINTL V exp+10
+		PRINTL A経験+10
+		PRINTFORML %EXPNAME:40%+10
+		EXP:0 += 10
+		EXP:1 += 10
+		EXP:40 += 5
+		PRINTFORML %PALAMNAME:1%の珠+{10*200}
+		PRINTFORML %PALAMNAME:2%の珠+{10*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{10*250}
+		JUEL:1 += 10*200
+		JUEL:2 += 10*200
+		JUEL:5 += 10*250
+	ELSE
+		PRINTL V exp+10
+		PRINTL A経験+10
+		PRINTL Semen exp+10
+		EXP:0 += 10
+		EXP:1 += 10
+		EXP:20 += 10
+		PRINTFORML %PALAMNAME:1%の珠+{10*200}
+		PRINTFORML %PALAMNAME:2%の珠+{10*200}
+		PRINTFORMW %PALAMNAME:5%の珠+{10*250}
+		JUEL:1 += 10*200
+		JUEL:2 += 10*200
+		JUEL:5 += 10*250
+		;妊娠フラグオン
+		SIF FLAG:5 & 4
+			CFLAG:105 = 10
+	ENDIF
+	
+ELSEIF P == 6
+	;公衆便女
+	PRINTW が性処理便器になっている姿が映されていた...
+	PRINTL 身体には"マ○コ10G-アナル無料"などの落書きや
+	PRINTW 性交回数を記した数が書かれている...
+	PRINTFORML %SAVESTR:TARGET%は狂王に完全に忠誠を誓っているようで
+	PRINTW 嫌がるようすも見せずに便器となって奉仕していた...
+
+	CALL NTR_KOUJO
+
+	PRINTL V exp+20
+	PRINTL A経験+20
+	PRINTL Semen exp+20
+	EXP:0 += 20
+	EXP:1 += 20
+	EXP:20 += 20
+	PRINTFORML %PALAMNAME:1%の珠+{20*200}
+	PRINTFORML %PALAMNAME:2%の珠+{20*200}
+	PRINTFORMW %PALAMNAME:5%の珠+{20*250}
+	JUEL:1 += 20*200
+	JUEL:2 += 20*200
+	JUEL:5 += 20*250
+	;妊娠フラグオン
+	SIF FLAG:5 & 4
+		CFLAG:105 = 10
+
+ELSEIF P == 7
+	;精液処理
+	PRINT が狂王の
+	IF FLAG:500 == 1
+		PRINT 性器
+	ELSE
+		PRINT ペニス
+	ENDIF
+	PRINTW に奉仕している姿が映されていた......
+	PRINTFORML %SAVESTR:TARGET%はあなたが見ていることを狂王に告げられると
+	PRINTW こちらにむかって淫蕩な顔で微笑んだ......
+	PRINT その顔は
+	IF FLAG:500 == 1
+		PRINT 愛液
+	ELSE
+		PRINT 精液
+	ENDIF
+	PRINTW でべっとりと汚れている......
+
+	CALL NTR_KOUJO
+
+	IF FLAG:500 == 1
+		PRINTFORMW %PALAMNAME:5%の珠+{5*250}
+		JUEL:5 += 5*250
+	ELSE
+		PRINTL フェラ経験+3
+		PRINTL Semen exp+3
+		EXP:22 += 3
+		EXP:20 += 3
+		PRINTFORMW %PALAMNAME:5%の珠+{5*250}
+		JUEL:5 += 5*250
+		;ファーストキス
+		SIF CFLAG:16 == -1
+			CFLAG:16 = 993
+	ENDIF
+	
+ELSEIF P == 8
+	;そのうちプレイ拡張
+ENDIF
+
+WAIT
+
+RETURN 0
+
+
+;------------------------------------------
+@NTR_CHILD_BIRTH
+;------------------------------------------
+PRINTL
+PRINTW 狂王から水晶球が届いた.
+;父が狂王
+IF CFLAG:102 == 7
+	PRINTFORMW 水晶球には%SAVESTR:TARGET%が狂王と観客達の前で公開出産する姿が録画されていた.
+	PRINTFORMW 魔法の薬により妊娠を促成されたせいか肌も毛も真っ白な赤子が生まれ落ちる.
+	PRINTFORMW 『このような赤子を何人も産ませたが,1０人から先は覚えてない』と狂王が笑いながら言うと,周りの観客達も笑い出した.
+;父が見ず知らずの男
+ELSEIF CFLAG:102 == 4
+	PRINTFORMW 水晶球には%SAVESTR:TARGET%が狂王と観客達の前で公開出産する姿が録画されていた.
+	PRINTFORMW 魔法の薬により妊娠を促成されたせいか肌も毛も真っ白な赤子が生まれ落ちる.
+	PRINTFORMW 『父が誰かも分からぬこんな出来損ないでもお前の子供だぞ』と狂王が笑いながら言うと,周りの観客達も笑い出した.
+;父が奴隷か助手
+ELSEIF CFLAG:102 == 2 || CFLAG:102 == 3
+	PRINTFORMW 水晶球には%SAVESTR:TARGET%が狂王と観客達の前で公開出産する姿が録画されていた.
+	PRINTFORMW 魔法の薬により妊娠を促成されたせいか肌も毛も真っ白な赤子が生まれ落ちる.
+	PRINTFORMW 『勇者同士で掛け合わせるとは魔王とやらもなかなかいい趣味をしている』と狂王が笑いながら言うと,周りの観客達も笑い出した.
+ELSE
+	PRINTFORMW 水晶球には%SAVESTR:TARGET%が狂王と観客達の前で公開出産する姿が録画されていた.
+	PRINTFORMW 『穢れた腹からはバケモノしか産まれぬか』と,周りの観客達は嘲笑している.
+	IF RAND:3 == 0
+		PRINTFORMW 産まれたモンスタ-はその場で刺し殺されてバラバラにされた.........
+	ELSEIF RAND:2 == 0
+		PRINTFORMW 産まれたモンスタ-は狂王に襲いかかったが返り討ちにされた.........
+	ELSE
+		PRINTFORMW 産まれたモンスタ-は取り上げられると床に何度も叩き付けられ殺された.........
+	ENDIF
+ENDIF
+P = 20
+CALL NTR_KOUJO
+P = 0
+
+
+
+

@@ -1,0 +1,239 @@
+﻿;eraWIZから流用
+
+@COM73
+;髪型を弄る
+
+PRINTL 髪型を弄る
+STR:0 = 髪型を弄る
+
+LOSEBASE:1 += 60
+
+;従順,露出癖,調教者の技巧が影響
+;入るソースは露出,屈従.従順が高いと情愛,技巧が低いと痛覚,ばっさり切ると逸脱
+;バランス的に購入直後の奴隷の髪をばっさり切ると反発刻印が付く程度に.効果は控えめ.
+
+;ABL:従順をみる
+IF ABL:10 == 0
+	SOURCE:13 = 100
+ELSEIF ABL:10 == 1
+	SOURCE:3 = 10
+	SOURCE:13 = 250
+ELSEIF ABL:10 == 2
+	SOURCE:3 = 100
+	SOURCE:13 = 500
+ELSEIF ABL:10 == 3
+	SOURCE:3 = 250
+	SOURCE:13 = 1000
+ELSEIF ABL:10 == 4
+	SOURCE:3 = 500
+	SOURCE:13 = 1500
+ELSE
+	SOURCE:3 = 1000
+	SOURCE:13 = 2000
+ENDIF
+
+;ABL:露出癖をみる
+IF ABL:17 == 0
+	SOURCE:12 = 500
+ELSEIF ABL:17 == 1
+	SOURCE:12 = 250
+ELSEIF ABL:17 == 2
+	SOURCE:12 = 100
+ELSEIF ABL:17 == 3
+	SOURCE:12 = 50
+ELSEIF ABL:17 == 4
+	SOURCE:12 = 25
+ELSE
+	SOURCE:12 = 10
+ENDIF
+
+;プレイヤーの技巧を見る
+IF ABL:PLAYER:12 <= 3
+	SOURCE:6 = 100
+ELSEIF ABL:PLAYER:12 == 4
+	SOURCE:6 = 10
+ELSE
+	SOURCE:6 = 0
+ENDIF
+
+CALL HAIRSET
+
+RETURN 1
+
+@HAIRSET
+;X,Yは,カット,セットの変更を行ったかどうかを記録する(セリフ表示のため)
+X = 0
+Y = 0
+
+;既にショートだと髪は切らない
+SIF TALENT:302 <= 100
+	GOTO INPUT_LOOP_HAIRSET
+
+$INPUT_LOOP_HAIRCUT
+PRINTFORML %SAVESTR:TARGET%の髪を切りますか?
+IF TALENT:302 <= 200
+	PRINTL 現在[セミロング]
+ELSE
+	PRINTL 現在[ロング]
+	PRINTL [0]---ほどほどに切る
+ENDIF
+PRINTL [1]---ばっさり切る
+PRINTL [2]---切らない
+INPUT
+IF RESULT == 0 && TALENT:302 >= 201
+	L = 2
+	SOURCE:14 = 500
+ELSEIF RESULT == 1 && TALENT:302 >= 101
+	L = 1
+	SOURCE:14 = 500
+	SIF TALENT:302 >= 201
+		SOURCE:14 += 500
+ELSEIF RESULT == 2
+	L = 0
+ELSE
+	GOTO INPUT_LOOP_HAIRCUT
+ENDIF
+
+IF L
+	PRINTL どのようにカットしますか?
+	PRINTL [0]---やっぱり切らない
+	PRINTL [1]---自然に仕上げる
+	PRINTL [2]---切り揃える
+	PRINTL [3]---レイヤ-を強調
+	PRINTL [4]---シャギ-を強調
+	INPUT
+	C = RESULT
+	IF C >= 1 && C <= 4
+		X = 1
+		PRINTFORML %SAVESTR:PLAYER%は,%SAVESTR:TARGET%の髪を切った.
+		IF ABL:PLAYER:12 >= 5
+			PRINTL この出来映えなら,まずどこに出しても恥ずかしくはないだろう...
+		ELSEIF ABL:PLAYER:12 >= 4
+			PRINTL 持ち前の器用さが助けとなって,まずまずの仕上がりとなった...
+		ELSE
+			PRINTL 不慣れな作業のためか,仕上がりは今ひとつのようだ...
+		ENDIF
+		IF L == 2
+			TALENT:302 = 101
+		ELSE
+			TALENT:302 = 1
+		ENDIF
+		TALENT:303 = C
+		;髪を切ったときは髪型をナチュラルに
+		TALENT:304 = 1
+	ELSE
+		PRINTL 髪を切らないことにした.
+	ENDIF
+ENDIF
+
+SIF X
+	CALL HAIRSET_TALK_1
+
+PRINTL  
+$INPUT_LOOP_HAIRSET
+PRINTFORML %SAVESTR:TARGET%の髪をどのようにセットしますか?
+PRINTL [1]---ナチュラル
+PRINTL [2]---横分け
+PRINTL [3]---アンバランス
+IF TALENT:302 >= 101
+	PRINTL [4]---一本縛り
+	PRINTL [5]---ポニ-テ-ル
+	PRINTL [6]---サイドポニ-
+	PRINTL [7]---おさげ
+	PRINTL [8]---ツインテ-ル
+	PRINTL [9]---アップ
+	PRINTL [10]--サイドアップ
+	IF TALENT:302 >= 201
+		PRINTL [11]--フィッシュボ-ン
+		PRINTL [12]--ロ-ル
+	ENDIF
+ENDIF
+PRINT 現在の髪型:
+IF TALENT:304 == 1
+	PRINTL ナチュラル
+ELSEIF TALENT:304 == 2
+	PRINTL 横分け
+ELSEIF TALENT:304 == 3
+	PRINTL アンバランス
+ELSEIF TALENT:304 == 4
+	PRINTL 一本縛り
+ELSEIF TALENT:304 == 5
+	PRINTL ポニ-テ-ル
+ELSEIF TALENT:304 == 6
+	PRINTL サイドポニ-
+ELSEIF TALENT:304 == 7
+	PRINTL おさげ
+ELSEIF TALENT:304 == 8
+	PRINTL ツインテ-ル
+ELSEIF TALENT:304 == 9
+	PRINTL アップ
+ELSEIF TALENT:304 == 10
+	PRINTL サイドアップ
+ELSEIF TALENT:304 == 11
+	PRINTL フィッシュボ-ン
+ELSEIF TALENT:304 == 12
+	PRINTL ロ-ル
+ENDIF
+INPUT
+IF RESULT < 1 || RESULT > 14
+	GOTO INPUT_LOOP_HAIRSET
+ELSEIF TALENT:302 <= 200 && RESULT > 11
+	GOTO INPUT_LOOP_HAIRSET
+ELSEIF TALENT:302 <= 100 && RESULT > 4
+	GOTO INPUT_LOOP_HAIRSET
+ELSEIF RESULT == TALENT:304
+	PRINTFORML %SAVESTR:TARGET%の髪型をそのままにした.
+ELSE
+	TALENT:304 = RESULT
+	PRINTFORM %SAVESTR:PLAYER%は%SAVESTR:TARGET%の髪型を
+	IF TALENT:304 == 1
+		PRINT ナチュラル
+	ELSEIF TALENT:304 == 2
+		PRINT 横分け
+	ELSEIF TALENT:304 == 3
+		PRINT アンバランス
+	ELSEIF TALENT:304 == 4
+		PRINT 一本縛り
+	ELSEIF TALENT:304 == 5
+		PRINT ポニ-テ-ル
+	ELSEIF TALENT:304 == 6
+		PRINT サイドポニ-
+	ELSEIF TALENT:304 == 7
+		PRINT おさげ
+	ELSEIF TALENT:304 == 8
+		PRINT ツインテ-ル
+	ELSEIF TALENT:304 == 9
+		PRINT アップ
+	ELSEIF TALENT:304 == 10
+		PRINT サイドアップ
+	ELSEIF TALENT:304 == 11
+		PRINT フィッシュボ-ン
+	ELSEIF TALENT:304 == 12
+		PRINT ロ-ル
+	ENDIF
+	PRINTL に変えた.
+	IF ABL:PLAYER:12 >= 5
+		PRINTL この出来映えなら,まずどこに出しても恥ずかしくはないだろう...
+	ELSEIF ABL:PLAYER:12 >= 4
+		PRINTL 持ち前の器用さが助けとなって,まずまずの仕上がりとなった...
+	ELSE
+		PRINTL 不慣れな作業のためか,仕上がりは今ひとつのようだ...
+	ENDIF
+	Y = 1
+ENDIF
+
+SIF Y
+	CALL HAIRSET_TALK_2
+
+RETURN 1
+
+;髪を切ったときのセリフ
+@HAIRSET_TALK_1
+
+RETURN 1
+
+;髪型を変えたときのセリフ
+@HAIRSET_TALK_2
+
+
+RETURN 1
